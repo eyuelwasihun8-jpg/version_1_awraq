@@ -31,7 +31,6 @@ const LIFE_STATUS = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -42,37 +41,22 @@ export default function OnboardingPage() {
     lifeStatus: '',
   });
 
-  // Verify user is authenticated + not already onboarded
+  // Fast background check (doesn't block UI render)
   useEffect(() => {
-    const check = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
         router.push('/login');
         return;
       }
-
-      // Check if already onboarded
-      try {
-        const res = await fetch('/api/onboarding');
-        const data = await res.json();
-        if (data.profile?.onboarding_completed) {
-          router.push('/dashboard');
-          return;
-        }
-        // Pre-fill name if available
-        if (data.profile?.full_name) {
-          setFormData((prev) => ({ ...prev, fullName: data.profile.full_name }));
-        }
-      } catch {
-        // continue anyway
+      // Pre-fill name if already set
+      if (user.user_metadata?.full_name) {
+        setFormData((prev) => ({
+          ...prev,
+          fullName: prev.fullName || user.user_metadata.full_name,
+        }));
       }
-      setCheckingAuth(false);
-    };
-    check();
+    });
   }, [router]);
 
   const canProceedStep1 = formData.fullName.trim().length >= 2 && formData.phone.trim().length >= 9;
@@ -99,20 +83,12 @@ export default function OnboardingPage() {
       }
 
       toast.success('Welcome to Awraq! 🎉');
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } catch {
       toast.error('Network error. Please try again.');
       setLoading(false);
     }
   };
-
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#07CCFD]" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50/30 flex flex-col">
@@ -129,14 +105,14 @@ export default function OnboardingPage() {
           <div className="mb-6 sm:mb-8">
             <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#07CCFD] to-[#20B486] rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-[#07CCFD] to-[#20B486] rounded-full transition-all duration-300"
                 style={{ width: `${(step / 3) * 100}%` }}
-              ></div>
+              />
             </div>
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 sm:p-8 lg:p-10">
-            {/* ─── STEP 1: Name + Phone ─── */}
+            {/* STEP 1: Name + Phone */}
             {step === 1 && (
               <div className="space-y-6 animate-fadeIn">
                 <div className="text-center">
@@ -146,7 +122,7 @@ export default function OnboardingPage() {
                   <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
                     Let's get to know you
                   </h1>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 font-medium">
                     We'll personalize your learning experience
                   </p>
                 </div>
@@ -193,6 +169,7 @@ export default function OnboardingPage() {
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => canProceedStep1 && setStep(2)}
                   disabled={!canProceedStep1}
                   className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -203,14 +180,14 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* ─── STEP 2: Gender + Age ─── */}
+            {/* STEP 2: Gender + Age */}
             {step === 2 && (
               <div className="space-y-6 animate-fadeIn">
                 <div className="text-center">
                   <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
                     A bit more about you
                   </h1>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 font-medium">
                     Help us understand our community better
                   </p>
                 </div>
@@ -224,6 +201,7 @@ export default function OnboardingPage() {
                       {GENDERS.map((g) => (
                         <button
                           key={g.value}
+                          type="button"
                           onClick={() => setFormData({ ...formData, gender: g.value })}
                           className={`py-3 sm:py-3.5 rounded-xl border-2 text-sm font-bold transition-all cursor-pointer ${
                             formData.gender === g.value
@@ -245,6 +223,7 @@ export default function OnboardingPage() {
                       {AGE_GROUPS.map((a) => (
                         <button
                           key={a.value}
+                          type="button"
                           onClick={() => setFormData({ ...formData, ageGroup: a.value })}
                           className={`py-3 sm:py-3.5 rounded-xl border-2 text-sm font-bold transition-all cursor-pointer ${
                             formData.ageGroup === a.value
@@ -261,12 +240,14 @@ export default function OnboardingPage() {
 
                 <div className="flex flex-col-reverse sm:flex-row gap-3">
                   <button
+                    type="button"
                     onClick={() => setStep(1)}
                     className="sm:flex-1 min-h-[48px] py-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold transition-all cursor-pointer"
                   >
                     Back
                   </button>
                   <button
+                    type="button"
                     onClick={() => canProceedStep2 && setStep(3)}
                     disabled={!canProceedStep2}
                     className="sm:flex-1 min-h-[48px] py-3.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -278,14 +259,14 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* ─── STEP 3: Life Status ─── */}
+            {/* STEP 3: Life Status */}
             {step === 3 && (
               <div className="space-y-6 animate-fadeIn">
                 <div className="text-center">
                   <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
                     What best describes you?
                   </h1>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 font-medium">
                     We'll recommend courses based on your goals
                   </p>
                 </div>
@@ -294,6 +275,7 @@ export default function OnboardingPage() {
                   {LIFE_STATUS.map((s) => (
                     <button
                       key={s.value}
+                      type="button"
                       onClick={() => setFormData({ ...formData, lifeStatus: s.value })}
                       className={`p-4 sm:p-5 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-center gap-3 ${
                         formData.lifeStatus === s.value
@@ -320,6 +302,7 @@ export default function OnboardingPage() {
 
                 <div className="flex flex-col-reverse sm:flex-row gap-3">
                   <button
+                    type="button"
                     onClick={() => setStep(2)}
                     disabled={loading}
                     className="sm:flex-1 min-h-[48px] py-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold transition-all cursor-pointer disabled:opacity-70"
@@ -327,6 +310,7 @@ export default function OnboardingPage() {
                     Back
                   </button>
                   <button
+                    type="button"
                     onClick={handleSubmit}
                     disabled={!canSubmit || loading}
                     className="sm:flex-1 min-h-[48px] py-3.5 rounded-xl bg-gradient-to-b from-[#20B486] to-[#059669] border-b-[4px] border-[#047857] hover:border-b-[2px] hover:translate-y-[2px] text-white text-sm font-bold shadow-[0_8px_20px_rgba(32,180,134,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"

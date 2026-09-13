@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Mail, Lock, CheckCircle2, Loader2 } from 'lucide-react';
+import { X, Mail, Lock, Loader2 } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { createClient } from '@/lib/supabase-browser';
 import { toast } from 'sonner';
@@ -41,8 +41,8 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
 
     try {
       if (isRegister) {
-        const { error } = await supabase.auth.signUp({
-          email,
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
@@ -55,11 +55,12 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
           return;
         }
 
-        toast.success('Check your email to confirm your account!');
+        toast.success('Account created! Setting up...');
         onClose();
+        window.location.href = '/onboarding';
       } else {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password,
         });
 
@@ -69,22 +70,25 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
           return;
         }
 
-        // Check onboarding
-        const res = await fetch('/api/onboarding');
-        const data = await res.json();
-
         toast.success('Welcome back!');
         onClose();
-
-        if (!data.profile?.onboarding_completed) {
-          router.push('/onboarding');
-        } else {
-          router.push('/dashboard');
-        }
+        
+        // Instant check
+        fetch('/api/onboarding')
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.profile?.onboarding_completed) {
+              window.location.href = '/dashboard';
+            } else {
+              window.location.href = '/onboarding';
+            }
+          })
+          .catch(() => {
+            window.location.href = '/onboarding';
+          });
       }
-    } catch (err) {
+    } catch {
       toast.error('Something went wrong. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -96,7 +100,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
       },
     });
 
@@ -117,67 +121,41 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden border border-gray-100 grid grid-cols-1 md:grid-cols-12 max-h-[92dvh] overflow-y-auto safe-bottom"
+        className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden border border-slate-100 grid grid-cols-1 md:grid-cols-12 max-h-[92dvh] overflow-y-auto safe-bottom"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 z-20 w-11 h-11 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition-colors cursor-pointer"
+          className="absolute top-3 right-3 z-20 w-11 h-11 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
           aria-label="Close modal"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Left visual */}
-        <div className="hidden md:flex md:col-span-5 bg-gradient-to-b from-gray-50 via-slate-50 to-emerald-50/40 p-8 flex-col justify-between border-r border-gray-100">
+        <div className="hidden md:flex md:col-span-5 bg-gradient-to-b from-slate-50 via-slate-50 to-emerald-50/40 p-8 flex-col justify-between border-r border-slate-100">
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
+            <div className="bg-white rounded-2xl p-4 shadow-md border border-slate-100">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-50 text-[#07CCFD]">
                   • LIVE
                 </span>
-                <span className="text-[11px] text-gray-400 font-medium">STRATEGY</span>
+                <span className="text-[11px] text-slate-400 font-medium">STRATEGY</span>
               </div>
-              <h4 className="text-sm font-bold text-gray-900 leading-snug">
+              <h4 className="text-sm font-bold text-slate-900 leading-snug">
                 Master Digital Marketing
               </h4>
-              <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-50">
-                <img
-                  src="https://res.cloudinary.com/dw1ohipim/image/upload/v1788610521/zdd0btz0dhpdrl3qdekg.jpg"
-                  alt="Lamlak"
-                  className="w-6 h-6 rounded-full object-cover"
-                />
-                <span className="text-xs text-gray-600 font-medium">Lamlak</span>
-              </div>
             </div>
 
-            <div className="bg-white rounded-xl p-3 shadow-xs border border-gray-100 flex items-center justify-between">
+            <div className="bg-white rounded-xl p-3 shadow-xs border border-slate-100 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-bold text-gray-900">Premium Access</div>
-                <div className="text-[10px] text-gray-500">Join 1,000+ students</div>
+                <div className="text-[11px] font-bold text-slate-900">Premium Access</div>
+                <div className="text-[10px] text-slate-500">Join 1,000+ students</div>
               </div>
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
                 Learn today
               </span>
             </div>
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-gray-200/70">
-            <div className="flex items-center gap-3 mb-3">
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
-                alt="Student"
-                className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-xs"
-              />
-              <div>
-                <div className="text-xs font-bold text-gray-900">Marcus Chen</div>
-                <div className="text-[10px] text-gray-500">Product Lead</div>
-              </div>
-            </div>
-            <p className="text-sm font-semibold text-gray-800 leading-relaxed italic">
-              "Awraq completely changed how I think about my business. Simple, effective, and
-              directly applicable."
-            </p>
           </div>
         </div>
 
@@ -187,10 +165,10 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
             <BrandLogo size="sm" />
           </div>
 
-          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 pr-10">
+          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 pr-10">
             {isRegister ? 'Create your account' : 'Welcome back'}
           </h3>
-          <p className="text-sm text-gray-500 mt-1 mb-6">
+          <p className="text-sm text-slate-500 mt-1 mb-6">
             {isRegister
               ? 'Join over 1,000+ students advancing their digital careers'
               : 'Sign in to access your courses and resources'}
@@ -201,7 +179,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
             type="button"
             onClick={handleGoogleLogin}
             disabled={googleLoading || loading}
-            className="w-full mb-4 min-h-[48px] py-3 rounded-xl bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-800 text-sm font-bold transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-70"
+            className="w-full mb-4 min-h-[48px] py-3 rounded-xl bg-white border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800 text-sm font-bold transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-70"
           >
             {googleLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -231,18 +209,18 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
           {/* Divider */}
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full border-t border-slate-200" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-3 text-gray-500 font-medium">or</span>
+              <span className="bg-white px-3 text-slate-500 font-medium">or</span>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Email</label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   value={email}
@@ -250,15 +228,15 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
                   required
                   placeholder="name@example.com"
                   autoComplete="email"
-                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-gray-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-gray-50/50"
+                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-slate-50/50"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   value={password}
@@ -267,7 +245,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
                   minLength={6}
                   placeholder="••••••••"
                   autoComplete={isRegister ? 'new-password' : 'current-password'}
-                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-gray-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-gray-50/50"
+                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-slate-50/50"
                 />
               </div>
               {!isRegister && (
@@ -275,7 +253,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-[11px] font-medium text-gray-500 hover:text-[#07CCFD] cursor-pointer"
+                    className="text-[11px] font-medium text-slate-500 hover:text-[#07CCFD] cursor-pointer"
                   >
                     Forgot password?
                   </button>
@@ -299,11 +277,12 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-500 pb-2">
+          <div className="mt-6 text-center text-sm text-slate-500 pb-2">
             {isRegister ? (
               <>
                 Already have an account?{' '}
                 <button
+                  type="button"
                   onClick={() => setIsRegister(false)}
                   className="font-bold text-[#07CCFD] hover:underline cursor-pointer"
                 >
@@ -314,6 +293,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
               <>
                 Don't have an account?{' '}
                 <button
+                  type="button"
                   onClick={() => setIsRegister(true)}
                   className="font-bold text-[#07CCFD] hover:underline cursor-pointer"
                 >

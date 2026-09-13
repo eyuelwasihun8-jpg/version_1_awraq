@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'lessonId required' }, { status: 400 });
   }
 
-  // Verify user is enrolled in the course this lesson belongs to
+  // Verify enrollment
   const { data: lesson } = await supabase
     .from('lessons')
     .select('course_id')
@@ -36,8 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Not enrolled' }, { status: 403 });
   }
 
-  // Fetch current progress (if any) so we NEVER decrease values
-  // Prevents cheating (e.g. student sending watchSeconds=0 to reset)
+  // Fetch existing to prevent decrease
   const { data: existing } = await supabase
     .from('lesson_progress')
     .select('watch_seconds, scroll_percentage, time_on_page_seconds')
@@ -49,8 +48,6 @@ export async function POST(request: NextRequest) {
   const newScroll = Math.max(existing?.scroll_percentage ?? 0, scrollPercentage ?? 0);
   const newTime = Math.max(existing?.time_on_page_seconds ?? 0, timeOnPageSeconds ?? 0);
 
-  // Upsert (insert or update)
-  // The DB trigger auto-sets is_completed=true when thresholds are met
   const { data, error } = await supabase
     .from('lesson_progress')
     .upsert(
@@ -77,7 +74,6 @@ export async function POST(request: NextRequest) {
   });
 }
 
-// GET current progress for a lesson (used when page loads)
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

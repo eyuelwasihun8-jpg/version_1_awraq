@@ -18,24 +18,14 @@ export const TextReader: React.FC<Props> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollPct, setScrollPct] = useState<number>(initialProgress?.scroll_percentage || 0);
-  const [timeSpent, setTimeSpent] = useState<number>(initialProgress?.time_on_page_seconds || 0);
   const completedRef = useRef<boolean>(initialProgress?.is_completed || false);
 
-  // Reset on lesson change
   useEffect(() => {
     setScrollPct(initialProgress?.scroll_percentage || 0);
-    setTimeSpent(initialProgress?.time_on_page_seconds || 0);
     completedRef.current = initialProgress?.is_completed || false;
     window.scrollTo({ top: 0 });
   }, [lessonId, initialProgress]);
 
-  // Time tracker
-  useEffect(() => {
-    const interval = setInterval(() => setTimeSpent((t) => t + 1), 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Scroll tracker
   useEffect(() => {
     const onScroll = () => {
       const container = containerRef.current;
@@ -51,7 +41,7 @@ export const TextReader: React.FC<Props> = ({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Send progress every 15s + on unmount
+  // Send progress every 8 seconds AND when scroll reaches 90%
   useEffect(() => {
     const send = async () => {
       try {
@@ -61,24 +51,24 @@ export const TextReader: React.FC<Props> = ({
           body: JSON.stringify({
             lessonId,
             scrollPercentage: scrollPct,
-            timeOnPageSeconds: timeSpent,
+            timeOnPageSeconds: 0, // No longer required
           }),
         });
         const data = await res.json();
         if (data.isCompleted && !completedRef.current) {
           completedRef.current = true;
           onCompleted();
-          toast.success('Lesson completed!');
+          toast.success('Reading complete! 📖');
         }
       } catch {}
     };
 
-    const interval = setInterval(send, 15000);
+    const interval = setInterval(send, 8000);
     return () => {
       clearInterval(interval);
       send();
     };
-  }, [scrollPct, timeSpent, lessonId, onCompleted]);
+  }, [scrollPct, lessonId, onCompleted]);
 
   return (
     <article

@@ -12,6 +12,7 @@ import {
   Video,
   FileText,
   HelpCircle,
+  Award,
 } from 'lucide-react';
 import { VideoPlayer } from './VideoPlayer';
 import { TextReader } from './TextReader';
@@ -73,6 +74,11 @@ export const LessonClient: React.FC<Props> = ({
   const hasQuiz = !!(
     lesson.quiz_data?.questions && lesson.quiz_data.questions.length > 0
   );
+
+  // Is this the last lesson AND is the entire course fully completed?
+  const isLastLesson = !nextLesson;
+  const courseFullyCompleted = totalCount > 0 && completedCount === totalCount;
+  const showCertificateButton = isLastLesson && courseFullyCompleted;
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -256,8 +262,43 @@ export const LessonClient: React.FC<Props> = ({
                 </h2>
               </div>
 
-              {/* NEXT / PREV NAVIGATION (BOTTOM - VISIBLE ALWAYS) */}
-              <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-slate-200 pt-6">
+              {/* 🎉 CERTIFICATE CELEBRATION BANNER (Only Last Lesson + Course Completed) */}
+              {showCertificateButton && (
+                <div className="mt-6 rounded-2xl bg-gradient-to-br from-amber-100 via-amber-50 to-yellow-50 border-2 border-amber-300 p-6 sm:p-8 text-center shadow-xl relative overflow-hidden">
+                  {/* Decorative dots */}
+                  <div className="absolute top-4 left-4 w-2 h-2 rounded-full bg-amber-400 opacity-60" />
+                  <div className="absolute top-8 right-6 w-3 h-3 rounded-full bg-amber-500 opacity-40" />
+                  <div className="absolute bottom-6 left-10 w-2 h-2 rounded-full bg-amber-400 opacity-50" />
+                  <div className="absolute bottom-4 right-12 w-1.5 h-1.5 rounded-full bg-amber-500 opacity-60" />
+
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center mx-auto mb-3 shadow-lg">
+                      <Award className="w-8 h-8 text-white" />
+                    </div>
+
+                    <div className="text-[10px] uppercase font-black text-amber-700 tracking-widest mb-1">
+                      🎉 Congratulations!
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-1">
+                      You've completed the entire course!
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 font-medium mb-5">
+                      Get your official certificate to celebrate your achievement
+                    </p>
+
+                    <Link
+                      href={`/certificate/${course.id}`}
+                      className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-b from-amber-500 to-amber-600 border-b-[4px] border-amber-700 hover:border-b-[2px] hover:translate-y-[2px] text-white text-sm font-black shadow-[0_8px_20px_rgba(245,158,11,0.4)] cursor-pointer transition-all"
+                    >
+                      <Award className="w-5 h-5" />
+                      <span>Get Your Certificate</span>
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* NEXT / PREV NAVIGATION */}
+              <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-slate-200 pt-6">
                 {prevLesson ? (
                   <Link
                     href={`/learn/${course.id}/${prevLesson.id}`}
@@ -297,20 +338,61 @@ export const LessonClient: React.FC<Props> = ({
                     </div>
                   </Link>
                 ) : (
-                  <Link
-                    href={`/learn/${course.id}`}
-                    className="flex-1 flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-[#20B486] to-[#059669] cursor-pointer transition-all group shadow-[0_8px_20px_rgba(32,180,134,0.3)] hover:-translate-y-0.5"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[10px] uppercase font-black text-emerald-100 tracking-wider mb-0.5">
-                        Course Complete
+                  <>
+                    {/* GRID: 2 buttons if course is complete, 1 button otherwise */}
+                    {showCertificateButton ? (
+                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <Link
+                          href={`/learn/${course.id}`}
+                          className="flex items-center gap-3 p-4 rounded-2xl bg-white border-2 border-slate-200 hover:border-slate-300 cursor-pointer transition-all group"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[10px] uppercase font-black text-slate-400 tracking-wider mb-0.5">
+                              Course Overview
+                            </div>
+                            <div className="text-sm font-bold text-slate-900">
+                              Back to Overview
+                            </div>
+                          </div>
+                          <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                            <ArrowLeft className="w-5 h-5 text-slate-700" />
+                          </div>
+                        </Link>
+
+                        <Link
+                          href={`/certificate/${course.id}`}
+                          className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 cursor-pointer transition-all group shadow-[0_8px_20px_rgba(245,158,11,0.4)] hover:-translate-y-0.5"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[10px] uppercase font-black text-amber-100 tracking-wider mb-0.5">
+                              Certificate Ready
+                            </div>
+                            <div className="text-sm font-bold text-white">
+                              Get Your Certificate
+                            </div>
+                          </div>
+                          <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                            <Award className="w-5 h-5 text-white" />
+                          </div>
+                        </Link>
                       </div>
-                      <div className="text-sm font-bold text-white">Back to Overview</div>
-                    </div>
-                    <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                      <CheckCircle2 className="w-5 h-5 text-white" />
-                    </div>
-                  </Link>
+                    ) : (
+                      <Link
+                        href={`/learn/${course.id}`}
+                        className="flex-1 flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-[#20B486] to-[#059669] cursor-pointer transition-all group shadow-[0_8px_20px_rgba(32,180,134,0.3)] hover:-translate-y-0.5"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[10px] uppercase font-black text-emerald-100 tracking-wider mb-0.5">
+                            Last Lesson
+                          </div>
+                          <div className="text-sm font-bold text-white">Back to Overview</div>
+                        </div>
+                        <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <CheckCircle2 className="w-5 h-5 text-white" />
+                        </div>
+                      </Link>
+                    )}
+                  </>
                 )}
               </div>
             </div>

@@ -51,7 +51,8 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  html, body {
+  html,
+  body {
     max-width: 100%;
     overflow-x: hidden;
   }
@@ -63,84 +64,205 @@
 }
 
 /* Scrollbars */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--color-bg-tertiary); }
-::-webkit-scrollbar-thumb { background: var(--color-border-secondary); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-text-tertiary); }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-tertiary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
 
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 3px; }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+}
 
 /* Viewport helpers */
-.min-h-screen { min-height: 100vh; min-height: 100dvh; }
-.h-screen { height: 100vh; height: 100dvh; }
-.safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-.safe-top { padding-top: env(safe-area-inset-top); }
+.min-h-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.h-screen {
+  height: 100vh;
+  height: 100dvh;
+}
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
 
 /* Mobile form / touch fixes */
 @media (max-width: 640px) {
-  input, select, textarea { font-size: 16px !important; }
-  button, a, [role="button"] { min-height: 40px; }
-  button.chip, a.chip, .no-min-touch { min-height: 0; }
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  button,
+  a,
+  [role='button'] {
+    min-height: 40px;
+  }
+  button.chip,
+  a.chip,
+  .no-min-touch {
+    min-height: 0;
+  }
 }
 
-* { -webkit-tap-highlight-color: transparent; }
+* {
+  -webkit-tap-highlight-color: transparent;
+}
 
-.player-lock { height: 100vh; height: 100dvh; overflow: hidden; }
+.player-lock {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
 
-/* ─── Animations ─── */
+/* ───────────────── Animations ───────────────── */
 
+/* Generic marquee (can be used elsewhere) */
 @keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 .animate-marquee {
   width: max-content;
-  animation: marquee 22s linear infinite;
+  animation: marquee 25s linear infinite;
   will-change: transform;
 }
-.animate-marquee:hover { animation-play-state: paused; }
-
-@keyframes courseSlide {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
-.animate-course-slide { animation: courseSlide 40s linear infinite; }
-.animate-course-slide:hover { animation-play-state: paused; }
+
+/* Trusted By marquee — continuous, NEVER pauses on hover */
+@keyframes marqueeTrusted {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee-trusted {
+  width: max-content;
+  animation: marqueeTrusted 28s linear infinite;
+  will-change: transform;
+}
+.animate-marquee-trusted:hover {
+  animation-play-state: running;
+}
+
+/* Courses slider */
+@keyframes courseSlide {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.animate-course-slide {
+  animation: courseSlide 40s linear infinite;
+}
+.animate-course-slide:hover {
+  animation-play-state: paused;
+}
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
-.animate-fadeIn { animation: fadeIn 0.3s ease-in-out; }
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.animate-slideUp { animation: slideUp 0.4s ease-out; }
+.animate-slideUp {
+  animation: slideUp 0.4s ease-out;
+}
 
 @keyframes floatY {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
-.animate-floatY { animation: floatY 3s ease-in-out infinite; }
+.animate-floatY {
+  animation: floatY 3s ease-in-out infinite;
+}
 
 @keyframes floatYDelayed {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
-.animate-floatY-delayed { animation: floatYDelayed 4s ease-in-out infinite 0.6s; }
+.animate-floatY-delayed {
+  animation: floatYDelayed 4s ease-in-out infinite 0.6s;
+}
 
 @keyframes pulseSoft {
-  0%, 100% { opacity: 0.55; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.08); }
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
 }
-.animate-pulse-soft { animation: pulseSoft 2.8s ease-in-out infinite; }
+.animate-pulse-soft {
+  animation: pulseSoft 2.8s ease-in-out infinite;
+}
 
 /* Glass helpers */
 .glass-panel {
@@ -172,7 +294,7 @@
   font-family: var(--font-serif);
 }
 
-/* Line clamp helpers if needed */
+/* Line clamp helper */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

@@ -7,8 +7,13 @@ type LogoItem = {
   src: string;
 };
 
-// Put real files in /public/logos/
-// Example: public/logos/yango.png
+/**
+ * IMPORTANT:
+ * Put your real logo files in /public/logos/
+ * Example:
+ * public/logos/yango.png
+ * public/logos/khilx.png
+ */
 const TRUSTED_LOGOS: LogoItem[] = [
   { name: 'Yango', src: '/logos/yango.png' },
   { name: 'Khilx', src: '/logos/khilx.png' },
@@ -19,16 +24,14 @@ const TRUSTED_LOGOS: LogoItem[] = [
   { name: 'Ethio Telecom', src: '/logos/ethio-telecom.png' },
   { name: 'Coca Cola', src: '/logos/coca-cola.png' },
   { name: 'Awash Bank', src: '/logos/awash-bank.png' },
-  { name: 'Meta', src: '/logos/meta.png' },
+  { name: 'Meta Beer', src: '/logos/meta.png' },
 ];
 
 export const TrustedBySection: React.FC = () => {
-  // Duplicate for seamless infinite scroll
   const logos = [...TRUSTED_LOGOS, ...TRUSTED_LOGOS];
 
   return (
     <section className="relative w-full bg-[#0B0F17] py-10 sm:py-12 overflow-hidden">
-      {/* thin brand lines like reference */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#07CCFD] via-[#F86BCF] to-[#07CCFD]" />
       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#07CCFD] via-[#F86BCF] to-[#07CCFD]" />
 
@@ -38,14 +41,12 @@ export const TrustedBySection: React.FC = () => {
         </h2>
       </div>
 
-      {/* Full-width marquee track */}
       <div className="relative w-full">
-        {/* soft edge fades */}
         <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-[#0B0F17] to-transparent z-10" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-[#0B0F17] to-transparent z-10" />
 
         <div className="overflow-hidden">
-          {/* IMPORTANT: no hover pause */}
+          {/* continuous scroll, does NOT pause */}
           <div className="flex items-center gap-12 sm:gap-16 md:gap-20 animate-marquee-trusted px-8">
             {logos.map((logo, i) => (
               <LogoBadge key={`${logo.name}-${i}`} name={logo.name} src={logo.src} />
@@ -62,26 +63,25 @@ const LogoBadge = ({ name, src }: { name: string; src: string }) => {
 
   return (
     <div
-      className="shrink-0 h-12 sm:h-14 md:h-16 flex items-center justify-center min-w-[110px] sm:min-w-[130px]"
+      className="shrink-0 h-12 sm:h-14 md:h-16 min-w-[120px] sm:min-w-[140px] flex items-center justify-center"
       title={name}
     >
       {!failed ? (
         <img
           src={src}
           alt={name}
+          loading="lazy"
           onError={() => setFailed(true)}
           className="
-            h-7 sm:h-8 md:h-10 w-auto object-contain
-            opacity-70 brightness-0 invert
+            h-8 sm:h-9 md:h-11 w-auto max-w-[160px] object-contain
+            opacity-75 brightness-0 invert
             transition-all duration-300 ease-out
             hover:opacity-100 hover:brightness-125 hover:scale-105
           "
           style={{ background: 'transparent' }}
-          loading="lazy"
         />
       ) : (
-        // Fallback so something is always visible if file path is wrong
-        <span className="text-white/70 hover:text-white text-xs sm:text-sm font-bold tracking-wide transition-colors duration-300">
+        <span className="text-white/80 hover:text-white text-xs sm:text-sm font-bold tracking-wide transition-colors">
           {name}
         </span>
       )}

@@ -301,3 +301,35 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+@keyframes marqueeTrusted {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-trusted {
+  width: max-content;
+  animation: marqueeTrusted 28s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-trusted:hover {
+  animation-play-state: running; /* never stop */
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-floatY { animation: floatY 3s ease-in-out infinite; }
+
+@keyframes floatYDelayed {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-floatY-delayed { animation: floatYDelayed 4s ease-in-out infinite 0.6s; }
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+.animate-pulse-soft { animation: pulseSoft 2.8s ease-in-out infinite; }

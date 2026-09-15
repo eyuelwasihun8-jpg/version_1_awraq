@@ -18,6 +18,7 @@ const ModalContext = createContext<ModalContextType>({
   openConsultation: () => {},
 });
 
+// 🔑 EXPORT THIS HOOK SO OTHER COMPONENTS CAN USE IT
 export const useModals = () => useContext(ModalContext);
 
 interface RootLayoutClientProps {
@@ -33,16 +34,15 @@ export const RootLayoutClient: React.FC<RootLayoutClientProps> = ({ children }) 
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
 
   const hideChrome =
-  pathname.startsWith('/learn/') ||
-  pathname.startsWith(`/${PORTAL_SLUG}`) ||
-  pathname.startsWith(`/${LOGIN_SLUG}`) ||
-  pathname.startsWith('/purchase/') ||   // 🆕 ADD
-  pathname.startsWith('/certificate/') || // 🆕 ADD (optional)
-  pathname === '/login' ||
-  pathname === '/signup' ||
-  pathname === '/forgot-password' ||
-  pathname === '/reset-password' ||
-  pathname === '/onboarding';
+    pathname.startsWith('/learn/') ||
+    pathname.startsWith(`/${PORTAL_SLUG}`) ||
+    pathname.startsWith(`/${LOGIN_SLUG}`) ||
+    pathname.startsWith('/purchase/waiting/') ||
+    pathname === '/login' ||
+    pathname === '/signup' ||
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password' ||
+    pathname === '/onboarding';
 
   return (
     <ModalContext.Provider

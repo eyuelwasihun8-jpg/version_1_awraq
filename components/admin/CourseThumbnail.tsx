@@ -15,7 +15,7 @@ interface Props {
 export const CourseThumbnail: React.FC<Props> = ({
   thumbnailKey,
   alt,
-  className = 'w-14 h-14 rounded-xl object-cover border border-slate-200 shrink-0',
+  className = 'w-14 h-14 rounded-xl object-cover border border-[#e8e0d2] shrink-0',
   fallbackClassName = 'w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center shrink-0',
   priority = false,
 }) => {

@@ -134,7 +134,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#07CCFD]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#ddb049]" />
       </div>
     );
   }
@@ -160,7 +160,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
             <button
               onClick={() => setShowMenu(!showMenu)}
               disabled={updating}
-              className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-white border border-[#e8e0d2] hover:bg-[#fbfaf7] text-slate-700 transition-colors cursor-pointer"
             >
               {updating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -172,10 +172,10 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 p-1 z-20">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-[#e8e0d2] p-1 z-20">
                   <button
                     onClick={() => toggleActive(student.is_active)}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 text-left cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold text-slate-700 hover:bg-[#fbfaf7] text-left cursor-pointer"
                   >
                     {student.is_active ? (
                       <>
@@ -195,7 +195,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+      <div className="bg-white rounded-3xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <UserAvatar avatarKey={student.avatar_url} name={student.full_name} size="2xl" />
 
@@ -233,7 +233,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
 
             {/* Assignment section — Admin/Super Admin only */}
             {canAssign && (
-              <div className="mt-6 pt-6 border-t border-slate-100">
+              <div className="mt-6 pt-6 border-t border-[#f0ebe2]">
                 <div className="flex items-center gap-3 flex-wrap">
                   <div className="flex items-center gap-2">
                     <UserCog className="w-4 h-4 text-indigo-500" />
@@ -278,7 +278,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
 
             {/* Sales view — show which sales owns this student */}
             {role === 'sales' && (
-              <div className="mt-6 pt-6 border-t border-slate-100">
+              <div className="mt-6 pt-6 border-t border-[#f0ebe2]">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">
                   <UserCog className="w-3.5 h-3.5" />
                   <span className="text-xs font-black uppercase tracking-wider">
@@ -295,15 +295,15 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
         {/* Left Col: Courses & Quizzes */}
         <div className="lg:col-span-2 space-y-6">
           {/* Courses */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-[#f0ebe2] flex items-center justify-between">
               <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-[#07CCFD]" /> Enrolled Courses
+                <BookOpen className="w-5 h-5 text-[#ddb049]" /> Enrolled Courses
               </h2>
               {canEnrollBtn(role) && (
                 <Link
                   href={`/${PORTAL_SLUG}/students/enroll`}
-                  className="text-xs font-bold text-[#07CCFD] hover:underline"
+                  className="text-xs font-bold text-[#ddb049] hover:underline"
                 >
                   + Enroll
                 </Link>
@@ -379,8 +379,8 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
           </div>
 
           {/* Quiz Attempts */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100">
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-[#f0ebe2]">
               <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-purple-500" /> Recent Quiz Attempts
               </h2>
@@ -429,7 +429,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
         {/* Right Col: Certs & Payments */}
         <div className="space-y-6">
           {/* Certificates */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5">
             <h2 className="text-base font-black text-slate-900 flex items-center gap-2 mb-4">
               <Award className="w-4 h-4 text-amber-500" /> Certificates ({certificates.length})
             </h2>
@@ -461,8 +461,8 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
 
           {/* Payments */}
           {canManage && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="p-5 border-b border-slate-100">
+            <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-[#f0ebe2]">
                 <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
                   <Receipt className="w-4 h-4 text-slate-700" /> Payment History
                 </h2>
@@ -511,7 +511,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
 };
 
 const InfoBox = ({ label, value }: any) => (
-  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+  <div className="bg-[#fbfaf7] p-3 rounded-xl border border-[#f0ebe2]">
     <div className="text-[10px] uppercase font-black text-slate-400 tracking-wider mb-0.5">
       {label}
     </div>

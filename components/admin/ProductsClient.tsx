@@ -41,14 +41,14 @@ export const ProductsClient: React.FC = () => {
         </div>
         <Link
           href={`/${PORTAL_SLUG}/products/new`}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] text-[#0F172A] text-sm font-bold cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] text-[#0a0704] text-sm font-bold cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>New Product</span>
         </Link>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -71,7 +71,7 @@ export const ProductsClient: React.FC = () => {
               <Link
                 key={p.id}
                 href={`/${PORTAL_SLUG}/products/${p.id}`}
-                className="flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-4 sm:p-5 hover:bg-[#fbfaf7] transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <CourseThumbnail
@@ -88,7 +88,7 @@ export const ProductsClient: React.FC = () => {
                           Published
                         </span>
                       ) : (
-                        <span className="text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
+                        <span className="text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-[#e8e0d2] flex items-center gap-1">
                           <EyeOff className="w-2.5 h-2.5" />
                           Draft
                         </span>

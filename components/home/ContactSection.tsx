@@ -50,7 +50,7 @@ export const ContactSection: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 shadow-lg rounded-[24px] sm:rounded-[28px] p-6 sm:p-8 md:p-10">
+        <div className="bg-white border border-[#e8e0d2] shadow-lg rounded-[24px] sm:rounded-[28px] p-6 sm:p-8 md:p-10">
           <form className="space-y-5 sm:space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
@@ -61,7 +61,7 @@ export const ContactSection: React.FC = () => {
                   placeholder="Your Name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#07CCFD] focus:ring-1 focus:ring-[#07CCFD] transition-all"
+                  className="w-full bg-[#fbfaf7] border border-[#e8e0d2] rounded-xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#ddb049] focus:ring-1 focus:ring-[#ddb049] transition-all"
                 />
               </div>
               <div className="space-y-2">
@@ -72,7 +72,7 @@ export const ContactSection: React.FC = () => {
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#07CCFD] focus:ring-1 focus:ring-[#07CCFD] transition-all"
+                  className="w-full bg-[#fbfaf7] border border-[#e8e0d2] rounded-xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#ddb049] focus:ring-1 focus:ring-[#ddb049] transition-all"
                 />
               </div>
             </div>
@@ -83,7 +83,7 @@ export const ContactSection: React.FC = () => {
                 placeholder="How can we help?"
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#07CCFD] focus:ring-1 focus:ring-[#07CCFD] transition-all"
+                className="w-full bg-[#fbfaf7] border border-[#e8e0d2] rounded-xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#ddb049] focus:ring-1 focus:ring-[#ddb049] transition-all"
               />
             </div>
             <div className="space-y-2">
@@ -94,13 +94,13 @@ export const ContactSection: React.FC = () => {
                 placeholder="Write your message here..."
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#07CCFD] focus:ring-1 focus:ring-[#07CCFD] transition-all resize-none"
+                className="w-full bg-[#fbfaf7] border border-[#e8e0d2] rounded-xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#ddb049] focus:ring-1 focus:ring-[#ddb049] transition-all resize-none"
               ></textarea>
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] text-[#0F172A] font-black shadow-[0_8px_20px_rgba(7,204,253,0.3)] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+              className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] font-black shadow-[0_8px_20px_rgba(221,176,73,0.3)] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

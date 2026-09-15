@@ -132,12 +132,12 @@ export const TestimonialsMediaSection: React.FC = () => {
 
   return (
     <section className="relative py-16 sm:py-20 bg-gradient-to-b from-white via-slate-50 to-white overflow-hidden">
-      <div className="pointer-events-none absolute top-10 left-10 w-40 h-40 rounded-full bg-[#07CCFD]/10 blur-3xl" />
+      <div className="pointer-events-none absolute top-10 left-10 w-40 h-40 rounded-full bg-[#ddb049]/10 blur-3xl" />
       <div className="pointer-events-none absolute bottom-10 right-10 w-52 h-52 rounded-full bg-[#20B486]/10 blur-3xl" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#07CCFD] mb-2">
+          <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#ddb049] mb-2">
             Student Stories
           </div>
           <h2 className="text-2xl sm:text-4xl font-black text-slate-900 mb-3">
@@ -196,7 +196,7 @@ export const TestimonialsMediaSection: React.FC = () => {
                 setMobileIndex((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
                 setTimeout(() => setPausedMobile(false), 1500);
               }}
-              className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center cursor-pointer hover:bg-slate-50"
+              className="w-10 h-10 rounded-full bg-white border border-[#e8e0d2] shadow-sm flex items-center justify-center cursor-pointer hover:bg-[#fbfaf7]"
               aria-label="Previous"
             >
               <ChevronLeft className="w-5 h-5 text-slate-700" />
@@ -212,7 +212,7 @@ export const TestimonialsMediaSection: React.FC = () => {
                     setTimeout(() => setPausedMobile(false), 1500);
                   }}
                   className={`h-2 rounded-full transition-all cursor-pointer ${
-                    i === mobileIndex ? 'w-6 bg-[#07CCFD]' : 'w-2 bg-slate-300'
+                    i === mobileIndex ? 'w-6 bg-[#ddb049]' : 'w-2 bg-slate-300'
                   }`}
                   aria-label={`Go to testimonial ${i + 1}`}
                 />
@@ -225,7 +225,7 @@ export const TestimonialsMediaSection: React.FC = () => {
                 setMobileIndex((i) => (i + 1) % TESTIMONIALS.length);
                 setTimeout(() => setPausedMobile(false), 1500);
               }}
-              className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center cursor-pointer hover:bg-slate-50"
+              className="w-10 h-10 rounded-full bg-white border border-[#e8e0d2] shadow-sm flex items-center justify-center cursor-pointer hover:bg-[#fbfaf7]"
               aria-label="Next"
             >
               <ChevronRight className="w-5 h-5 text-slate-700" />
@@ -293,7 +293,7 @@ export const TestimonialsMediaSection: React.FC = () => {
               </div>
               {activeItem.quote && (
                 <p className="text-xs text-white/80 mt-2 font-medium flex gap-2">
-                  <Quote className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#07CCFD]" />
+                  <Quote className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#ddb049]" />
                   {activeItem.quote}
                 </p>
               )}

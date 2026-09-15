@@ -141,7 +141,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16">
+    <div className="min-h-screen bg-[#fbfaf7] pt-24 sm:pt-28 pb-16">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link
           href={itemType === 'course' ? `/courses/${item.id}` : `/products/${item.id}`}
@@ -151,7 +151,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           <span>Back</span>
         </Link>
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 mb-6 flex items-center gap-4">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-4 sm:p-5 mb-6 flex items-center gap-4">
           <div className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden shrink-0">
             <CourseThumbnail
               thumbnailKey={item.thumbnail_url}
@@ -172,7 +172,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
         </div>
 
         {/* Payment method */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 mb-4">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 mb-4">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center">
               1
@@ -186,12 +186,12 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
               onClick={() => setMethod('cbe')}
               className={`p-4 rounded-xl border-2 text-left cursor-pointer transition-all ${
                 method === 'cbe'
-                  ? 'border-[#07CCFD] bg-cyan-50'
-                  : 'border-slate-200 bg-white hover:border-slate-300'
+                  ? 'border-[#ddb049] bg-amber-50'
+                  : 'border-[#e8e0d2] bg-white hover:border-slate-300'
               }`}
             >
               <Building2
-                className={`w-6 h-6 mb-2 ${method === 'cbe' ? 'text-[#07CCFD]' : 'text-slate-400'}`}
+                className={`w-6 h-6 mb-2 ${method === 'cbe' ? 'text-[#ddb049]' : 'text-slate-400'}`}
               />
               <div className="text-sm font-black text-slate-900">CBE</div>
               <div className="text-[10px] text-slate-500 font-medium">Bank Transfer</div>
@@ -201,13 +201,13 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
               onClick={() => setMethod('telebirr')}
               className={`p-4 rounded-xl border-2 text-left cursor-pointer transition-all ${
                 method === 'telebirr'
-                  ? 'border-[#07CCFD] bg-cyan-50'
-                  : 'border-slate-200 bg-white hover:border-slate-300'
+                  ? 'border-[#ddb049] bg-amber-50'
+                  : 'border-[#e8e0d2] bg-white hover:border-slate-300'
               }`}
             >
               <Smartphone
                 className={`w-6 h-6 mb-2 ${
-                  method === 'telebirr' ? 'text-[#07CCFD]' : 'text-slate-400'
+                  method === 'telebirr' ? 'text-[#ddb049]' : 'text-slate-400'
                 }`}
               />
               <div className="text-sm font-black text-slate-900">Telebirr</div>
@@ -217,7 +217,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
         </div>
 
         {/* Instructions */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 mb-4">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 mb-4">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center">
               2
@@ -271,7 +271,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
         </div>
 
         {/* Upload */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 mb-4">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 mb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center">
@@ -289,7 +289,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
               <img
                 src={preview}
                 alt="Receipt preview"
-                className="w-full max-h-[350px] object-contain rounded-xl border border-slate-200 bg-slate-50"
+                className="w-full max-h-[350px] object-contain rounded-xl border border-[#e8e0d2] bg-[#fbfaf7]"
               />
               <button
                 type="button"
@@ -299,14 +299,14 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
                   setFileSizeInfo(null);
                 }}
                 disabled={uploading}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/95 border border-slate-200 flex items-center justify-center cursor-pointer hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/95 border border-[#e8e0d2] flex items-center justify-center cursor-pointer hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
           ) : (
             <label className="block cursor-pointer">
-              <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-[#07CCFD] hover:bg-cyan-50/30 transition-all">
+              <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-[#ddb049] hover:bg-amber-50/30 transition-all">
                 <ImageIcon className="w-10 h-10 text-slate-400 mx-auto mb-3" />
                 <div className="text-sm font-bold text-slate-700 mb-1">
                   Click to upload receipt image
@@ -318,14 +318,14 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           )}
 
           {uploading && (
-            <div className="mt-3 space-y-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div className="mt-3 space-y-1.5 bg-[#fbfaf7] p-3 rounded-xl border border-[#e8e0d2]">
               <div className="flex justify-between text-xs font-bold text-slate-700">
                 <span>{fileSizeInfo || 'Optimizing & Uploading...'}</span>
                 <span>{uploadProgress}%</span>
               </div>
               <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#07CCFD] transition-all duration-150"
+                  className="h-full bg-[#ddb049] transition-all duration-150"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
@@ -337,7 +337,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           type="button"
           onClick={handleSubmit}
           disabled={!rawFile || uploading}
-          className="w-full min-h-[52px] py-4 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full min-h-[52px] py-4 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {uploading ? (
             <>
@@ -357,7 +357,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
 };
 
 const PaymentField = ({ label, value, mono, onCopy }: any) => (
-  <div className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+  <div className="flex items-center justify-between bg-[#fbfaf7] rounded-xl px-4 py-3">
     <div className="min-w-0 flex-1">
       <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider mb-0.5">
         {label}
@@ -369,7 +369,7 @@ const PaymentField = ({ label, value, mono, onCopy }: any) => (
     <button
       type="button"
       onClick={onCopy}
-      className="ml-2 p-2 rounded-lg hover:bg-white text-slate-500 hover:text-[#07CCFD] cursor-pointer"
+      className="ml-2 p-2 rounded-lg hover:bg-white text-slate-500 hover:text-[#ddb049] cursor-pointer"
     >
       <Copy className="w-4 h-4" />
     </button>

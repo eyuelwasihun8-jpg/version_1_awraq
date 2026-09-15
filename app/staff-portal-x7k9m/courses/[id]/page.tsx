@@ -62,7 +62,7 @@ export default async function EditCoursePage({
 
         <Link
           href={`/${PORTAL_SLUG}/courses/${id}/analytics`}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-b from-[#07CCFD] to-[#06B8E4] border-b-[3px] border-[#05A3CA] hover:border-b-[1px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-b from-[#ddb049] to-[#c99a3a] border-b-[3px] border-[#b8862f] hover:border-b-[1px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all cursor-pointer"
         >
           <BarChart3 className="w-4 h-4" />
           <span>View Analytics</span>

@@ -54,7 +54,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       setIsScrolled(current > 12);
 
-      // Hide navbar whenever user is scrolled down, show ONLY at top
       if (current > 40 && !mobileMenuOpen) {
         setHidden(true);
         setProfileMenuOpen(false);
@@ -126,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           hidden && !mobileMenuOpen ? '-translate-y-full' : 'translate-y-0'
         } ${
           isScrolled
-            ? 'py-2.5 sm:py-3 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100'
+            ? 'py-2.5 sm:py-3 bg-white/95 backdrop-blur-md shadow-sm border-b border-[#e8e0d2]'
             : 'py-3 sm:py-4 bg-white/80 backdrop-blur-sm'
         }`}
       >
@@ -143,7 +142,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     key={item.section}
                     onClick={() => handleNavClick(item.section)}
-                    className="text-slate-600 hover:text-[#07CCFD] transition-colors cursor-pointer"
+                    className="text-[#0a0704]/80 hover:text-[#ddb049] transition-colors cursor-pointer"
                   >
                     {item.label}
                   </button>
@@ -158,12 +157,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   href="/courses"
                   className={`text-sm font-bold px-3 lg:px-4 py-2 rounded-xl transition-all ${
                     pathname.startsWith('/courses')
-                      ? 'bg-cyan-50 text-[#07CCFD]'
-                      : 'text-slate-600 hover:bg-slate-50'
+                      ? 'bg-[#ddb049]/15 text-[#0a0704]'
+                      : 'text-[#0a0704]/80 hover:bg-[#f3efe6]'
                   }`}
                 >
                   <span className="inline-flex items-center gap-1.5">
-                    <BookOpen className="w-4 h-4" />
+                    <BookOpen className="w-4 h-4 text-[#ddb049]" />
                     Courses
                   </span>
                 </Link>
@@ -171,12 +170,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   href="/dashboard"
                   className={`text-sm font-bold px-3 lg:px-4 py-2 rounded-xl transition-all ${
                     pathname.startsWith('/dashboard') || pathname.startsWith('/learn')
-                      ? 'bg-cyan-50 text-[#07CCFD]'
-                      : 'text-slate-600 hover:bg-slate-50'
+                      ? 'bg-[#ddb049]/15 text-[#0a0704]'
+                      : 'text-[#0a0704]/80 hover:bg-[#f3efe6]'
                   }`}
                 >
                   <span className="inline-flex items-center gap-1.5">
-                    <GraduationCap className="w-4 h-4" />
+                    <GraduationCap className="w-4 h-4 text-[#ddb049]" />
                     My Learning
                   </span>
                 </Link>
@@ -191,7 +190,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       e.stopPropagation();
                       setProfileMenuOpen(!profileMenuOpen);
                     }}
-                    className="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-slate-100 cursor-pointer"
+                    className="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-[#f3efe6] cursor-pointer"
                     title="Profile"
                   >
                     <UserAvatar
@@ -199,24 +198,24 @@ export const Navbar: React.FC<NavbarProps> = ({
                       name={profileData?.full_name}
                       size="sm"
                     />
-                    <span className="hidden lg:inline text-xs font-bold text-slate-700 max-w-[100px] truncate">
+                    <span className="hidden lg:inline text-xs font-bold text-[#0a0704] max-w-[100px] truncate">
                       {profileData?.full_name?.split(' ')[0] || 'Profile'}
                     </span>
                   </button>
 
                   {profileMenuOpen && (
                     <div
-                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
+                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-[#e8e0d2] overflow-hidden"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="p-4 border-b border-slate-100 flex items-center gap-3">
+                      <div className="p-4 border-b border-[#e8e0d2] flex items-center gap-3">
                         <UserAvatar
                           avatarKey={profileData?.avatar_url}
                           name={profileData?.full_name}
                           size="md"
                         />
                         <div className="min-w-0">
-                          <div className="text-sm font-black text-slate-900 truncate">
+                          <div className="text-sm font-black text-[#0a0704] truncate">
                             {profileData?.full_name || 'User'}
                           </div>
                         </div>
@@ -225,7 +224,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <Link
                           href="/profile"
                           onClick={() => setProfileMenuOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50"
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-[#0a0704] hover:bg-[#f3efe6]"
                         >
                           <User className="w-4 h-4" />
                           My Profile
@@ -233,7 +232,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <Link
                           href="/dashboard"
                           onClick={() => setProfileMenuOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50"
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-[#0a0704] hover:bg-[#f3efe6]"
                         >
                           <GraduationCap className="w-4 h-4" />
                           My Learning
@@ -241,16 +240,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <Link
                           href="/courses"
                           onClick={() => setProfileMenuOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50"
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-[#0a0704] hover:bg-[#f3efe6]"
                         >
                           <BookOpen className="w-4 h-4" />
                           Browse Courses
                         </Link>
                       </div>
-                      <div className="p-2 border-t border-slate-100">
+                      <div className="p-2 border-t border-[#e8e0d2]">
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50"
+                          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 cursor-pointer"
                         >
                           <LogOut className="w-4 h-4" />
                           Sign Out
@@ -263,20 +262,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <>
                   <button
                     onClick={onOpenSignIn}
-                    className="hidden sm:inline-block text-sm font-bold text-slate-700 hover:text-[#07CCFD] px-3 py-2 cursor-pointer"
+                    className="hidden sm:inline-block text-sm font-bold text-[#0a0704] hover:text-[#ddb049] px-3 py-2 cursor-pointer transition-colors"
                   >
                     Sign In
                   </button>
                   <button
                     onClick={onOpenConsultation}
-                    className="hidden sm:inline-flex text-[#0F172A] text-sm font-bold px-4 lg:px-5 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] shadow-sm cursor-pointer"
+                    className="hidden sm:inline-flex text-[#0a0704] text-sm font-black px-4 lg:px-5 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] hover:border-b-[1px] hover:translate-y-[2px] shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all cursor-pointer whitespace-nowrap"
                   >
                     Book Consultation
                   </button>
 
                   <button
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="lg:hidden w-11 h-11 rounded-xl flex items-center justify-center text-slate-700 hover:bg-slate-100 cursor-pointer"
+                    className="lg:hidden w-11 h-11 rounded-xl flex items-center justify-center text-[#0a0704] hover:bg-[#f3efe6] cursor-pointer"
                     aria-label="Toggle menu"
                   >
                     {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -295,25 +294,25 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="lg:hidden fixed inset-0 top-16 bg-black/40 z-30"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-white border-b border-slate-200 shadow-xl px-4 py-5 space-y-4 max-h-[85dvh] overflow-y-auto">
+          <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-white border-b border-[#e8e0d2] shadow-xl px-4 py-5 space-y-4 max-h-[85dvh] overflow-y-auto">
             <nav className="flex flex-col space-y-1">
               {NAV_LINKS.map((item) => (
                 <button
                   key={item.section}
                   onClick={() => handleNavClick(item.section)}
-                  className="text-left text-base font-bold py-3 px-3 rounded-xl text-slate-700 hover:text-[#07CCFD] hover:bg-slate-50 cursor-pointer"
+                  className="text-left text-base font-bold py-3 px-3 rounded-xl text-[#0a0704] hover:text-[#ddb049] hover:bg-[#f3efe6] cursor-pointer"
                 >
                   {item.label}
                 </button>
               ))}
             </nav>
-            <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
+            <div className="pt-4 border-t border-[#e8e0d2] flex flex-col gap-3">
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   onOpenConsultation();
                 }}
-                className="w-full min-h-[48px] bg-[#07CCFD] text-[#0F172A] py-3 rounded-xl font-bold text-sm cursor-pointer"
+                className="w-full min-h-[48px] bg-[#ddb049] text-[#0a0704] py-3 rounded-xl font-black text-sm cursor-pointer shadow-md"
               >
                 Book Consultation
               </button>
@@ -322,7 +321,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   onOpenSignIn();
                 }}
-                className="w-full min-h-[48px] bg-slate-100 text-slate-800 py-3 rounded-xl font-bold text-sm cursor-pointer"
+                className="w-full min-h-[48px] bg-[#f3efe6] text-[#0a0704] py-3 rounded-xl font-bold text-sm cursor-pointer"
               >
                 Sign In
               </button>

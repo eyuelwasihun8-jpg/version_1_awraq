@@ -50,7 +50,7 @@ export const StaffDashboardClient: React.FC<Props> = ({ role, name }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#07CCFD]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#ddb049]" />
       </div>
     );
   }
@@ -102,23 +102,23 @@ const SalesDashboard = ({ data }: { data: any }) => (
       </Link>
       <Link
         href={`/${PORTAL_SLUG}/students/enroll`}
-        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07CCFD] text-[#0F172A] text-sm font-bold"
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#ddb049] text-[#0a0704] text-sm font-bold"
       >
         <UserPlus className="w-4 h-4" /> Enroll Student
       </Link>
       <Link
         href={`/${PORTAL_SLUG}/payments`}
-        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-bold"
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#e8e0d2] text-slate-800 text-sm font-bold"
       >
         <Receipt className="w-4 h-4" /> Review Payments
       </Link>
     </div>
 
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[#f0ebe2] flex items-center justify-between">
           <h2 className="text-base font-black text-slate-900">Recent Assigned Students</h2>
-          <Link href={`/${PORTAL_SLUG}/students`} className="text-xs font-bold text-[#07CCFD] hover:underline">
+          <Link href={`/${PORTAL_SLUG}/students`} className="text-xs font-bold text-[#ddb049] hover:underline">
             View all
           </Link>
         </div>
@@ -132,7 +132,7 @@ const SalesDashboard = ({ data }: { data: any }) => (
               <Link
                 key={s.id}
                 href={`/${PORTAL_SLUG}/students/${s.id}`}
-                className="flex items-center gap-3 p-4 hover:bg-slate-50 cursor-pointer"
+                className="flex items-center gap-3 p-4 hover:bg-[#fbfaf7] cursor-pointer"
               >
                 <UserAvatar avatarKey={s.avatar_url} name={s.full_name} size="sm" />
                 <div className="min-w-0 flex-1">
@@ -147,8 +147,8 @@ const SalesDashboard = ({ data }: { data: any }) => (
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-slate-100">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[#f0ebe2]">
           <h2 className="text-base font-black text-slate-900">Student Progress Snapshot</h2>
         </div>
         {data.recentProgress.length === 0 ? (
@@ -199,15 +199,15 @@ const InstructorDashboard = ({ data }: { data: any }) => (
       </Link>
       <Link
         href={`/${PORTAL_SLUG}/students`}
-        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-bold"
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#e8e0d2] text-slate-800 text-sm font-bold"
       >
         <GraduationCap className="w-4 h-4" /> My Students
       </Link>
     </div>
 
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-slate-100">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[#f0ebe2]">
           <h2 className="text-base font-black text-slate-900">My Courses</h2>
         </div>
         {data.myCourses.length === 0 ? (
@@ -231,7 +231,7 @@ const InstructorDashboard = ({ data }: { data: any }) => (
                 </div>
                 <Link
                   href={`/${PORTAL_SLUG}/courses/${c.id}/analytics`}
-                  className="p-2 rounded-lg hover:bg-cyan-50 text-slate-500 hover:text-[#07CCFD]"
+                  className="p-2 rounded-lg hover:bg-amber-50 text-slate-500 hover:text-[#ddb049]"
                   title="Analytics"
                 >
                   <BarChart3 className="w-4 h-4" />
@@ -242,8 +242,8 @@ const InstructorDashboard = ({ data }: { data: any }) => (
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-slate-100">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[#f0ebe2]">
           <h2 className="text-base font-black text-slate-900">Recent Enrollments</h2>
         </div>
         {data.recentEnrollments.length === 0 ? (
@@ -256,7 +256,7 @@ const InstructorDashboard = ({ data }: { data: any }) => (
               <Link
                 key={`${e.user_id}-${i}`}
                 href={`/${PORTAL_SLUG}/students/${e.user_id}`}
-                className="flex items-center gap-3 p-4 hover:bg-slate-50 cursor-pointer"
+                className="flex items-center gap-3 p-4 hover:bg-[#fbfaf7] cursor-pointer"
               >
                 <UserAvatar
                   avatarKey={e.student?.avatar_url}
@@ -321,20 +321,20 @@ const AdminDashboard = ({ data, role }: { data: any; role: string }) => (
       <Link href={`/${PORTAL_SLUG}/payments`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold">
         <Receipt className="w-4 h-4" /> Payments
       </Link>
-      <Link href={`/${PORTAL_SLUG}/students`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07CCFD] text-[#0F172A] text-sm font-bold">
+      <Link href={`/${PORTAL_SLUG}/students`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#ddb049] text-[#0a0704] text-sm font-bold">
         <Users className="w-4 h-4" /> Students
       </Link>
-      <Link href={`/${PORTAL_SLUG}/students/enroll`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-bold">
+      <Link href={`/${PORTAL_SLUG}/students/enroll`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#e8e0d2] text-slate-800 text-sm font-bold">
         <UserPlus className="w-4 h-4" /> Enroll
       </Link>
     </div>
 
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+    <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+      <div className="p-5 border-b border-[#f0ebe2] flex items-center justify-between">
         <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
           <Clock className="w-4 h-4 text-slate-500" /> Recent Payments
         </h2>
-        <Link href={`/${PORTAL_SLUG}/payments`} className="text-xs font-bold text-[#07CCFD] hover:underline">
+        <Link href={`/${PORTAL_SLUG}/payments`} className="text-xs font-bold text-[#ddb049] hover:underline">
           View all
         </Link>
       </div>
@@ -386,13 +386,13 @@ const StatCard = ({
   color: 'cyan' | 'emerald' | 'amber' | 'indigo';
 }) => {
   const colors = {
-    cyan: 'bg-cyan-50 border-cyan-100 text-[#07CCFD]',
+    cyan: 'bg-amber-50 border-amber-100 text-[#ddb049]',
     emerald: 'bg-emerald-50 border-emerald-100 text-[#20B486]',
     amber: 'bg-amber-50 border-amber-100 text-amber-600',
     indigo: 'bg-indigo-50 border-indigo-100 text-indigo-600',
   };
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
+    <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-4 sm:p-5">
       <div className={`w-10 h-10 rounded-xl border flex items-center justify-center mb-3 ${colors[color]}`}>
         <Icon className="w-5 h-5" />
       </div>
@@ -403,7 +403,7 @@ const StatCard = ({
 };
 
 const MiniStat = ({ label, value }: { label: string; value: string | number }) => (
-  <div className="bg-white rounded-xl border border-slate-200 p-3 text-center shadow-sm">
+  <div className="bg-white rounded-xl border border-[#e8e0d2] p-3 text-center shadow-sm">
     <div className="text-lg font-black text-slate-900 capitalize">{value}</div>
     <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider">{label}</div>
   </div>

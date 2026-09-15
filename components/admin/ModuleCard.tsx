@@ -162,9 +162,9 @@ export const ModuleCard: React.FC<Props> = ({
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-white border border-[#e8e0d2] rounded-2xl shadow-sm overflow-hidden">
       {/* Module header */}
-      <div className="p-4 sm:p-5 bg-slate-50 border-b border-slate-100">
+      <div className="p-4 sm:p-5 bg-[#fbfaf7] border-b border-[#f0ebe2]">
         <div className="flex items-start gap-3">
           {/* Reorder */}
           <div className="flex flex-col gap-0.5 shrink-0">
@@ -186,7 +186,7 @@ export const ModuleCard: React.FC<Props> = ({
             </button>
           </div>
 
-          <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-white border border-[#e8e0d2] flex items-center justify-center shrink-0">
             <span className="text-sm font-black text-slate-700">{index + 1}</span>
           </div>
 
@@ -197,7 +197,7 @@ export const ModuleCard: React.FC<Props> = ({
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-white text-sm font-bold"
+                  className="w-full px-3 py-2 rounded-lg border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-white text-sm font-bold"
                   placeholder="Module title"
                 />
                 <textarea
@@ -205,7 +205,7 @@ export const ModuleCard: React.FC<Props> = ({
                   onChange={(e) => setDescription(e.target.value)}
                   rows={2}
                   placeholder="Optional description..."
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-white text-xs resize-none"
+                  className="w-full px-3 py-2 rounded-lg border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-white text-xs resize-none"
                 />
               </div>
             ) : (
@@ -301,7 +301,7 @@ export const ModuleCard: React.FC<Props> = ({
 
                 return (
                   <div key={l.id}>
-                    <div className="flex items-center gap-3 p-3 sm:p-4 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-3 p-3 sm:p-4 hover:bg-[#fbfaf7] transition-colors">
                       {/* Reorder */}
                       <div className="flex flex-col gap-0.5 shrink-0">
                         <button
@@ -328,10 +328,10 @@ export const ModuleCard: React.FC<Props> = ({
                       <div className="flex items-center gap-1 shrink-0">
                         {hasVideo && (
                           <div
-                            className="w-7 h-7 rounded-lg bg-cyan-50 border border-cyan-100 flex items-center justify-center"
+                            className="w-7 h-7 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center"
                             title="Has video"
                           >
-                            <Video className="w-3.5 h-3.5 text-[#07CCFD]" />
+                            <Video className="w-3.5 h-3.5 text-[#ddb049]" />
                           </div>
                         )}
                         {hasText && (
@@ -351,7 +351,7 @@ export const ModuleCard: React.FC<Props> = ({
                           </div>
                         )}
                         {isEmpty && (
-                          <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center">
+                          <div className="w-7 h-7 rounded-lg bg-slate-100 border border-[#e8e0d2] flex items-center justify-center">
                             <FileText className="w-3.5 h-3.5 text-slate-400" />
                           </div>
                         )}
@@ -363,13 +363,13 @@ export const ModuleCard: React.FC<Props> = ({
                             {l.title}
                           </span>
                           {l.is_published === false && (
-                            <span className="text-[9px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-0.5">
+                            <span className="text-[9px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-[#e8e0d2] flex items-center gap-0.5">
                               <EyeOff className="w-2 h-2" />
                               Draft
                             </span>
                           )}
                           {isMulti && (
-                            <span className="text-[9px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-cyan-50 to-purple-50 text-slate-700 border border-slate-200">
+                            <span className="text-[9px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-cyan-50 to-purple-50 text-slate-700 border border-[#e8e0d2]">
                               Multi
                             </span>
                           )}
@@ -440,7 +440,7 @@ export const ModuleCard: React.FC<Props> = ({
 
                     {/* Resources panel */}
                     {expandedResourceLesson === l.id && (
-                      <div className="p-4 bg-slate-50 border-t border-slate-100">
+                      <div className="p-4 bg-[#fbfaf7] border-t border-[#f0ebe2]">
                         <ResourcesManager lessonId={l.id} lessonTitle={l.title} />
                       </div>
                     )}
@@ -451,11 +451,11 @@ export const ModuleCard: React.FC<Props> = ({
           )}
 
           {/* Add lesson button */}
-          <div className="p-3 border-t border-slate-100">
+          <div className="p-3 border-t border-[#f0ebe2]">
             <button
               onClick={onAddLesson}
               disabled={creatingLesson}
-              className="w-full py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border-2 border-dashed border-slate-200 text-slate-600 text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-[#fbfaf7] hover:bg-slate-100 border-2 border-dashed border-[#e8e0d2] text-slate-600 text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {creatingLesson ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

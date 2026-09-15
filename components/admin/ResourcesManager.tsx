@@ -139,7 +139,7 @@ export const ResourcesManager: React.FC<Props> = ({ lessonId, lessonTitle }) => 
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 space-y-4">
       <div>
         <h3 className="text-sm font-black text-slate-900 mb-1">Resources</h3>
         <p className="text-[11px] text-slate-500 font-medium">
@@ -157,11 +157,11 @@ export const ResourcesManager: React.FC<Props> = ({ lessonId, lessonTitle }) => 
           {resources.map((r) => (
             <div
               key={r.id}
-              className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 group"
+              className="flex items-center gap-3 p-3 bg-[#fbfaf7] rounded-xl border border-[#f0ebe2] group"
             >
-              <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-white border border-[#e8e0d2] flex items-center justify-center shrink-0">
                 {r.resource_type === 'link' ? (
-                  <LinkIcon className="w-3.5 h-3.5 text-[#07CCFD]" />
+                  <LinkIcon className="w-3.5 h-3.5 text-[#ddb049]" />
                 ) : (
                   <FileText className="w-3.5 h-3.5 text-[#20B486]" />
                 )}
@@ -177,7 +177,7 @@ export const ResourcesManager: React.FC<Props> = ({ lessonId, lessonTitle }) => 
                   href={r.external_url}
                   target="_blank"
                   rel="noopener"
-                  className="p-1.5 rounded-lg text-slate-400 hover:bg-white hover:text-[#07CCFD] cursor-pointer"
+                  className="p-1.5 rounded-lg text-slate-400 hover:bg-white hover:text-[#ddb049] cursor-pointer"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
@@ -196,7 +196,7 @@ export const ResourcesManager: React.FC<Props> = ({ lessonId, lessonTitle }) => 
       )}
 
       {/* Add form */}
-      <div className="pt-4 border-t border-slate-100 space-y-3">
+      <div className="pt-4 border-t border-[#f0ebe2] space-y-3">
         {/* Type selector */}
         <div className="grid grid-cols-3 gap-2">
           {(['pdf', 'file', 'link'] as ResourceType[]).map((t) => (
@@ -205,8 +205,8 @@ export const ResourcesManager: React.FC<Props> = ({ lessonId, lessonTitle }) => 
               onClick={() => setType(t)}
               className={`py-2 rounded-lg border-2 text-xs font-bold capitalize cursor-pointer transition-all ${
                 type === t
-                  ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-                  : 'border-slate-200 bg-white text-slate-600'
+                  ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+                  : 'border-[#e8e0d2] bg-white text-slate-600'
               }`}
             >
               {t}
@@ -219,7 +219,7 @@ export const ResourcesManager: React.FC<Props> = ({ lessonId, lessonTitle }) => 
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Resource title"
-          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-[#07CCFD] outline-none bg-slate-50/50 text-xs"
+          className="w-full px-3 py-2.5 rounded-lg border border-[#e8e0d2] focus:border-[#ddb049] outline-none bg-[#fbfaf7]/50 text-xs"
         />
 
         {type === 'link' ? (
@@ -228,7 +228,7 @@ export const ResourcesManager: React.FC<Props> = ({ lessonId, lessonTitle }) => 
             value={externalUrl}
             onChange={(e) => setExternalUrl(e.target.value)}
             placeholder="https://example.com"
-            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-[#07CCFD] outline-none bg-slate-50/50 text-xs font-mono"
+            className="w-full px-3 py-2.5 rounded-lg border border-[#e8e0d2] focus:border-[#ddb049] outline-none bg-[#fbfaf7]/50 text-xs font-mono"
           />
         ) : (
           <div className="flex items-center gap-2">

@@ -40,7 +40,7 @@ export const NotesTab: React.FC<Props> = ({ enrolledCourses, initialNotes }) => 
 
   if (notes.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-12 text-center animate-fadeIn">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-8 sm:p-12 text-center animate-fadeIn">
         <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
           <PenTool className="w-8 h-8 text-slate-400" />
         </div>
@@ -54,7 +54,7 @@ export const NotesTab: React.FC<Props> = ({ enrolledCourses, initialNotes }) => 
         {enrolledCourses.length > 0 ? (
           <Link
             href={`/learn/${enrolledCourses[0].id}`}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#07CCFD] text-[#0F172A] text-sm font-bold cursor-pointer transition-all"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#ddb049] text-[#0a0704] text-sm font-bold cursor-pointer transition-all"
           >
             <span>Start Learning</span>
             <ArrowRight className="w-4 h-4" />
@@ -62,7 +62,7 @@ export const NotesTab: React.FC<Props> = ({ enrolledCourses, initialNotes }) => 
         ) : (
           <Link
             href="/courses"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#07CCFD] text-[#0F172A] text-sm font-bold cursor-pointer transition-all"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#ddb049] text-[#0a0704] text-sm font-bold cursor-pointer transition-all"
           >
             <span>Browse Courses</span>
             <ArrowRight className="w-4 h-4" />
@@ -89,7 +89,7 @@ export const NotesTab: React.FC<Props> = ({ enrolledCourses, initialNotes }) => 
             <select
               value={filterCourse}
               onChange={(e) => setFilterCourse(e.target.value)}
-              className="pl-10 pr-8 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold cursor-pointer outline-none focus:border-[#07CCFD] appearance-none"
+              className="pl-10 pr-8 py-2.5 rounded-xl border border-[#e8e0d2] bg-white text-xs font-bold cursor-pointer outline-none focus:border-[#ddb049] appearance-none"
             >
               <option value="all">All Courses</option>
               {enrolledCourses.map((c) => (
@@ -103,7 +103,7 @@ export const NotesTab: React.FC<Props> = ({ enrolledCourses, initialNotes }) => 
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] p-8 text-center">
           <p className="text-sm text-slate-500 font-medium">No notes in this course</p>
         </div>
       ) : (
@@ -116,12 +116,12 @@ export const NotesTab: React.FC<Props> = ({ enrolledCourses, initialNotes }) => 
             return (
               <div
                 key={note.id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md p-4 sm:p-5 group transition-all flex flex-col"
+                className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm hover:shadow-md p-4 sm:p-5 group transition-all flex flex-col"
               >
                 {/* Meta */}
-                <div className="flex items-start justify-between gap-3 mb-3 pb-3 border-b border-slate-100">
+                <div className="flex items-start justify-between gap-3 mb-3 pb-3 border-b border-[#f0ebe2]">
                   <div className="min-w-0 flex-1">
-                    <div className="text-[10px] uppercase font-black text-[#07CCFD] tracking-widest mb-0.5">
+                    <div className="text-[10px] uppercase font-black text-[#ddb049] tracking-widest mb-0.5">
                       {courseTitle}
                     </div>
                     <div className="text-xs font-bold text-slate-700 truncate">{lessonTitle}</div>
@@ -165,7 +165,7 @@ export const NotesTab: React.FC<Props> = ({ enrolledCourses, initialNotes }) => 
                     onClick={() =>
                       router.push(`/learn/${note.course_id}/${note.lesson_id}`)
                     }
-                    className="text-[11px] font-bold text-[#07CCFD] hover:underline cursor-pointer flex items-center gap-1"
+                    className="text-[11px] font-bold text-[#ddb049] hover:underline cursor-pointer flex items-center gap-1"
                   >
                     <span>Go to lesson</span>
                     <ExternalLink className="w-3 h-3" />

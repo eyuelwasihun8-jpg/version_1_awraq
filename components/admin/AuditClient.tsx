@@ -44,7 +44,7 @@ export const AuditClient: React.FC = () => {
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden min-h-[400px]">
         {loading ? (
           <div className="py-20 flex justify-center">
             <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -75,7 +75,7 @@ export const AuditClient: React.FC = () => {
                   Target: {log.target_type} {log.target_id ? `· ${String(log.target_id).slice(0, 8)}…` : ''}
                 </div>
                 {log.details && (
-                  <pre className="mt-2 text-[10px] bg-slate-50 border border-slate-100 rounded-lg p-2 overflow-x-auto text-slate-600">
+                  <pre className="mt-2 text-[10px] bg-[#fbfaf7] border border-[#f0ebe2] rounded-lg p-2 overflow-x-auto text-slate-600">
                     {JSON.stringify(log.details, null, 2)}
                   </pre>
                 )}
@@ -85,11 +85,11 @@ export const AuditClient: React.FC = () => {
         )}
 
         {pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+          <div className="p-4 border-t border-[#f0ebe2] bg-[#fbfaf7] flex items-center justify-end gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={!pagination.hasPrev}
-              className="p-2 rounded-lg bg-white border border-slate-200 disabled:opacity-50 cursor-pointer"
+              className="p-2 rounded-lg bg-white border border-[#e8e0d2] disabled:opacity-50 cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -99,7 +99,7 @@ export const AuditClient: React.FC = () => {
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={!pagination.hasNext}
-              className="p-2 rounded-lg bg-white border border-slate-200 disabled:opacity-50 cursor-pointer"
+              className="p-2 rounded-lg bg-white border border-[#e8e0d2] disabled:opacity-50 cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

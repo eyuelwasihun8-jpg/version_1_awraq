@@ -87,16 +87,16 @@ export const CertificateClient: React.FC<Props> = ({ course, defaultName }) => {
 
   if (checking) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#07CCFD]" />
+      <div className="min-h-screen bg-[#fbfaf7] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#ddb049]" />
       </div>
     );
   }
 
   if (!eligible) {
     return (
-      <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16 flex items-center justify-center px-4">
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 max-w-md w-full text-center">
+      <div className="min-h-screen bg-[#fbfaf7] pt-24 sm:pt-28 pb-16 flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl border border-[#e8e0d2] shadow-sm p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
             <Award className="w-8 h-8 text-slate-400" />
           </div>
@@ -106,7 +106,7 @@ export const CertificateClient: React.FC<Props> = ({ course, defaultName }) => {
           </p>
           <Link
             href={`/learn/${course.id}`}
-            className="inline-block px-5 py-3 rounded-xl bg-[#07CCFD] text-[#0F172A] text-sm font-bold cursor-pointer"
+            className="inline-block px-5 py-3 rounded-xl bg-[#ddb049] text-[#0a0704] text-sm font-bold cursor-pointer"
           >
             Continue Learning
           </Link>
@@ -116,7 +116,7 @@ export const CertificateClient: React.FC<Props> = ({ course, defaultName }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16">
+    <div className="min-h-screen bg-[#fbfaf7] pt-24 sm:pt-28 pb-16">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link
           href={`/learn/${course.id}`}
@@ -126,7 +126,7 @@ export const CertificateClient: React.FC<Props> = ({ course, defaultName }) => {
           <span>Back to Course</span>
         </Link>
 
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div className="bg-white rounded-3xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8">
           <div className="text-center mb-6">
             <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
               <Award className="w-10 h-10 text-white" />
@@ -160,7 +160,7 @@ export const CertificateClient: React.FC<Props> = ({ course, defaultName }) => {
               <button
                 onClick={handleDownload}
                 disabled={downloading}
-                className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 <span>{downloading ? 'Preparing...' : 'Download Certificate PDF'}</span>
@@ -179,7 +179,7 @@ export const CertificateClient: React.FC<Props> = ({ course, defaultName }) => {
                     value={studentName}
                     onChange={(e) => setStudentName(e.target.value)}
                     placeholder="e.g. Sarah Kebede"
-                    className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm"
+                    className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm"
                   />
                 </div>
                 <p className="text-[11px] text-slate-500 mt-1">

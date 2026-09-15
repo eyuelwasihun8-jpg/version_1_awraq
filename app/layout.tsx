@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased font-sans" suppressHydrationWarning>
         {/* 2. ADD TOP LOADER HERE (Awraq Cyan color) */}
         <NextTopLoader
-          color="#07CCFD"
+          color="#ddb049"
           initialPosition={0.08}
           crawlSpeed={200}
           height={3}
@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           showSpinner={false}
           easing="ease"
           speed={200}
-          shadow="0 0 10px #07CCFD,0 0 5px #07CCFD"
+          shadow="0 0 10px #ddb049,0 0 5px #ddb049"
         />
 
         <RootLayoutClient>{children}</RootLayoutClient>

@@ -125,7 +125,7 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-8 max-h-[94dvh] flex flex-col"
+        className="bg-white w-full max-w-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-[#e8e0d2] overflow-hidden my-0 sm:my-8 max-h-[94dvh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -187,7 +187,7 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
                         className={`p-4 rounded-2xl border-2 transition-all cursor-pointer text-left min-h-0 ${
                           topic === topicItem.title
                             ? 'border-emerald-600 bg-emerald-50/50 shadow-xs'
-                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                            : 'border-[#e8e0d2] hover:border-slate-300 bg-white'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-3">
@@ -224,7 +224,7 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 gap-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-[#f0ebe2] gap-2">
                     <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full truncate">
                       Topic: {topic}
                     </span>

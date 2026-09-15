@@ -57,11 +57,11 @@ export const WhatYouLearnSection: React.FC = () => {
                 className="relative group cursor-pointer"
                 onClick={scrollToCourses}
               >
-                <div className="relative bg-white rounded-[20px] p-6 sm:p-8 text-center shadow-md border border-slate-200 border-b-[6px] border-b-slate-200 group-hover:border-b-[#07CCFD] group-hover:-translate-y-1.5 group-hover:shadow-xl transition-all duration-300 h-full flex flex-col items-center">
+                <div className="relative bg-white rounded-[20px] p-6 sm:p-8 text-center shadow-md border border-[#e8e0d2] border-b-[6px] border-b-slate-200 group-hover:border-b-[#ddb049] group-hover:-translate-y-1.5 group-hover:shadow-xl transition-all duration-300 h-full flex flex-col items-center">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 mb-5 sm:mb-6 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Icon3D size={80} />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2 sm:mb-3 group-hover:text-[#07CCFD] transition-colors">
+                  <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2 sm:mb-3 group-hover:text-[#ddb049] transition-colors">
                     {topic.title}
                   </h3>
                   <p className="text-sm text-slate-600 font-medium leading-relaxed">

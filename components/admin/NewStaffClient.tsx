@@ -129,7 +129,7 @@ Login URL: ${window.location.origin}/staff-login-x7k9m
           <div className="flex gap-3">
             <button
               onClick={copyCredentials}
-              className="flex-1 py-3 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] text-[#0F172A] text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-all"
+              className="flex-1 py-3 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] text-[#0a0704] text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-all"
             >
               <Copy className="w-4 h-4" />
               <span>Copy All</span>
@@ -163,7 +163,7 @@ Login URL: ${window.location.origin}/staff-login-x7k9m
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 space-y-5">
         {/* Full Name */}
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Name *</label>
@@ -174,7 +174,7 @@ Login URL: ${window.location.origin}/staff-login-x7k9m
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="e.g. Sarah Kebede"
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm"
             />
           </div>
         </div>
@@ -189,7 +189,7 @@ Login URL: ${window.location.origin}/staff-login-x7k9m
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="sarah@awraq.com"
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm"
             />
           </div>
         </div>
@@ -198,7 +198,7 @@ Login URL: ${window.location.origin}/staff-login-x7k9m
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone (optional)</label>
           <div className="flex">
-            <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-slate-200 bg-slate-100 text-slate-600 text-sm font-bold">
+            <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-[#e8e0d2] bg-slate-100 text-slate-600 text-sm font-bold">
               +251
             </span>
             <div className="relative flex-1">
@@ -208,7 +208,7 @@ Login URL: ${window.location.origin}/staff-login-x7k9m
                 value={phone}
                 onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                 placeholder="9XX XXX XXX"
-                className="w-full pl-10 pr-4 py-3 rounded-r-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm font-mono"
+                className="w-full pl-10 pr-4 py-3 rounded-r-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm font-mono"
               />
             </div>
           </div>
@@ -221,7 +221,7 @@ Login URL: ${window.location.origin}/staff-login-x7k9m
             <button
               type="button"
               onClick={generatePassword}
-              className="text-[11px] font-bold text-[#07CCFD] hover:underline cursor-pointer"
+              className="text-[11px] font-bold text-[#ddb049] hover:underline cursor-pointer"
             >
               Generate secure
             </button>
@@ -233,7 +233,7 @@ Login URL: ${window.location.origin}/staff-login-x7k9m
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 8 characters"
-              className="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm font-mono"
+              className="w-full pl-10 pr-12 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm font-mono"
             />
             <button
               type="button"
@@ -258,15 +258,15 @@ Login URL: ${window.location.origin}/staff-login-x7k9m
                 onClick={() => setRole(r.value)}
                 className={`w-full p-4 rounded-xl border-2 text-left transition-all cursor-pointer ${
                   role === r.value
-                    ? 'border-[#07CCFD] bg-cyan-50'
-                    : 'border-slate-200 bg-white hover:border-slate-300'
+                    ? 'border-[#ddb049] bg-amber-50'
+                    : 'border-[#e8e0d2] bg-white hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-sm font-black ${role === r.value ? 'text-[#07CCFD]' : 'text-slate-900'}`}>
+                  <span className={`text-sm font-black ${role === r.value ? 'text-[#ddb049]' : 'text-slate-900'}`}>
                     {r.label}
                   </span>
-                  {role === r.value && <CheckCircle2 className="w-4 h-4 text-[#07CCFD]" />}
+                  {role === r.value && <CheckCircle2 className="w-4 h-4 text-[#ddb049]" />}
                 </div>
                 <p className="text-xs text-slate-500 font-medium">{r.description}</p>
               </button>

@@ -58,7 +58,7 @@ export const CourseDetailClient: React.FC<Props> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16">
+    <div className="min-h-screen bg-[#fbfaf7] pt-24 sm:pt-28 pb-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link
           href="/courses"
@@ -70,7 +70,7 @@ export const CourseDetailClient: React.FC<Props> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
               <div className="aspect-video bg-slate-100 relative">
                 <CourseThumbnail
                   thumbnailKey={course.thumbnail_url}
@@ -81,7 +81,7 @@ export const CourseDetailClient: React.FC<Props> = ({
               </div>
 
               <div className="p-5 sm:p-6 lg:p-8">
-                <div className="text-[10px] uppercase font-black tracking-widest text-[#07CCFD] mb-2">
+                <div className="text-[10px] uppercase font-black tracking-widest text-[#ddb049] mb-2">
                   {course.category?.replace('_', ' ') || 'Course'}
                 </div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight mb-3">
@@ -111,7 +111,7 @@ export const CourseDetailClient: React.FC<Props> = ({
                     </>
                   )}
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
-                    <Users className="w-3.5 h-3.5 text-[#07CCFD]" />
+                    <Users className="w-3.5 h-3.5 text-[#ddb049]" />
                     <span>
                       {formatStudents(studentCount)} student{studentCount !== 1 ? 's' : ''} enrolled
                     </span>
@@ -119,7 +119,7 @@ export const CourseDetailClient: React.FC<Props> = ({
                 </div>
 
                 {course.instructor && (
-                  <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100 mb-4">
+                  <div className="flex items-center gap-2.5 pb-4 border-b border-[#f0ebe2] mb-4">
                     <div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
                       {course.instructor.avatar_url ? (
                         <img src={course.instructor.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -152,7 +152,7 @@ export const CourseDetailClient: React.FC<Props> = ({
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+            <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6">
               <h2 className="text-base sm:text-lg font-black text-slate-900 mb-4">What You'll Get</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
@@ -171,9 +171,9 @@ export const CourseDetailClient: React.FC<Props> = ({
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 lg:p-8">
+            <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 lg:p-8">
               <div className="flex items-center gap-2 mb-2">
-                <MessageSquareQuote className="w-5 h-5 text-[#07CCFD]" />
+                <MessageSquareQuote className="w-5 h-5 text-[#ddb049]" />
                 <h2 className="text-base sm:text-lg font-black text-slate-900">Student Testimonials</h2>
               </div>
               <p className="text-xs text-slate-500 font-medium mb-6">
@@ -181,16 +181,16 @@ export const CourseDetailClient: React.FC<Props> = ({
               </p>
 
               {reviews.length === 0 ? (
-                <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <div className="text-center py-10 bg-[#fbfaf7] rounded-xl border border-dashed border-[#e8e0d2]">
                   <Star className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                   <p className="text-sm font-bold text-slate-600 mb-1">No testimonials yet</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {reviews.map((r) => (
-                    <div key={r.id} className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div key={r.id} className="p-4 sm:p-5 rounded-2xl bg-[#fbfaf7] border border-[#f0ebe2]">
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-white border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-white border border-[#e8e0d2] overflow-hidden shrink-0 flex items-center justify-center">
                           {r.user?.avatar_url ? (
                             <img src={r.user.avatar_url} alt="" className="w-full h-full object-cover" />
                           ) : (
@@ -228,7 +228,7 @@ export const CourseDetailClient: React.FC<Props> = ({
           </div>
 
           <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+            <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6">
               <div className="mb-4">
                 <div className="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-1">Price</div>
                 <div className="text-3xl sm:text-4xl font-black text-slate-900">
@@ -236,8 +236,8 @@ export const CourseDetailClient: React.FC<Props> = ({
                 </div>
               </div>
 
-              <div className="mb-4 flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-50 rounded-xl px-3 py-2.5 border border-slate-100">
-                <Users className="w-3.5 h-3.5 text-[#07CCFD] shrink-0" />
+              <div className="mb-4 flex items-center gap-2 text-xs font-bold text-slate-600 bg-[#fbfaf7] rounded-xl px-3 py-2.5 border border-[#f0ebe2]">
+                <Users className="w-3.5 h-3.5 text-[#ddb049] shrink-0" />
                 <span>
                   {studentCount === 0
                     ? 'Be the first to enroll'
@@ -255,7 +255,7 @@ export const CourseDetailClient: React.FC<Props> = ({
               ) : (
                 <button
                   onClick={handlePurchase}
-                  className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] text-[#0F172A] text-sm font-bold cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] text-sm font-bold cursor-pointer flex items-center justify-center gap-2"
                 >
                   {!isLoggedIn && <Lock className="w-4 h-4" />}
                   <span>{isLoggedIn ? 'Purchase This Course' : 'Sign In to Purchase'}</span>
@@ -270,7 +270,7 @@ export const CourseDetailClient: React.FC<Props> = ({
 };
 
 const StatBox = ({ icon: Icon, label, value }: any) => (
-  <div className="bg-slate-50 rounded-xl p-3 text-center">
+  <div className="bg-[#fbfaf7] rounded-xl p-3 text-center">
     <Icon className="w-4 h-4 text-slate-400 mx-auto mb-1" />
     <div className="text-sm font-black text-slate-900">{value}</div>
     <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{label}</div>

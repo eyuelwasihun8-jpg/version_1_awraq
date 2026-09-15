@@ -32,7 +32,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-[#fbfaf7] flex">
       <AdminSidebar role={profile.role} />
       <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
         <AdminHeader userName={profile.full_name} role={profile.role} />

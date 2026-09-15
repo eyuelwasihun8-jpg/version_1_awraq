@@ -143,10 +143,10 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
 
   return (
     <div className="max-w-4xl">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8">
         <div className="flex items-start gap-3 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-cyan-50 border border-cyan-100 flex items-center justify-center shrink-0">
-            <Video className="w-6 h-6 text-[#07CCFD]" />
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+            <Video className="w-6 h-6 text-[#ddb049]" />
           </div>
           <div>
             <h2 className="text-xl font-black text-slate-900">Video Section</h2>
@@ -173,10 +173,10 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
         )}
 
         {detectedDuration > 0 && (
-          <div className="mb-5 flex items-center gap-3 p-3 bg-cyan-50 border border-cyan-100 rounded-xl">
-            <Clock className="w-4 h-4 text-[#07CCFD]" />
+          <div className="mb-5 flex items-center gap-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+            <Clock className="w-4 h-4 text-[#ddb049]" />
             <div>
-              <div className="text-[10px] uppercase font-black text-cyan-700 tracking-wider">
+              <div className="text-[10px] uppercase font-black bg-amber-800 tracking-wider">
                 Detected Duration
               </div>
               <div className="text-lg font-black text-slate-900">
@@ -200,23 +200,23 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
           </label>
 
           {uploading && (
-            <div className="mt-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div className="mt-3 bg-[#fbfaf7] p-3 rounded-xl border border-[#e8e0d2]">
               <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
                 <span>Uploading...</span>
                 <span>{uploadProgress}%</span>
               </div>
               <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                <div className="h-full bg-[#07CCFD] transition-all" style={{ width: `${uploadProgress}%` }} />
+                <div className="h-full bg-[#ddb049] transition-all" style={{ width: `${uploadProgress}%` }} />
               </div>
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-3 pt-5 border-t border-slate-100 flex-wrap">
+        <div className="flex items-center gap-3 pt-5 border-t border-[#f0ebe2] flex-wrap">
           <button
             onClick={handleSave}
             disabled={saving || uploading || !hasChanges || !videoKey}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] text-[#0F172A] text-sm font-bold cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] text-[#0a0704] text-sm font-bold cursor-pointer disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             <span>{saving ? 'Saving...' : 'Save Video Section'}</span>

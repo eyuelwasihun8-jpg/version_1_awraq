@@ -146,7 +146,7 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
               isGreat
                 ? 'bg-emerald-50 border-emerald-200'
                 : isGood
-                ? 'bg-cyan-50 border-cyan-200'
+                ? 'bg-amber-50 border-amber-200'
                 : 'bg-amber-50 border-amber-200'
             }`}
           >
@@ -155,7 +155,7 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
                 isGreat
                   ? 'bg-[#20B486]'
                   : isGood
-                  ? 'bg-[#07CCFD]'
+                  ? 'bg-[#ddb049]'
                   : 'bg-amber-500'
               }`}
             >
@@ -213,7 +213,7 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
                       const wasSelected = selectedIds.has(opt.id);
                       const isCorrectOpt = correctIds.has(opt.id);
 
-                      let cls = 'bg-white border-slate-200 text-slate-600';
+                      let cls = 'bg-white border-[#e8e0d2] text-slate-600';
                       if (isCorrectOpt) {
                         cls = 'bg-emerald-100 border-emerald-300 text-emerald-900 font-bold';
                       } else if (wasSelected && !isCorrectOpt) {
@@ -249,12 +249,12 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
                   </div>
 
                   {explanation && explanation.trim() && (
-                    <div className="pl-8 mt-3 pt-3 border-t border-slate-200">
+                    <div className="pl-8 mt-3 pt-3 border-t border-[#e8e0d2]">
                       <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider mb-1.5 flex items-center gap-1.5">
                         <MessageSquare className="w-3 h-3" />
                         <span>Explanation</span>
                       </div>
-                      <p className="text-xs text-slate-700 font-medium leading-relaxed bg-white rounded-lg p-3 border border-slate-200">
+                      <p className="text-xs text-slate-700 font-medium leading-relaxed bg-white rounded-lg p-3 border border-[#e8e0d2]">
                         {explanation}
                       </p>
                     </div>
@@ -290,7 +290,7 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
   return (
     <div className="p-6 sm:p-8">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-6 pb-4 border-b border-slate-100">
+        <div className="mb-6 pb-4 border-b border-[#f0ebe2]">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
               <HelpCircle className="w-4 h-4 text-purple-600" />
@@ -306,7 +306,7 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
           {!loadingAttempts && pastAttempts.length > 0 && (
             <button
               onClick={() => setShowPast(!showPast)}
-              className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#07CCFD] hover:underline cursor-pointer"
+              className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#ddb049] hover:underline cursor-pointer"
             >
               <History className="w-3 h-3" />
               <span>
@@ -321,7 +321,7 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
               {pastAttempts.slice(0, 5).map((a) => (
                 <div
                   key={a.id}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-xs"
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-[#fbfaf7] border border-[#f0ebe2] text-xs"
                 >
                   <div className="flex items-center gap-2">
                     <Trophy className="w-3.5 h-3.5 text-amber-500" />
@@ -353,7 +353,7 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
 
         <div className="space-y-6">
           {questions.map((q, i) => (
-            <div key={q.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+            <div key={q.id} className="bg-[#fbfaf7] border border-[#e8e0d2] rounded-2xl p-5">
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-7 h-7 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center shrink-0">
                   {i + 1}
@@ -379,15 +379,15 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
                       onClick={() => toggleAnswer(q.id, opt.id, isMulti)}
                       className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all text-left ${
                         isSelected
-                          ? 'border-[#07CCFD] bg-cyan-50'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
+                          ? 'border-[#ddb049] bg-amber-50'
+                          : 'border-[#e8e0d2] bg-white hover:border-slate-300'
                       }`}
                     >
                       {isMulti ? (
                         <div
                           className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${
                             isSelected
-                              ? 'border-[#07CCFD] bg-[#07CCFD]'
+                              ? 'border-[#ddb049] bg-[#ddb049]'
                               : 'border-slate-300 bg-white'
                           }`}
                         >
@@ -396,10 +396,10 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
                       ) : (
                         <div
                           className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            isSelected ? 'border-[#07CCFD]' : 'border-slate-300'
+                            isSelected ? 'border-[#ddb049]' : 'border-slate-300'
                           }`}
                         >
-                          {isSelected && <div className="w-2 h-2 rounded-full bg-[#07CCFD]" />}
+                          {isSelected && <div className="w-2 h-2 rounded-full bg-[#ddb049]" />}
                         </div>
                       )}
                       <span

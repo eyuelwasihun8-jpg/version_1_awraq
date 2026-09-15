@@ -70,7 +70,7 @@ export const NotesSidePanel: React.FC<Props> = ({ courseId, lessonId }) => {
           onChange={(e) => setNewNote(e.target.value)}
           placeholder="Write a note about this lesson..."
           rows={3}
-          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm resize-none"
+          className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm resize-none"
         />
         <button
           onClick={handleAdd}

@@ -33,14 +33,14 @@ export const VerifyClient: React.FC<Props> = ({ code }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#07CCFD]" />
+      <div className="min-h-screen bg-[#fbfaf7] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#ddb049]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#fbfaf7] pt-24 sm:pt-28 pb-16 flex items-center justify-center px-4">
       <div className="max-w-lg w-full">
         {data?.valid ? (
           <div className="bg-white rounded-3xl border border-emerald-200 shadow-lg p-8 sm:p-10">
@@ -54,7 +54,7 @@ export const VerifyClient: React.FC<Props> = ({ code }) => {
               </p>
             </div>
 
-            <div className="bg-slate-50 rounded-xl p-5 space-y-3">
+            <div className="bg-[#fbfaf7] rounded-xl p-5 space-y-3">
               <Row label="Student" value={data.studentName} />
               <Row label="Course" value={data.courseName} />
               <Row label="Issued" value={new Date(data.issuedAt).toLocaleDateString()} />
@@ -63,7 +63,7 @@ export const VerifyClient: React.FC<Props> = ({ code }) => {
 
             <Link
               href="/"
-              className="mt-6 inline-flex items-center gap-1 text-xs font-bold text-[#07CCFD] hover:underline cursor-pointer"
+              className="mt-6 inline-flex items-center gap-1 text-xs font-bold text-[#ddb049] hover:underline cursor-pointer"
             >
               Visit Awraq
               <ExternalLink className="w-3 h-3" />
@@ -78,7 +78,7 @@ export const VerifyClient: React.FC<Props> = ({ code }) => {
             <p className="text-sm text-slate-500 font-medium mb-6">
               {error || 'This certificate code is invalid or has been revoked.'}
             </p>
-            <div className="bg-slate-50 rounded-xl p-3 text-xs font-mono text-slate-500 break-all">
+            <div className="bg-[#fbfaf7] rounded-xl p-3 text-xs font-mono text-slate-500 break-all">
               {code}
             </div>
           </div>

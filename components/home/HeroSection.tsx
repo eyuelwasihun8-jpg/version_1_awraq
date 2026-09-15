@@ -22,38 +22,43 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   videoUrl = '/videos/hero-demo.mp4',
 }) => {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white pt-28 sm:pt-32 pb-10 sm:pb-14">
-      <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[#07CCFD]/10 blur-3xl" />
-      <div className="pointer-events-none absolute top-40 -right-20 w-80 h-80 rounded-full bg-[#20B486]/10 blur-3xl" />
+    <section className="relative overflow-hidden bg-[var(--gradient-hero)] pt-28 sm:pt-32 pb-10 sm:pb-14">
+      {/* Soft Gold & Ink Ambient Glows */}
+      <div className="pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full bg-[#ddb049]/15 blur-3xl" />
+      <div className="pointer-events-none absolute top-40 -right-20 w-96 h-96 rounded-full bg-[#ddb049]/10 blur-3xl" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Headline only — badge removed */}
+        {/* Headline only */}
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.05] mb-4">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-[#0a0704] tracking-tight leading-[1.05] mb-4">
             Master Digital Marketing
           </h1>
-          <p className="text-sm sm:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
+          <p className="text-sm sm:text-lg text-[#0a0704]/75 font-medium leading-relaxed max-w-2xl mx-auto">
             Learn digital marketing step by step and build skills you can use in your work,
             business, or personal brand.
           </p>
         </div>
 
         <div className="relative max-w-4xl mx-auto">
-          {/* Floating cards */}
+          {/* Floating cards (Gold accents) */}
           <div className="hidden lg:block absolute -left-5 top-10 z-20 animate-floatY">
-            <FloatingCard icon={Users} title="1,000+ Learners" subtitle="Growing every month" tone="cyan" />
+            <FloatingCard icon={Users} title="1,000+ Learners" subtitle="Growing every month" />
           </div>
           <div className="hidden lg:block absolute -right-5 top-20 z-20 animate-floatY-delayed">
-            <FloatingCard icon={TrendingUp} title="Real Campaign Skills" subtitle="Ads • Content • SEO" tone="emerald" />
+            <FloatingCard icon={TrendingUp} title="Real Campaign Skills" subtitle="Ads • Content • SEO" />
           </div>
           <div className="hidden lg:block absolute -left-3 bottom-28 z-20 animate-floatY">
-            <FloatingCard icon={Award} title="Certificate Ready" subtitle="Verified completion" tone="amber" />
+            <FloatingCard icon={Award} title="Certificate Ready" subtitle="Verified completion" />
           </div>
 
-          {/* Video */}
-          <div className="relative rounded-[28px] p-[1px] bg-gradient-to-br from-slate-200 via-[#07CCFD]/50 to-[#20B486]/40 shadow-[0_30px_80px_rgba(15,23,42,0.14)]">
-            <div className="relative rounded-[27px] overflow-hidden bg-slate-900 border border-white/20">
-              <div className="aspect-video bg-slate-900">
+          {/* Floating dots */}
+          <div className="absolute -top-2 left-10 w-3 h-3 rounded-full bg-[#ddb049] animate-pulse-soft" />
+          <div className="absolute top-1/3 -right-1 w-2.5 h-2.5 rounded-full bg-[#ddb049]/80 animate-pulse-soft" />
+
+          {/* Video Frame with Gold Border Glow */}
+          <div className="relative rounded-[28px] p-[1px] bg-gradient-to-br from-[#ddb049]/60 via-[#0a0704]/20 to-[#ddb049]/40 shadow-[0_30px_80px_rgba(10,7,4,0.18)]">
+            <div className="relative rounded-[27px] overflow-hidden bg-[#0a0704] border border-white/10">
+              <div className="aspect-video bg-[#0a0704] relative">
                 <video
                   className="w-full h-full object-cover"
                   src={videoUrl}
@@ -66,30 +71,30 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
           </div>
 
-          {/* Buttons under video */}
+          {/* GOLD & INK ACTION BUTTONS */}
           <div className="mt-6 sm:mt-7 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={onOpenSignIn}
-              className="w-full sm:w-auto min-h-[48px] px-7 py-3 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-black shadow-[0_10px_24px_rgba(7,204,253,0.35)] transition-all cursor-pointer"
+              className="w-full sm:w-auto min-h-[48px] px-8 py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-black shadow-[0_10px_24px_rgba(221,176,73,0.4)] transition-all cursor-pointer"
             >
               Start Learning
             </button>
             <button
               onClick={onOpenConsultation}
-              className="w-full sm:w-auto min-h-[48px] px-7 py-3 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 text-sm font-bold shadow-sm transition-all cursor-pointer"
+              className="w-full sm:w-auto min-h-[48px] px-8 py-3.5 rounded-xl bg-white border border-[#e8e0d2] hover:bg-[#fbfaf7] text-[#0a0704] text-sm font-bold shadow-sm transition-all cursor-pointer"
             >
               Book Consultation
             </button>
           </div>
 
-          {/* Community pill */}
+          {/* Ink Community pill */}
           <div className="mt-5 sm:mt-6 flex justify-center">
-            <div className="inline-flex items-center gap-3 rounded-full bg-slate-950 text-white pl-2 pr-5 py-2 shadow-[0_12px_40px_rgba(15,23,42,0.25)]">
+            <div className="inline-flex items-center gap-3 rounded-full bg-[#0a0704] text-white pl-2 pr-5 py-2 shadow-xl border border-white/10">
               <div className="flex -space-x-2">
                 {COMMUNITY_AVATARS.map((src, i) => (
                   <div
                     key={i}
-                    className="w-8 h-8 rounded-full border-2 border-slate-950 overflow-hidden bg-slate-700"
+                    className="w-8 h-8 rounded-full border-2 border-[#0a0704] overflow-hidden bg-slate-800"
                   >
                     <img
                       src={src}
@@ -103,7 +108,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 ))}
               </div>
               <div className="text-xs sm:text-sm font-bold text-white/90">
-                Join our <span className="text-white">1000+</span> community
+                Join our <span className="text-[#ddb049]">1000+</span> community
               </div>
             </div>
           </div>
@@ -117,28 +122,20 @@ const FloatingCard = ({
   icon: Icon,
   title,
   subtitle,
-  tone = 'cyan',
 }: {
   icon: any;
   title: string;
   subtitle: string;
-  tone?: 'cyan' | 'emerald' | 'amber';
 }) => {
-  const tones = {
-    cyan: 'bg-[#07CCFD]/15 text-[#0891b2]',
-    emerald: 'bg-[#20B486]/15 text-[#059669]',
-    amber: 'bg-amber-400/15 text-amber-700',
-  };
-
   return (
-    <div className="rounded-2xl border border-white/50 bg-white/55 backdrop-blur-xl shadow-[0_10px_40px_rgba(15,23,42,0.10)] px-3.5 py-3 min-w-[170px]">
+    <div className="rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-[0_10px_40px_rgba(10,7,4,0.12)] px-3.5 py-3 min-w-[170px]">
       <div className="flex items-center gap-2.5">
-        <div className={`w-9 h-9 rounded-xl ${tones[tone]} border border-white/70 flex items-center justify-center`}>
-          <Icon className="w-4 h-4" />
+        <div className="w-9 h-9 rounded-xl bg-[#ddb049]/20 text-[#0a0704] border border-[#ddb049]/30 flex items-center justify-center">
+          <Icon className="w-4 h-4 text-[#b8862f]" />
         </div>
         <div>
-          <div className="text-xs font-black text-slate-900 leading-tight">{title}</div>
-          <div className="text-[10px] font-bold text-slate-500 leading-tight">{subtitle}</div>
+          <div className="text-xs font-black text-[#0a0704] leading-tight">{title}</div>
+          <div className="text-[10px] font-bold text-[#0a0704]/60 leading-tight">{subtitle}</div>
         </div>
       </div>
     </div>

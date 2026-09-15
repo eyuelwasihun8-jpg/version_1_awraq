@@ -86,7 +86,7 @@ export const LessonQuizEditor: React.FC<Props> = ({ lesson, onSaved }) => {
 
   return (
     <div className="max-w-5xl">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8">
         <div className="flex items-start gap-3 mb-6">
           <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center shrink-0">
             <HelpCircle className="w-6 h-6 text-purple-600" />
@@ -101,7 +101,7 @@ export const LessonQuizEditor: React.FC<Props> = ({ lesson, onSaved }) => {
 
         <QuizBuilder data={quizData} onChange={setQuizData} />
 
-        <div className="flex items-center gap-3 pt-6 mt-6 border-t border-slate-100 flex-wrap">
+        <div className="flex items-center gap-3 pt-6 mt-6 border-t border-[#f0ebe2] flex-wrap">
           <button
             onClick={handleSave}
             disabled={saving || !hasQuestions || !hasChanges}

@@ -51,14 +51,14 @@ export const CoursesClient: React.FC = () => {
         </div>
         <Link
           href={`/${PORTAL_SLUG}/courses/new`}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] hover:border-b-[1px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] hover:border-b-[1px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>New Course</span>
         </Link>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -80,7 +80,7 @@ export const CoursesClient: React.FC = () => {
             {courses.map((c) => (
               <div
                 key={c.id}
-                className="flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50 transition-colors group"
+                className="flex items-center justify-between p-4 sm:p-5 hover:bg-[#fbfaf7] transition-colors group"
               >
                 <Link
                   href={`/${PORTAL_SLUG}/courses/${c.id}`}
@@ -98,7 +98,7 @@ export const CoursesClient: React.FC = () => {
                           Published
                         </span>
                       ) : (
-                        <span className="text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
+                        <span className="text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-[#e8e0d2] flex items-center gap-1">
                           <EyeOff className="w-2.5 h-2.5" />
                           Draft
                         </span>
@@ -116,7 +116,7 @@ export const CoursesClient: React.FC = () => {
                   <Link
                     href={`/${PORTAL_SLUG}/courses/${c.id}/analytics`}
                     onClick={(e) => e.stopPropagation()}
-                    className="p-2 rounded-lg text-slate-500 hover:bg-cyan-50 hover:text-[#07CCFD] transition-colors cursor-pointer"
+                    className="p-2 rounded-lg text-slate-500 hover:bg-amber-50 hover:text-[#ddb049] transition-colors cursor-pointer"
                     title="View analytics"
                   >
                     <BarChart3 className="w-4 h-4" />

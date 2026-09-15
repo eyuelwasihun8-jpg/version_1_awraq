@@ -153,7 +153,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
           <button
             onClick={handleExport}
             disabled={downloading || students.length === 0}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-bold shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#e8e0d2] hover:bg-[#fbfaf7] text-slate-700 text-sm font-bold shadow-sm transition-all disabled:opacity-50 cursor-pointer"
           >
             {downloading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -166,7 +166,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
           {canEnroll && (
             <Link
               href={`/${PORTAL_SLUG}/students/enroll`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] hover:border-b-[1px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] hover:border-b-[1px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
               <span>Enroll Student</span>
@@ -176,7 +176,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col sm:flex-row gap-3">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] p-4 shadow-sm flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -184,7 +184,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name, phone, email..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none text-sm"
           />
         </div>
 
@@ -194,7 +194,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
             <select
               value={courseId}
               onChange={(e) => setCourseId(e.target.value)}
-              className="w-full pl-10 pr-8 py-2.5 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm font-bold appearance-none bg-white cursor-pointer"
+              className="w-full pl-10 pr-8 py-2.5 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none text-sm font-bold appearance-none bg-white cursor-pointer"
             >
               <option value="all">All Courses</option>
               {courses.map((c) => (
@@ -208,7 +208,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
           <select
             value={hasPurchases}
             onChange={(e) => setHasPurchases(e.target.value)}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm font-bold appearance-none bg-white cursor-pointer"
+            className="px-4 py-2.5 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none text-sm font-bold appearance-none bg-white cursor-pointer"
           >
             <option value="all">All Students</option>
             <option value="yes">With Purchases</option>
@@ -218,7 +218,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm font-bold appearance-none bg-white cursor-pointer bg-slate-50"
+            className="px-4 py-2.5 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none text-sm font-bold appearance-none bg-white cursor-pointer bg-[#fbfaf7]"
           >
             <option value="newest">Newest Signups</option>
             <option value="oldest">Oldest Signups</option>
@@ -229,7 +229,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
       </div>
 
       {/* List */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden min-h-[400px]">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
@@ -247,7 +247,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
         ) : (
           <>
             {/* Desktop Table Header */}
-            <div className="hidden sm:grid grid-cols-12 gap-4 p-4 border-b border-slate-100 bg-slate-50 text-[10px] uppercase font-black text-slate-500 tracking-wider">
+            <div className="hidden sm:grid grid-cols-12 gap-4 p-4 border-b border-[#f0ebe2] bg-[#fbfaf7] text-[10px] uppercase font-black text-slate-500 tracking-wider">
               <div className="col-span-5">Student</div>
               <div className="col-span-2 text-center">Enrollments</div>
               <div className="col-span-2 text-center">Avg Progress</div>
@@ -259,7 +259,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
                 <Link
                   key={s.id}
                   href={`/${PORTAL_SLUG}/students/${s.id}`}
-                  className="block p-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="block p-4 hover:bg-[#fbfaf7] transition-colors cursor-pointer"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                     {/* Student Info */}
@@ -285,7 +285,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
                                   👤 {s.assignedToName}
                                 </span>
                               ) : (
-                                <span className="bg-slate-100 text-slate-500 border border-slate-200 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">
+                                <span className="bg-slate-100 text-slate-500 border border-[#e8e0d2] px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">
                                   Unassigned
                                 </span>
                               )}
@@ -330,7 +330,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+              <div className="p-4 border-t border-[#f0ebe2] bg-[#fbfaf7] flex items-center justify-between">
                 <div className="text-xs text-slate-500 font-medium hidden sm:block">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
                   {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
@@ -341,7 +341,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={!pagination.hasPrev}
-                    className="p-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    className="p-2 rounded-lg bg-white border border-[#e8e0d2] hover:bg-[#fbfaf7] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -353,7 +353,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={!pagination.hasNext}
-                    className="p-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    className="p-2 rounded-lg bg-white border border-[#e8e0d2] hover:bg-[#fbfaf7] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>

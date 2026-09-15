@@ -71,7 +71,7 @@ export const LessonTextEditor: React.FC<Props> = ({ lesson, onSaved }) => {
 
   return (
     <div className="max-w-5xl">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8">
         <div className="flex items-start gap-3 mb-6">
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
             <FileText className="w-6 h-6 text-[#20B486]" />
@@ -94,13 +94,13 @@ export const LessonTextEditor: React.FC<Props> = ({ lesson, onSaved }) => {
         </div>
 
         {wordCount > 0 && (
-          <div className="mb-5 text-xs text-slate-500 font-medium bg-slate-50 rounded-lg px-3 py-2 inline-block">
+          <div className="mb-5 text-xs text-slate-500 font-medium bg-[#fbfaf7] rounded-lg px-3 py-2 inline-block">
             <span className="font-bold text-slate-900">{wordCount}</span> word
             {wordCount !== 1 ? 's' : ''}
           </div>
         )}
 
-        <div className="flex items-center gap-3 pt-5 border-t border-slate-100 flex-wrap">
+        <div className="flex items-center gap-3 pt-5 border-t border-[#f0ebe2] flex-wrap">
           <button
             onClick={handleSave}
             disabled={saving || !hasContent || !hasChanges}

@@ -253,7 +253,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
       </div>
 
       {/* Lessons list */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
             <Loader2 className="w-5 h-5 animate-spin text-slate-400 mx-auto" />
@@ -264,7 +264,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
           <div className="divide-y divide-slate-100">
             {lessons.map((l, i) => (
               <div key={l.id}>
-                <div className="flex items-center gap-3 p-4 hover:bg-slate-50">
+                <div className="flex items-center gap-3 p-4 hover:bg-[#fbfaf7]">
                   {/* Reorder buttons */}
                   <div className="flex flex-col gap-0.5">
                     <button
@@ -286,7 +286,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
                   <div className="text-xs font-black text-slate-400 w-6 text-center">{i + 1}</div>
 
                   {l.lesson_type === 'video' ? (
-                    <Video className="w-4 h-4 text-[#07CCFD] shrink-0" />
+                    <Video className="w-4 h-4 text-[#ddb049] shrink-0" />
                   ) : (
                     <FileText className="w-4 h-4 text-[#20B486] shrink-0" />
                   )}
@@ -330,7 +330,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
 
                 {/* Expanded resources manager */}
                 {expandedId === l.id && (
-                  <div className="p-4 bg-slate-50 border-t border-slate-100">
+                  <div className="p-4 bg-[#fbfaf7] border-t border-[#f0ebe2]">
                     <ResourcesManager lessonId={l.id} lessonTitle={l.title} />
                   </div>
                 )}
@@ -341,7 +341,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
       </div>
 
       {/* Add new lesson form */}
-      <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-5 space-y-4">
+      <div className="bg-white rounded-2xl border-2 border-dashed border-[#e8e0d2] p-5 space-y-4">
         <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
           <Plus className="w-4 h-4" />
           <span>Add New Lesson</span>
@@ -354,7 +354,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder="e.g. 1.1 Introduction to Digital Marketing"
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm"
+            className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm"
           />
         </div>
 
@@ -366,8 +366,8 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
               onClick={() => setNewType('video')}
               className={`flex-1 py-2.5 rounded-xl border-2 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
                 newType === 'video'
-                  ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-                  : 'border-slate-200 bg-white text-slate-600'
+                  ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+                  : 'border-[#e8e0d2] bg-white text-slate-600'
               }`}
             >
               <Video className="w-3.5 h-3.5" />
@@ -379,7 +379,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
               className={`flex-1 py-2.5 rounded-xl border-2 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
                 newType === 'text'
                   ? 'border-[#20B486] bg-emerald-50 text-[#20B486]'
-                  : 'border-slate-200 bg-white text-slate-600'
+                  : 'border-[#e8e0d2] bg-white text-slate-600'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -412,14 +412,14 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
             </div>
 
             {uploading && (
-              <div className="space-y-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <div className="space-y-1.5 bg-[#fbfaf7] p-3 rounded-xl border border-[#e8e0d2]">
                 <div className="flex justify-between text-xs font-bold text-slate-700">
                   <span>Uploading to R2...</span>
                   <span>{uploadProgress}%</span>
                 </div>
                 <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#07CCFD] transition-all duration-150"
+                    className="h-full bg-[#ddb049] transition-all duration-150"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
@@ -439,7 +439,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
                 onChange={(e) => setNewText(e.target.value)}
                 rows={6}
                 placeholder="<h2>Lesson Content</h2><p>Write your lesson here...</p>"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#20B486] outline-none bg-slate-50/50 text-sm font-mono resize-none"
+                className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#20B486] outline-none bg-[#fbfaf7]/50 text-sm font-mono resize-none"
               />
             </div>
             <div>
@@ -451,7 +451,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
                 value={newDuration}
                 onChange={(e) => setNewDuration(e.target.value)}
                 min="30"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none bg-slate-50/50 text-sm font-mono"
+                className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] outline-none bg-[#fbfaf7]/50 text-sm font-mono"
               />
             </div>
           </>
@@ -481,7 +481,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
             className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90dvh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+            <div className="flex items-center justify-between p-5 border-b border-[#f0ebe2]">
               <div>
                 <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
                   Lesson Preview
@@ -518,7 +518,7 @@ export const LessonsManager: React.FC<Props> = ({ courseId }) => {
                 )
               ) : (
                 <article
-                  className="prose prose-slate max-w-none bg-slate-50 rounded-xl p-4"
+                  className="prose prose-slate max-w-none bg-[#fbfaf7] rounded-xl p-4"
                   dangerouslySetInnerHTML={{
                     __html: previewLesson.text_content || '<p>No content</p>',
                   }}

@@ -92,7 +92,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ role }) => {
       {/* Mobile menu toggle */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-11 h-11 rounded-xl bg-white border border-slate-200 shadow-md flex items-center justify-center cursor-pointer"
+        className="lg:hidden fixed top-4 left-4 z-50 w-11 h-11 rounded-xl bg-white border border-[#e8e0d2] shadow-md flex items-center justify-center cursor-pointer"
         aria-label="Toggle sidebar"
       >
         {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -108,12 +108,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ role }) => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-200 z-40 transform transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-[#e8e0d2] z-40 transform transition-transform duration-300 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-slate-100">
+        <div className="p-6 border-b border-[#f0ebe2]">
           <Link
             href={`/${SLUG}`}
             className="flex items-center gap-2"
@@ -139,7 +139,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ role }) => {
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
                   active
                     ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-50'
+                    : 'text-slate-600 hover:bg-[#fbfaf7]'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -150,10 +150,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ role }) => {
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-100">
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-[#f0ebe2]">
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-all cursor-pointer"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-[#fbfaf7] transition-all cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Site</span>

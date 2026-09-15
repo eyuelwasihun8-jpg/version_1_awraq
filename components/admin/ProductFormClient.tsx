@@ -227,14 +227,14 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 space-y-5">
         <Field label="Product Title *">
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Complete SEO Checklist PDF"
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm"
+            className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm"
           />
         </Field>
 
@@ -244,7 +244,7 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             placeholder="What's included in this product?"
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none bg-slate-50/50 text-sm resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none bg-[#fbfaf7]/50 text-sm resize-none"
           />
         </Field>
 
@@ -253,7 +253,7 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
             <select
               value={fileType}
               onChange={(e) => setFileType(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none bg-slate-50/50 text-sm font-bold cursor-pointer"
+              className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none bg-[#fbfaf7]/50 text-sm font-bold cursor-pointer"
             >
               {FILE_TYPES.map((f) => (
                 <option key={f.value} value={f.value}>
@@ -270,7 +270,7 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
               onChange={(e) => setPrice(e.target.value)}
               min="0"
               step="10"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none bg-slate-50/50 text-sm font-mono"
+              className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none bg-[#fbfaf7]/50 text-sm font-mono"
             />
           </Field>
         </div>
@@ -299,14 +299,14 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
             </div>
 
             {uploadingFile && (
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <div className="bg-[#fbfaf7] p-3 rounded-xl border border-[#e8e0d2]">
                 <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
                   <span>Uploading...</span>
                   <span>{fileProgress}%</span>
                 </div>
                 <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#07CCFD] transition-all"
+                    className="h-full bg-[#ddb049] transition-all"
                     style={{ width: `${fileProgress}%` }}
                   />
                 </div>
@@ -346,7 +346,7 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
               className={`flex-1 py-3 rounded-xl border-2 text-sm font-bold cursor-pointer transition-all ${
                 !isPublished
                   ? 'border-slate-900 bg-slate-900 text-white'
-                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                  : 'border-[#e8e0d2] bg-white text-slate-500 hover:border-slate-300'
               }`}
             >
               Draft
@@ -357,7 +357,7 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
               className={`flex-1 py-3 rounded-xl border-2 text-sm font-bold cursor-pointer transition-all ${
                 isPublished
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                  : 'border-[#e8e0d2] bg-white text-slate-500 hover:border-slate-300'
               }`}
             >
               Published
@@ -369,7 +369,7 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
           type="button"
           onClick={handleSave}
           disabled={saving || uploadingFile}
-          className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           <span>{saving ? 'Saving...' : isEdit ? 'Update Product' : 'Create Product'}</span>

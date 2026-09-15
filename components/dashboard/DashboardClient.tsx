@@ -85,14 +85,14 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 sm:pb-16 pt-24 sm:pt-28">
+    <div className="min-h-screen bg-[#fbfaf7] pb-20 sm:pb-16 pt-24 sm:pt-28">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8 sm:mb-10">
           <div className="min-w-0">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-[#07CCFD] to-[#06B8E4] flex items-center justify-center shrink-0 shadow-md">
-                <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-[#0F172A]" />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-[#ddb049] to-[#c99a3a] flex items-center justify-center shrink-0 shadow-md">
+                <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-[#0a0704]" />
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
                 My Learning
@@ -106,7 +106,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
 
           <button
             onClick={handleLogout}
-            className="hidden sm:inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-bold shadow-sm hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all cursor-pointer self-start"
+            className="hidden sm:inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-white border border-[#e8e0d2] text-slate-600 text-sm font-bold shadow-sm hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all cursor-pointer self-start"
           >
             <LogOut className="w-4 h-4" />
             <span>Log Out</span>
@@ -120,9 +120,9 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
               icon={BookOpen}
               value={totalEnrolled}
               label="Enrolled Courses"
-              iconBg="bg-cyan-50"
-              iconBorder="border-cyan-100"
-              iconColor="text-[#07CCFD]"
+              iconBg="bg-amber-50"
+              iconBorder="border-amber-100"
+              iconColor="text-[#ddb049]"
               tagLabel="Total"
               tagColor="text-slate-400"
             />
@@ -137,7 +137,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
               tagLabel="Done"
               tagColor="text-[#20B486]"
             />
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all">
+            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e8e0d2] shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-[#3B82F6]" />
@@ -154,7 +154,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
               </div>
               <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#3B82F6] to-[#07CCFD] rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-[#3B82F6] to-[#ddb049] rounded-full transition-all duration-500"
                   style={{ width: `${overallProgress}%` }}
                 ></div>
               </div>
@@ -173,7 +173,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
         )}
 
         {/* TABS */}
-        <div className="flex gap-1 sm:gap-2 mb-6 sm:mb-8 overflow-x-auto hide-scrollbar bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm">
+        <div className="flex gap-1 sm:gap-2 mb-6 sm:mb-8 overflow-x-auto hide-scrollbar bg-white border border-[#e8e0d2] rounded-2xl p-1.5 shadow-sm">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -184,7 +184,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
                 className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer no-min-touch ${
                   isActive
                     ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-50'
+                    : 'text-slate-600 hover:bg-[#fbfaf7]'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -192,7 +192,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
                 {tab.count > 0 && (
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-                      isActive ? 'bg-[#07CCFD] text-[#0F172A]' : 'bg-slate-100 text-slate-600'
+                      isActive ? 'bg-[#ddb049] text-[#0a0704]' : 'bg-slate-100 text-slate-600'
                     }`}
                   >
                     {tab.count}
@@ -238,7 +238,7 @@ const StatCard = ({
   tagLabel,
   tagColor,
 }: any) => (
-  <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all">
+  <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e8e0d2] shadow-sm hover:shadow-md transition-all">
     <div className="flex items-center justify-between mb-3">
       <div className={`w-10 h-10 rounded-xl ${iconBg} border ${iconBorder} flex items-center justify-center`}>
         <Icon className={`w-5 h-5 ${iconColor}`} />

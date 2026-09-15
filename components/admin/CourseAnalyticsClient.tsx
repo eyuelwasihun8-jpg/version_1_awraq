@@ -53,7 +53,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#07CCFD]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#ddb049]" />
       </div>
     );
   }
@@ -64,7 +64,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
         <p className="text-sm font-bold text-slate-500">Could not load analytics</p>
         <Link
           href={`/${PORTAL_SLUG}/courses/${courseId}`}
-          className="text-xs font-bold text-[#07CCFD] hover:underline mt-2 inline-block"
+          className="text-xs font-bold text-[#ddb049] hover:underline mt-2 inline-block"
         >
           ← Back to course
         </Link>
@@ -93,11 +93,11 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
             <CourseThumbnail
               thumbnailKey={course.thumbnail_url}
               alt={course.title}
-              className="w-12 h-12 rounded-xl object-cover border border-slate-200"
+              className="w-12 h-12 rounded-xl object-cover border border-[#e8e0d2]"
               fallbackClassName="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center"
             />
             <div>
-              <div className="text-[10px] uppercase font-black text-[#07CCFD] tracking-widest">
+              <div className="text-[10px] uppercase font-black text-[#ddb049] tracking-widest">
                 Course Analytics
               </div>
               <h1 className="text-xl sm:text-2xl font-black text-slate-900">
@@ -158,9 +158,9 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
         {/* Left 2 cols */}
         <div className="lg:col-span-2 space-y-6">
           {/* Progress distribution */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6">
             <h2 className="text-base font-black text-slate-900 mb-1 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-[#07CCFD]" />
+              <BarChart3 className="w-4 h-4 text-[#ddb049]" />
               Progress Distribution
             </h2>
             <p className="text-xs text-slate-500 font-medium mb-5">
@@ -175,7 +175,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
                   </div>
                   <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#07CCFD] to-[#20B486] rounded-full transition-all"
+                      className="h-full bg-gradient-to-r from-[#ddb049] to-[#20B486] rounded-full transition-all"
                       style={{
                         width: `${(Number(count) / maxDist) * 100}%`,
                       }}
@@ -190,8 +190,8 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
           </div>
 
           {/* Lesson drop-off table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100">
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-[#f0ebe2]">
               <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
                 <Target className="w-4 h-4 text-amber-500" />
                 Lesson Completion Rates
@@ -253,7 +253,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
 
           {/* Modules breakdown */}
           {modulesWithStats.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+            <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6">
               <h2 className="text-base font-black text-slate-900 mb-4 flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-[#20B486]" />
                 Module Performance
@@ -262,7 +262,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
                 {modulesWithStats.map((m: any, i: number) => (
                   <div
                     key={m.id}
-                    className="p-4 rounded-xl bg-slate-50 border border-slate-100"
+                    className="p-4 rounded-xl bg-[#fbfaf7] border border-[#f0ebe2]"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div>
@@ -282,7 +282,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
                         </div>
                       </div>
                     </div>
-                    <div className="h-2 bg-white rounded-full overflow-hidden border border-slate-200">
+                    <div className="h-2 bg-white rounded-full overflow-hidden border border-[#e8e0d2]">
                       <div
                         className="h-full bg-[#20B486] rounded-full"
                         style={{ width: `${m.avgCompletion}%` }}
@@ -296,8 +296,8 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
 
           {/* Quiz stats */}
           {quizStats.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="p-5 border-b border-slate-100">
+            <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-[#f0ebe2]">
                 <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
                   <HelpCircle className="w-4 h-4 text-purple-500" />
                   Quiz Performance
@@ -330,9 +330,9 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
         {/* Right col */}
         <div className="space-y-6">
           {/* Insights */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 space-y-4">
             <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-              <GraduationCap className="w-4 h-4 text-[#07CCFD]" />
+              <GraduationCap className="w-4 h-4 text-[#ddb049]" />
               Key Insights
             </h2>
 
@@ -374,7 +374,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
           </div>
 
           {/* Enrollment sources */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5">
             <h2 className="text-base font-black text-slate-900 mb-4">Enrollment Sources</h2>
             <div className="space-y-2">
               <SourceRow label="Online Purchase" count={sourceBreakdown.purchase} total={summary.totalEnrolled} />
@@ -386,7 +386,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
 
           {/* Payments summary */}
           {['super_admin', 'admin', 'sales'].includes(role) && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5">
               <h2 className="text-base font-black text-slate-900 mb-4 flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-emerald-600" />
                 Payments
@@ -417,7 +417,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
                   </div>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+              <div className="mt-4 pt-4 border-t border-[#f0ebe2] text-center">
                 <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
                   Total Revenue
                 </div>
@@ -429,8 +429,8 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
           )}
 
           {/* Recent enrollments */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100">
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-[#f0ebe2]">
               <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
                 <Clock className="w-4 h-4 text-slate-500" />
                 Recent Enrollments
@@ -446,7 +446,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
                   <Link
                     key={`${e.user_id}-${e.enrolled_at}`}
                     href={`/${PORTAL_SLUG}/students/${e.user_id}`}
-                    className="flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="flex items-center gap-3 p-3 hover:bg-[#fbfaf7] transition-colors cursor-pointer"
                   >
                     <UserAvatar
                       avatarKey={e.student?.avatar_url}
@@ -473,7 +473,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
 
           {/* Reviews preview */}
           {reviews.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5">
               <h2 className="text-base font-black text-slate-900 mb-3 flex items-center gap-2">
                 <Star className="w-4 h-4 text-amber-500" />
                 Latest Reviews
@@ -482,7 +482,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
                 {reviews.slice(0, 3).map((r: any) => (
                   <div
                     key={r.id}
-                    className="p-3 rounded-xl bg-slate-50 border border-slate-100"
+                    className="p-3 rounded-xl bg-[#fbfaf7] border border-[#f0ebe2]"
                   >
                     <div className="flex items-center gap-1 mb-1">
                       {[1, 2, 3, 4, 5].map((s) => (
@@ -524,14 +524,14 @@ const StatCard = ({
   color: 'cyan' | 'emerald' | 'amber' | 'purple';
 }) => {
   const colors = {
-    cyan: 'bg-cyan-50 border-cyan-100 text-[#07CCFD]',
+    cyan: 'bg-amber-50 border-amber-100 text-[#ddb049]',
     emerald: 'bg-emerald-50 border-emerald-100 text-[#20B486]',
     amber: 'bg-amber-50 border-amber-100 text-amber-600',
     purple: 'bg-purple-50 border-purple-100 text-purple-600',
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
+    <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-4 sm:p-5">
       <div
         className={`w-10 h-10 rounded-xl border flex items-center justify-center mb-3 ${colors[color]}`}
       >
@@ -546,7 +546,7 @@ const StatCard = ({
 };
 
 const MiniStat = ({ label, value }: { label: string; value: string | number }) => (
-  <div className="bg-white rounded-xl border border-slate-200 p-3 text-center shadow-sm">
+  <div className="bg-white rounded-xl border border-[#e8e0d2] p-3 text-center shadow-sm">
     <div className="text-lg font-black text-slate-900">{value}</div>
     <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
       {label}

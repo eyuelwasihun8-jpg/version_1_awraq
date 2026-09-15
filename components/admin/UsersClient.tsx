@@ -79,14 +79,14 @@ export const UsersClient: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search staff by name or phone..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-white text-sm"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-white text-sm"
           />
         </div>
 
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className="px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-bold cursor-pointer outline-none focus:border-[#07CCFD]"
+          className="px-4 py-3 rounded-xl border border-[#e8e0d2] bg-white text-sm font-bold cursor-pointer outline-none focus:border-[#ddb049]"
         >
           {ROLE_FILTERS.map((r) => (
             <option key={r.value} value={r.value}>
@@ -96,7 +96,7 @@ export const UsersClient: React.FC = () => {
         </select>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -115,7 +115,7 @@ export const UsersClient: React.FC = () => {
               <Link
                 key={u.id}
                 href={`/${PORTAL_SLUG}/users/${u.id}`}
-                className="flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-4 sm:p-5 hover:bg-[#fbfaf7] transition-colors cursor-pointer"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">

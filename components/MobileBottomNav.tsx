@@ -27,7 +27,7 @@ export const MobileBottomNav: React.FC = () => {
   };
 
   return (
-    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 safe-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#e8e0d2] safe-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
       <div className="flex items-center justify-around">
         {links.map((link) => {
           const Icon = link.icon;
@@ -37,17 +37,17 @@ export const MobileBottomNav: React.FC = () => {
               key={link.href}
               href={link.href}
               className={`flex-1 flex flex-col items-center gap-1 py-2.5 px-1 min-h-[56px] cursor-pointer transition-colors ${
-                active ? 'text-[#07CCFD]' : 'text-slate-500 hover:text-slate-700'
+                active ? 'text-[#ddb049]' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               <div
                 className={`p-1.5 rounded-lg transition-all ${
-                  active ? 'bg-cyan-50' : ''
+                  active ? 'bg-amber-50' : ''
                 }`}
               >
                 <Icon className="w-5 h-5" />
               </div>
-              <span className={`text-[10px] font-bold ${active ? 'text-[#07CCFD]' : ''}`}>
+              <span className={`text-[10px] font-bold ${active ? 'text-[#ddb049]' : ''}`}>
                 {link.label}
               </span>
             </Link>

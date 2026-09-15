@@ -91,11 +91,11 @@ export const LeadsClient: React.FC = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search leads..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-[#07CCFD]"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#e8e0d2] text-sm outline-none focus:border-[#ddb049]"
         />
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
         {loading ? (
           <div className="py-16 flex justify-center">
             <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -105,7 +105,7 @@ export const LeadsClient: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-slate-50 text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">
+                  <tr className="bg-[#fbfaf7] text-[10px] uppercase font-black tracking-wider text-slate-500 text-left">
                     <th className="p-4">Name</th>
                     <th className="p-4">Phone</th>
                     <th className="p-4">Gender</th>
@@ -116,7 +116,7 @@ export const LeadsClient: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {leads.map((l) => (
-                    <tr key={l.id} className="hover:bg-slate-50">
+                    <tr key={l.id} className="hover:bg-[#fbfaf7]">
                       <td className="p-4 font-bold text-slate-900">{l.full_name || '—'}</td>
                       <td className="p-4 text-slate-600 font-medium">{l.phone || '—'}</td>
                       <td className="p-4 capitalize text-slate-600">{l.gender || '—'}</td>
@@ -134,11 +134,11 @@ export const LeadsClient: React.FC = () => {
             </div>
 
             {pagination.totalPages > 1 && (
-              <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+              <div className="p-4 border-t border-[#f0ebe2] bg-[#fbfaf7] flex items-center justify-end gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={!pagination.hasPrev}
-                  className="p-2 rounded-lg bg-white border border-slate-200 disabled:opacity-50 cursor-pointer"
+                  className="p-2 rounded-lg bg-white border border-[#e8e0d2] disabled:opacity-50 cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -148,7 +148,7 @@ export const LeadsClient: React.FC = () => {
                 <button
                   onClick={() => setPage((p) => p + 1)}
                   disabled={!pagination.hasNext}
-                  className="p-2 rounded-lg bg-white border border-slate-200 disabled:opacity-50 cursor-pointer"
+                  className="p-2 rounded-lg bg-white border border-[#e8e0d2] disabled:opacity-50 cursor-pointer"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

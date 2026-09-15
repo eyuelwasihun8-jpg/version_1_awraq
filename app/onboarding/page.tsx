@@ -105,19 +105,19 @@ export default function OnboardingPage() {
           <div className="mb-6 sm:mb-8">
             <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#07CCFD] to-[#20B486] rounded-full transition-all duration-300"
+                className="h-full bg-gradient-to-r from-[#ddb049] to-[#20B486] rounded-full transition-all duration-300"
                 style={{ width: `${(step / 3) * 100}%` }}
               />
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 sm:p-8 lg:p-10">
+          <div className="bg-white rounded-3xl shadow-xl border border-[#e8e0d2] p-6 sm:p-8 lg:p-10">
             {/* STEP 1: Name + Phone */}
             {step === 1 && (
               <div className="space-y-6 animate-fadeIn">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-cyan-50 border border-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <User className="w-8 h-8 text-[#07CCFD]" />
+                  <div className="w-16 h-16 bg-amber-50 border border-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <User className="w-8 h-8 text-[#ddb049]" />
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
                     Let's get to know you
@@ -139,7 +139,7 @@ export default function OnboardingPage() {
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         placeholder="e.g. Sarah Kebede"
-                        className="w-full pl-10 pr-4 py-3.5 text-base rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-slate-50/50"
+                        className="w-full pl-10 pr-4 py-3.5 text-base rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-[#fbfaf7]/50"
                       />
                     </div>
                   </div>
@@ -149,7 +149,7 @@ export default function OnboardingPage() {
                       Phone Number *
                     </label>
                     <div className="flex shadow-sm">
-                      <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-slate-200 bg-slate-100 text-slate-600 text-sm font-bold">
+                      <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-[#e8e0d2] bg-slate-100 text-slate-600 text-sm font-bold">
                         +251
                       </span>
                       <div className="relative flex-1">
@@ -161,7 +161,7 @@ export default function OnboardingPage() {
                             setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })
                           }
                           placeholder="9XX XXX XXX"
-                          className="w-full pl-10 pr-4 py-3.5 text-base rounded-r-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-slate-50/50 font-mono tracking-wider"
+                          className="w-full pl-10 pr-4 py-3.5 text-base rounded-r-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-[#fbfaf7]/50 font-mono tracking-wider"
                         />
                       </div>
                     </div>
@@ -172,7 +172,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={() => canProceedStep1 && setStep(2)}
                   disabled={!canProceedStep1}
-                  className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span>Continue</span>
                   <ArrowRight className="w-4 h-4" />
@@ -205,8 +205,8 @@ export default function OnboardingPage() {
                           onClick={() => setFormData({ ...formData, gender: g.value })}
                           className={`py-3 sm:py-3.5 rounded-xl border-2 text-sm font-bold transition-all cursor-pointer ${
                             formData.gender === g.value
-                              ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-                              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                              ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+                              : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-slate-300'
                           }`}
                         >
                           {g.label}
@@ -227,8 +227,8 @@ export default function OnboardingPage() {
                           onClick={() => setFormData({ ...formData, ageGroup: a.value })}
                           className={`py-3 sm:py-3.5 rounded-xl border-2 text-sm font-bold transition-all cursor-pointer ${
                             formData.ageGroup === a.value
-                              ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-                              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                              ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+                              : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-slate-300'
                           }`}
                         >
                           {a.label}
@@ -250,7 +250,7 @@ export default function OnboardingPage() {
                     type="button"
                     onClick={() => canProceedStep2 && setStep(3)}
                     disabled={!canProceedStep2}
-                    className="sm:flex-1 min-h-[48px] py-3.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="sm:flex-1 min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span>Continue</span>
                     <ArrowRight className="w-4 h-4" />
@@ -279,22 +279,22 @@ export default function OnboardingPage() {
                       onClick={() => setFormData({ ...formData, lifeStatus: s.value })}
                       className={`p-4 sm:p-5 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-center gap-3 ${
                         formData.lifeStatus === s.value
-                          ? 'border-[#07CCFD] bg-cyan-50'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
+                          ? 'border-[#ddb049] bg-amber-50'
+                          : 'border-[#e8e0d2] bg-white hover:border-slate-300'
                       }`}
                     >
                       <span className="text-3xl">{s.emoji}</span>
                       <div className="flex-1">
                         <div
                           className={`text-sm sm:text-base font-black ${
-                            formData.lifeStatus === s.value ? 'text-[#07CCFD]' : 'text-slate-800'
+                            formData.lifeStatus === s.value ? 'text-[#ddb049]' : 'text-slate-800'
                           }`}
                         >
                           {s.label}
                         </div>
                       </div>
                       {formData.lifeStatus === s.value && (
-                        <CheckCircle2 className="w-5 h-5 text-[#07CCFD] shrink-0" />
+                        <CheckCircle2 className="w-5 h-5 text-[#ddb049] shrink-0" />
                       )}
                     </button>
                   ))}

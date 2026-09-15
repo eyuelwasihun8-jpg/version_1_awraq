@@ -90,7 +90,7 @@ export const UserAvatar: React.FC<Props> = ({ avatarKey, name, size = 'md', clas
 
   if (initials) {
     return (
-      <div className={`${baseClass} bg-gradient-to-br from-[#07CCFD] to-[#20B486] text-white font-black`}>
+      <div className={`${baseClass} bg-gradient-to-br from-[#ddb049] to-[#20B486] text-white font-black`}>
         {initials}
       </div>
     );

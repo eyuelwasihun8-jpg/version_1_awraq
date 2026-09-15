@@ -41,7 +41,7 @@ export const CertificatesTab: React.FC<Props> = ({ certificates, enrolledCourses
 
   if (certificates.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-12 text-center animate-fadeIn">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-8 sm:p-12 text-center animate-fadeIn">
         <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-4">
           <Award className="w-8 h-8 text-amber-500" />
         </div>
@@ -52,7 +52,7 @@ export const CertificatesTab: React.FC<Props> = ({ certificates, enrolledCourses
         {enrolledCourses.length > 0 ? (
           <Link
             href={`/learn/${enrolledCourses[0].id}`}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#07CCFD] text-[#0F172A] text-sm font-bold cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#ddb049] text-[#0a0704] text-sm font-bold cursor-pointer"
           >
             <BookOpen className="w-4 h-4" />
             <span>Continue Learning</span>
@@ -60,7 +60,7 @@ export const CertificatesTab: React.FC<Props> = ({ certificates, enrolledCourses
         ) : (
           <Link
             href="/courses"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#07CCFD] text-[#0F172A] text-sm font-bold cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#ddb049] text-[#0a0704] text-sm font-bold cursor-pointer"
           >
             <span>Browse Courses</span>
             <ArrowRight className="w-4 h-4" />
@@ -85,7 +85,7 @@ export const CertificatesTab: React.FC<Props> = ({ certificates, enrolledCourses
           return (
             <div
               key={cert.id}
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md overflow-hidden transition-all"
+              className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm hover:shadow-md overflow-hidden transition-all"
             >
               {/* Preview banner */}
               <div className="aspect-[3/1] bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 relative flex items-center justify-center">
@@ -112,7 +112,7 @@ export const CertificatesTab: React.FC<Props> = ({ certificates, enrolledCourses
                 </div>
 
                 {cert.certificate_code && (
-                  <div className="flex items-center gap-2 mb-4 bg-slate-50 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-2 mb-4 bg-[#fbfaf7] rounded-lg px-3 py-2">
                     <div className="min-w-0 flex-1">
                       <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
                         Verification Code
@@ -123,7 +123,7 @@ export const CertificatesTab: React.FC<Props> = ({ certificates, enrolledCourses
                     </div>
                     <button
                       onClick={() => copyCode(cert.certificate_code)}
-                      className="p-1.5 rounded-lg hover:bg-white text-slate-500 hover:text-[#07CCFD] cursor-pointer transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-white text-slate-500 hover:text-[#ddb049] cursor-pointer transition-colors"
                       title="Copy code"
                     >
                       <Copy className="w-3.5 h-3.5" />
@@ -135,7 +135,7 @@ export const CertificatesTab: React.FC<Props> = ({ certificates, enrolledCourses
                   <button
                     onClick={() => handleDownload(cert.course_id)}
                     disabled={isDownloading}
-                    className="flex-1 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] text-[#0F172A] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all"
+                    className="flex-1 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all"
                   >
                     {isDownloading ? (
                       <>

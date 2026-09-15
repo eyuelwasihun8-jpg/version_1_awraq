@@ -180,7 +180,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
       </div>
 
       {/* Stepper */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-4">
         <div className="flex items-center gap-2 mb-2">
           {[1, 2, 3, 4].map((s) => (
             <React.Fragment key={s}>
@@ -215,7 +215,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
 
       {/* STEP 1 */}
       {step === 1 && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-5">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-7 space-y-5">
           <div>
             <h2 className="text-lg font-black text-slate-900 mb-1">1. Student Details</h2>
             <p className="text-xs text-slate-500 font-medium">
@@ -233,7 +233,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Sarah Kebede"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none text-sm font-medium"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none text-sm font-medium"
                 />
               </div>
             </div>
@@ -247,7 +247,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="student@example.com"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none text-sm font-medium"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none text-sm font-medium"
                 />
               </div>
             </div>
@@ -255,7 +255,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone (optional)</label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-200 bg-slate-100 text-slate-600 text-sm font-bold">
+                <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-[#e8e0d2] bg-slate-100 text-slate-600 text-sm font-bold">
                   +251
                 </span>
                 <div className="relative flex-1">
@@ -265,7 +265,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                     placeholder="9XX XXX XXX"
-                    className="w-full pl-10 pr-4 py-3 rounded-r-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm font-mono tracking-wider"
+                    className="w-full pl-10 pr-4 py-3 rounded-r-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none text-sm font-mono tracking-wider"
                   />
                 </div>
               </div>
@@ -282,8 +282,8 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                     onClick={() => setGender(g.value)}
                     className={`py-3 rounded-xl border-2 text-sm font-bold cursor-pointer transition-all ${
                       gender === g.value
-                        ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+                        : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-slate-300'
                     }`}
                   >
                     {g.label}
@@ -303,8 +303,8 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                     onClick={() => setAgeGroup(a.value)}
                     className={`py-3 rounded-xl border-2 text-xs sm:text-sm font-bold cursor-pointer transition-all ${
                       ageGroup === a.value
-                        ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+                        : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-slate-300'
                     }`}
                   >
                     {a.label}
@@ -326,14 +326,14 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                     onClick={() => setLifeStatus(s.value)}
                     className={`p-3 rounded-xl border-2 text-left cursor-pointer transition-all flex items-center gap-3 ${
                       lifeStatus === s.value
-                        ? 'border-[#07CCFD] bg-cyan-50'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
+                        ? 'border-[#ddb049] bg-amber-50'
+                        : 'border-[#e8e0d2] bg-white hover:border-slate-300'
                     }`}
                   >
                     <span className="text-xl">{s.emoji}</span>
                     <span
                       className={`text-sm font-black ${
-                        lifeStatus === s.value ? 'text-[#07CCFD]' : 'text-slate-800'
+                        lifeStatus === s.value ? 'text-[#ddb049]' : 'text-slate-800'
                       }`}
                     >
                       {s.label}
@@ -350,7 +350,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                 <button
                   type="button"
                   onClick={() => setPassword(generatePassword())}
-                  className="text-[11px] font-bold text-[#07CCFD] hover:underline cursor-pointer flex items-center gap-1"
+                  className="text-[11px] font-bold text-[#ddb049] hover:underline cursor-pointer flex items-center gap-1"
                 >
                   <RefreshCw className="w-3 h-3" /> Generate Password
                 </button>
@@ -361,7 +361,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm font-mono"
+                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none text-sm font-mono"
                 />
                 <button
                   type="button"
@@ -390,7 +390,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
 
       {/* STEP 2 */}
       {step === 2 && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-5">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-7 space-y-5">
           <div>
             <h2 className="text-lg font-black text-slate-900 mb-1">2. Assign Access & Payment</h2>
             <p className="text-xs text-slate-500 font-medium">
@@ -409,13 +409,13 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                 }}
                 className={`p-4 rounded-xl border-2 text-left cursor-pointer transition-all ${
                   itemType === 'course'
-                    ? 'border-[#07CCFD] bg-cyan-50'
-                    : 'border-slate-200 bg-white hover:border-slate-300'
+                    ? 'border-[#ddb049] bg-amber-50'
+                    : 'border-[#e8e0d2] bg-white hover:border-slate-300'
                 }`}
               >
                 <BookOpen
                   className={`w-5 h-5 mb-2 ${
-                    itemType === 'course' ? 'text-[#07CCFD]' : 'text-slate-400'
+                    itemType === 'course' ? 'text-[#ddb049]' : 'text-slate-400'
                   }`}
                 />
                 <div className="text-sm font-black text-slate-900">Course</div>
@@ -428,13 +428,13 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                 }}
                 className={`p-4 rounded-xl border-2 text-left cursor-pointer transition-all ${
                   itemType === 'digital_product'
-                    ? 'border-[#07CCFD] bg-cyan-50'
-                    : 'border-slate-200 bg-white hover:border-slate-300'
+                    ? 'border-[#ddb049] bg-amber-50'
+                    : 'border-[#e8e0d2] bg-white hover:border-slate-300'
                 }`}
               >
                 <Package
                   className={`w-5 h-5 mb-2 ${
-                    itemType === 'digital_product' ? 'text-[#07CCFD]' : 'text-slate-400'
+                    itemType === 'digital_product' ? 'text-[#ddb049]' : 'text-slate-400'
                   }`}
                 />
                 <div className="text-sm font-black text-slate-900">Digital Product</div>
@@ -449,7 +449,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
             <select
               value={itemId}
               onChange={(e) => setItemId(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm font-bold bg-white cursor-pointer"
+              className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none text-sm font-bold bg-white cursor-pointer"
             >
               <option value="">Choose item...</option>
               {(itemType === 'course' ? courses : products).map((item) => (
@@ -499,7 +499,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                 value={transactionNumber}
                 onChange={(e) => setTransactionNumber(e.target.value)}
                 placeholder="e.g. CBE-TX-123456 or CASH-IN-PERSON"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm font-mono"
+                className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none text-sm font-mono"
               />
             </div>
           )}
@@ -513,7 +513,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="e.g. Paid cash at office..."
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none text-sm resize-none"
             />
           </div>
 
@@ -540,7 +540,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
 
       {/* STEP 3 REVIEW */}
       {step === 3 && selectedItem && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-6">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-7 space-y-6">
           <div>
             <h2 className="text-lg font-black text-slate-900 mb-1">3. Review & Confirm</h2>
             <p className="text-xs text-slate-500 font-medium">
@@ -549,8 +549,8 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
           </div>
 
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-              <div className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">
+            <div className="p-4 rounded-xl bg-[#fbfaf7] border border-[#e8e0d2] space-y-3">
+              <div className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-[#e8e0d2] pb-2">
                 Student Profile
               </div>
               <ReviewRow label="Full Name" value={fullName} />
@@ -562,8 +562,8 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
               <ReviewRow label="Initial Password" value={password} mono />
             </div>
 
-            <div className="p-4 rounded-xl bg-cyan-50/60 border border-cyan-100 space-y-3">
-              <div className="text-xs font-black text-cyan-900 uppercase tracking-wider border-b border-cyan-200/60 pb-2">
+            <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-100 space-y-3">
+              <div className="text-xs font-black text-cyan-900 uppercase tracking-wider border-b border-amber-200/60 pb-2">
                 Enrollment
               </div>
               <ReviewRow
@@ -635,7 +635,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-sm">
+          <div className="p-4 rounded-xl bg-[#fbfaf7] border border-[#e8e0d2] space-y-2 text-sm">
             <ReviewRow label="Gender" value={resultData.student.gender || genderLabel} />
             <ReviewRow label="Age Group" value={resultData.student.ageGroup || ageLabel} />
             <ReviewRow
@@ -660,7 +660,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                   <button
                     type="button"
                     onClick={() => copyText(resultData.credentials.email, 'Email')}
-                    className="p-2 rounded-lg hover:bg-slate-50 text-slate-500 cursor-pointer"
+                    className="p-2 rounded-lg hover:bg-[#fbfaf7] text-slate-500 cursor-pointer"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
@@ -675,7 +675,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                   <button
                     type="button"
                     onClick={() => copyText(resultData.credentials.password, 'Password')}
-                    className="p-2 rounded-lg hover:bg-slate-50 text-slate-500 cursor-pointer"
+                    className="p-2 rounded-lg hover:bg-[#fbfaf7] text-slate-500 cursor-pointer"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
@@ -712,10 +712,10 @@ const SourceBtn = ({ active, onClick, icon: Icon, label, desc }: any) => (
     type="button"
     onClick={onClick}
     className={`p-3 rounded-xl border-2 text-left cursor-pointer transition-all ${
-      active ? 'border-[#07CCFD] bg-cyan-50' : 'border-slate-200 bg-white hover:border-slate-300'
+      active ? 'border-[#ddb049] bg-amber-50' : 'border-[#e8e0d2] bg-white hover:border-slate-300'
     }`}
   >
-    <Icon className={`w-4 h-4 mb-1.5 ${active ? 'text-[#07CCFD]' : 'text-slate-400'}`} />
+    <Icon className={`w-4 h-4 mb-1.5 ${active ? 'text-[#ddb049]' : 'text-slate-400'}`} />
     <div className="text-xs font-black text-slate-900">{label}</div>
     <div className="text-[10px] text-slate-500 font-medium">{desc}</div>
   </button>

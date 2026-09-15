@@ -121,7 +121,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden border border-slate-100 grid grid-cols-1 md:grid-cols-12 max-h-[92dvh] overflow-y-auto safe-bottom"
+        className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden border border-[#f0ebe2] grid grid-cols-1 md:grid-cols-12 max-h-[92dvh] overflow-y-auto safe-bottom"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -133,11 +133,11 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
         </button>
 
         {/* Left visual */}
-        <div className="hidden md:flex md:col-span-5 bg-gradient-to-b from-slate-50 via-slate-50 to-emerald-50/40 p-8 flex-col justify-between border-r border-slate-100">
+        <div className="hidden md:flex md:col-span-5 bg-gradient-to-b from-slate-50 via-slate-50 to-emerald-50/40 p-8 flex-col justify-between border-r border-[#f0ebe2]">
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl p-4 shadow-md border border-slate-100">
+            <div className="bg-white rounded-2xl p-4 shadow-md border border-[#f0ebe2]">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-50 text-[#07CCFD]">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-50 text-[#ddb049]">
                   • LIVE
                 </span>
                 <span className="text-[11px] text-slate-400 font-medium">STRATEGY</span>
@@ -147,7 +147,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
               </h4>
             </div>
 
-            <div className="bg-white rounded-xl p-3 shadow-xs border border-slate-100 flex items-center justify-between">
+            <div className="bg-white rounded-xl p-3 shadow-xs border border-[#f0ebe2] flex items-center justify-between">
               <div>
                 <div className="text-[11px] font-bold text-slate-900">Premium Access</div>
                 <div className="text-[10px] text-slate-500">Join 1,000+ students</div>
@@ -179,7 +179,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
             type="button"
             onClick={handleGoogleLogin}
             disabled={googleLoading || loading}
-            className="w-full mb-4 min-h-[48px] py-3 rounded-xl bg-white border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800 text-sm font-bold transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-70"
+            className="w-full mb-4 min-h-[48px] py-3 rounded-xl bg-white border-2 border-[#e8e0d2] hover:border-slate-300 hover:bg-[#fbfaf7] text-slate-800 text-sm font-bold transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-70"
           >
             {googleLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -209,7 +209,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
           {/* Divider */}
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
+              <div className="w-full border-t border-[#e8e0d2]" />
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="bg-white px-3 text-slate-500 font-medium">or</span>
@@ -228,7 +228,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
                   required
                   placeholder="name@example.com"
                   autoComplete="email"
-                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-slate-50/50"
+                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-[#fbfaf7]/50"
                 />
               </div>
             </div>
@@ -245,7 +245,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
                   minLength={6}
                   placeholder="••••••••"
                   autoComplete={isRegister ? 'new-password' : 'current-password'}
-                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-slate-50/50"
+                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-[#fbfaf7]/50"
                 />
               </div>
               {!isRegister && (
@@ -253,7 +253,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-[11px] font-medium text-slate-500 hover:text-[#07CCFD] cursor-pointer"
+                    className="text-[11px] font-medium text-slate-500 hover:text-[#ddb049] cursor-pointer"
                   >
                     Forgot password?
                   </button>
@@ -264,7 +264,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
             <button
               type="submit"
               disabled={loading || googleLoading}
-              className="w-full mt-2 min-h-[48px] py-3.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+              className="w-full mt-2 min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
             >
               {loading ? (
                 <>
@@ -284,7 +284,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
                 <button
                   type="button"
                   onClick={() => setIsRegister(false)}
-                  className="font-bold text-[#07CCFD] hover:underline cursor-pointer"
+                  className="font-bold text-[#ddb049] hover:underline cursor-pointer"
                 >
                   Sign In
                 </button>
@@ -295,7 +295,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
                 <button
                   type="button"
                   onClick={() => setIsRegister(true)}
-                  className="font-bold text-[#07CCFD] hover:underline cursor-pointer"
+                  className="font-bold text-[#ddb049] hover:underline cursor-pointer"
                 >
                   Sign Up
                 </button>

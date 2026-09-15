@@ -10,7 +10,7 @@ interface StatCardProps {
 }
 
 const COLOR_MAP = {
-  cyan: { bg: 'bg-cyan-50', border: 'border-cyan-100', text: 'text-[#07CCFD]' },
+  cyan: { bg: 'bg-amber-50', border: 'border-amber-100', text: 'text-[#ddb049]' },
   emerald: { bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-[#20B486]' },
   blue: { bg: 'bg-blue-50', border: 'border-blue-100', text: 'text-[#3B82F6]' },
   amber: { bg: 'bg-amber-50', border: 'border-amber-100', text: 'text-[#F59E0B]' },
@@ -21,7 +21,7 @@ const COLOR_MAP = {
 export const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, color, subtitle }) => {
   const c = COLOR_MAP[color];
   return (
-    <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all">
+    <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e8e0d2] shadow-sm hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-3">
         <div className={`w-10 h-10 rounded-xl ${c.bg} border ${c.border} flex items-center justify-center`}>
           <Icon className={`w-5 h-5 ${c.text}`} />

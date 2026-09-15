@@ -10,7 +10,7 @@ const SKILLS = [
     title: 'Learn the Basics',
     desc: 'Understand the most important ideas before moving to advanced topics. We build your foundation the right way — no confusing jargon, no random hacks.',
     icon: Target,
-    gradient: 'from-[#07CCFD] to-[#3080E0]',
+    gradient: 'from-[#ddb049] to-[#3080E0]',
     visualIcon: '🎯',
   },
   {
@@ -56,15 +56,15 @@ export const SkillsYouUseSection: React.FC = () => {
   const ActiveIcon = activeSkill.icon;
 
   return (
-    <section className="py-16 sm:py-20 lg:py-28 relative z-10 overflow-hidden bg-slate-50">
+    <section className="py-16 sm:py-20 lg:py-28 relative z-10 overflow-hidden bg-[#fbfaf7]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-12 sm:mb-16">
-          <span className="inline-block text-[#07CCFD] font-black text-xs sm:text-sm tracking-widest uppercase bg-[#07CCFD]/10 border border-[#07CCFD]/30 px-4 py-1.5 rounded-full">
+          <span className="inline-block text-[#ddb049] font-black text-xs sm:text-sm tracking-widest uppercase bg-[#ddb049]/10 border border-[#ddb049]/30 px-4 py-1.5 rounded-full">
             Our Approach
           </span>
           <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight tracking-tight">
             Learn Skills You Can{' '}
-            <span className="bg-gradient-to-r from-[#07CCFD] to-[#F86BCF] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#ddb049] to-[#F86BCF] bg-clip-text text-transparent">
               Actually Use
             </span>
           </h2>
@@ -89,8 +89,8 @@ export const SkillsYouUseSection: React.FC = () => {
                   <div
                     className={`relative rounded-2xl p-4 sm:p-5 border-2 transition-all duration-500 ${
                       isActive
-                        ? 'bg-white border-[#07CCFD]/40 shadow-[0_10px_30px_rgba(7,204,253,0.15)]'
-                        : 'bg-white border-slate-200 hover:border-slate-300'
+                        ? 'bg-white border-[#ddb049]/40 shadow-[0_10px_30px_rgba(221,176,73,0.15)]'
+                        : 'bg-white border-[#e8e0d2] hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center gap-3 sm:gap-4">
@@ -123,7 +123,7 @@ export const SkillsYouUseSection: React.FC = () => {
                       <ChevronRight
                         className={`w-5 h-5 shrink-0 transition-all duration-500 ${
                           isActive
-                            ? 'text-[#07CCFD] translate-x-0'
+                            ? 'text-[#ddb049] translate-x-0'
                             : 'text-slate-300 -translate-x-2'
                         }`}
                       />
@@ -147,7 +147,7 @@ export const SkillsYouUseSection: React.FC = () => {
           <div className="lg:col-span-3 relative">
             <div
               key={activeSkill.id}
-              className="relative bg-white rounded-[28px] sm:rounded-[32px] border border-slate-200 p-6 sm:p-10 lg:p-12 min-h-[350px] sm:min-h-[420px] shadow-xl overflow-hidden animate-fadeIn"
+              className="relative bg-white rounded-[28px] sm:rounded-[32px] border border-[#e8e0d2] p-6 sm:p-10 lg:p-12 min-h-[350px] sm:min-h-[420px] shadow-xl overflow-hidden animate-fadeIn"
             >
               <div
                 className={`absolute -top-20 -right-20 w-72 h-72 sm:w-80 sm:h-80 bg-gradient-to-br ${activeSkill.gradient} rounded-full blur-[100px] opacity-25`}
@@ -185,7 +185,7 @@ export const SkillsYouUseSection: React.FC = () => {
                   <div
                     key={idx}
                     className={`h-2 rounded-full transition-all duration-500 ${
-                      idx === activeIndex ? 'bg-[#07CCFD] w-8' : 'bg-slate-300 w-2'
+                      idx === activeIndex ? 'bg-[#ddb049] w-8' : 'bg-slate-300 w-2'
                     }`}
                   ></div>
                 ))}

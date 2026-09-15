@@ -46,7 +46,7 @@ export const RichTextEditor: React.FC<Props> = ({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-[#07CCFD] underline cursor-pointer',
+          class: 'text-[#ddb049] underline cursor-pointer',
         },
       }),
       TextAlign.configure({
@@ -60,7 +60,7 @@ export const RichTextEditor: React.FC<Props> = ({
     editorProps: {
       attributes: {
         class:
-          'prose prose-slate max-w-none min-h-[300px] p-4 focus:outline-none prose-headings:font-black prose-headings:text-slate-900 prose-p:text-slate-700 prose-p:font-medium prose-a:text-[#07CCFD] prose-strong:text-slate-900 prose-strong:font-black',
+          'prose prose-slate max-w-none min-h-[300px] p-4 focus:outline-none prose-headings:font-black prose-headings:text-slate-900 prose-p:text-slate-700 prose-p:font-medium prose-a:text-[#ddb049] prose-strong:text-slate-900 prose-strong:font-black',
       },
     },
     onUpdate: ({ editor }) => {
@@ -78,7 +78,7 @@ export const RichTextEditor: React.FC<Props> = ({
 
   if (!editor) {
     return (
-      <div className="min-h-[300px] rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center text-sm text-slate-400 font-medium">
+      <div className="min-h-[300px] rounded-xl border border-[#e8e0d2] bg-[#fbfaf7] flex items-center justify-center text-sm text-slate-400 font-medium">
         Loading editor...
       </div>
     );
@@ -96,9 +96,9 @@ export const RichTextEditor: React.FC<Props> = ({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+    <div className="rounded-xl border border-[#e8e0d2] bg-white overflow-hidden">
       {/* Toolbar */}
-      <div className="flex flex-wrap gap-0.5 p-2 border-b border-slate-100 bg-slate-50">
+      <div className="flex flex-wrap gap-0.5 p-2 border-b border-[#f0ebe2] bg-[#fbfaf7]">
         <ToolBtn
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive('bold')}

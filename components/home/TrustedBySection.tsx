@@ -32,8 +32,8 @@ export const TrustedBySection: React.FC = () => {
 
   return (
     <section className="relative w-full bg-[#0B0F17] py-10 sm:py-12 overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#07CCFD] via-[#F86BCF] to-[#07CCFD]" />
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#07CCFD] via-[#F86BCF] to-[#07CCFD]" />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#ddb049] via-[#F86BCF] to-[#ddb049]" />
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#ddb049] via-[#F86BCF] to-[#ddb049]" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-7 sm:mb-8">
         <h2 className="text-center text-sm sm:text-base md:text-lg font-medium text-white/90 tracking-wide">

@@ -181,9 +181,9 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
   }, [lessons]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#fbfaf7]">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <header className="bg-white border-b border-[#e8e0d2] sticky top-0 z-40">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16 sm:h-18">
             <Link
@@ -212,7 +212,7 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
               )}
               <div className="w-40 bg-slate-100 rounded-full h-2 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#07CCFD] to-[#20B486] rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-[#ddb049] to-[#20B486] rounded-full transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -226,15 +226,15 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
           {/* Sidebar - Lesson List */}
           <aside className="hidden lg:block">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto">
-              <div className="p-4 border-b border-slate-100">
+            <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto">
+              <div className="p-4 border-b border-[#f0ebe2]">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-sm font-black text-slate-900">Course Content</h2>
                   <span className="text-xs font-bold text-slate-500">{completedCount}/{totalLessons} done</span>
                 </div>
                 <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-[#07CCFD] to-[#20B486] rounded-full"
+                    className="h-full bg-gradient-to-r from-[#ddb049] to-[#20B486] rounded-full"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -253,17 +253,17 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
                       disabled={isLocked}
                       className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-[#07CCFD]/10 border border-[#07CCFD]/30'
+                          ? 'bg-[#ddb049]/10 border border-[#ddb049]/30'
                           : isComplete
                           ? 'bg-emerald-50 hover:bg-emerald-100'
-                          : 'hover:bg-slate-50'
+                          : 'hover:bg-[#fbfaf7]'
                       } ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
                         isComplete
                           ? 'bg-[#20B486] text-white'
                           : isActive
-                          ? 'bg-[#07CCFD] text-[#0F172A]'
+                          ? 'bg-[#ddb049] text-[#0a0704]'
                           : 'bg-slate-100 text-slate-400'
                       }`}>
                         {isComplete ? (
@@ -310,7 +310,7 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
           {/* Main Content */}
           <main className="space-y-6">
             {/* Course Header (Mobile) */}
-            <div className="lg:hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+            <div className="lg:hidden bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-4">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                   {course.thumbnail_url ? (
@@ -333,17 +333,17 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
 
             {/* Video/Content Player */}
             {activeLesson ? (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
                 {/* Lesson Header */}
-                <div className="p-4 sm:p-6 border-b border-slate-100">
+                <div className="p-4 sm:p-6 border-b border-[#f0ebe2]">
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-cyan-50 text-[#07CCFD] border border-cyan-100">
+                        <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-amber-50 text-[#ddb049] border border-amber-100">
                           Lesson {activeLessonIndex + 1}
                         </span>
                         {activeLesson.lesson_type === 'video' ? (
-                          <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-[#07CCFD]/10 text-[#07CCFD] border border-[#07CCFD]/20 flex items-center gap-1">
+                          <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-[#ddb049]/10 text-[#ddb049] border border-[#ddb049]/20 flex items-center gap-1">
                             <PlayCircle className="w-2.5 h-2.5" />
                             Video
                           </span>
@@ -410,17 +410,17 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
                     </div>
                   ) : (
                     <div
-                      className="prose prose-slate max-w-none p-4 bg-slate-50 rounded-xl border border-slate-100"
+                      className="prose prose-slate max-w-none p-4 bg-[#fbfaf7] rounded-xl border border-[#f0ebe2]"
                       dangerouslySetInnerHTML={{ __html: activeLesson.text_content || '<p>No content available</p>' }}
                     />
                   )}
 
                   {/* Navigation Buttons */}
-                  <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-100">
+                  <div className="mt-6 flex items-center justify-between pt-4 border-t border-[#f0ebe2]">
                     <button
                       onClick={() => goToLesson(activeLessonIndex - 1)}
                       disabled={activeLessonIndex === 0}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#e8e0d2] text-slate-700 text-sm font-bold hover:bg-[#fbfaf7] disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                     >
                       <ChevronLeft className="w-4 h-4" />
                       <span>Previous</span>
@@ -433,7 +433,7 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
                     <button
                       onClick={() => goToLesson(activeLessonIndex + 1)}
                       disabled={activeLessonIndex === lessons.filter(l => l.is_published).length - 1}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] text-[#0F172A] text-sm font-bold shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] text-sm font-bold shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                     >
                       <span>Next</span>
                       <ChevronRight className="w-4 h-4" />
@@ -442,7 +442,7 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
+              <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-12 text-center">
                 <Sparkles className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                 <h3 className="text-xl font-black text-slate-900 mb-2">No lessons available</h3>
                 <p className="text-slate-500 font-medium">This course doesn't have any published lessons yet.</p>
@@ -461,7 +461,7 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
                     <p className="text-slate-600 font-medium mb-6">
                       Congratulations on completing <strong>{course.title}</strong>
                     </p>
-                    <div className="bg-slate-50 rounded-xl p-4 mb-4 text-left">
+                    <div className="bg-[#fbfaf7] rounded-xl p-4 mb-4 text-left">
                       <div className="text-xs font-bold text-slate-500 mb-1">Verification Code</div>
                       <div className="font-mono text-sm text-slate-900 tracking-widest">{certificate.verification_code}</div>
                     </div>
@@ -474,7 +474,7 @@ export const LearnPageClient: React.FC<LearnPageClientProps> = ({
                       </button>
                       <Link
                         href={`/certificate/${certificate.verification_code}`}
-                        className="flex-1 py-3 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] text-[#0F172A] font-bold text-sm text-center transition-colors cursor-pointer"
+                        className="flex-1 py-3 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] font-bold text-sm text-center transition-colors cursor-pointer"
                       >
                         Verify Online
                       </Link>

@@ -99,7 +99,7 @@ export const LessonClient: React.FC<Props> = ({
                 {completedCount} of {totalCount} lessons
               </span>
               <span>·</span>
-              <span className="text-[#07CCFD] font-bold">{percentage}% complete</span>
+              <span className="text-[#ddb049] font-bold">{percentage}% complete</span>
             </div>
           </div>
         </div>
@@ -107,7 +107,7 @@ export const LessonClient: React.FC<Props> = ({
         <div className="flex items-center gap-3 shrink-0">
           <div className="hidden sm:block w-24 lg:w-40 h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#07CCFD] transition-all"
+              className="h-full bg-[#ddb049] transition-all"
               style={{ width: `${percentage}%` }}
             />
           </div>
@@ -118,7 +118,7 @@ export const LessonClient: React.FC<Props> = ({
       </header>
 
       {/* MAIN */}
-      <div className="flex-1 flex overflow-hidden bg-slate-50">
+      <div className="flex-1 flex overflow-hidden bg-[#fbfaf7]">
         <LessonSidebar
           course={course}
           modules={modules}
@@ -132,7 +132,7 @@ export const LessonClient: React.FC<Props> = ({
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="fixed top-[76px] left-4 z-20 w-11 h-11 rounded-xl bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-all"
+              className="fixed top-[76px] left-4 z-20 w-11 h-11 rounded-xl bg-white border border-[#e8e0d2] shadow-md flex items-center justify-center hover:bg-[#fbfaf7] cursor-pointer transition-all"
               title="Show sidebar"
             >
               <PanelLeftOpen className="w-5 h-5 text-slate-700" />
@@ -147,10 +147,10 @@ export const LessonClient: React.FC<Props> = ({
                   onClick={() =>
                     router.push(`/learn/${course.id}/${prevLesson.id}`)
                   }
-                  className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 w-12 h-12 rounded-full bg-white border border-slate-200 shadow-lg items-center justify-center hover:bg-slate-50 cursor-pointer transition-all z-10 group"
+                  className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 w-12 h-12 rounded-full bg-white border border-[#e8e0d2] shadow-lg items-center justify-center hover:bg-[#fbfaf7] cursor-pointer transition-all z-10 group"
                   title={`Previous: ${prevLesson.title}`}
                 >
-                  <ChevronLeft className="w-5 h-5 text-slate-700 group-hover:text-[#07CCFD]" />
+                  <ChevronLeft className="w-5 h-5 text-slate-700 group-hover:text-[#ddb049]" />
                 </button>
               )}
 
@@ -159,10 +159,10 @@ export const LessonClient: React.FC<Props> = ({
                   onClick={() =>
                     router.push(`/learn/${course.id}/${nextLesson.id}`)
                   }
-                  className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 w-12 h-12 rounded-full bg-white border border-slate-200 shadow-lg items-center justify-center hover:bg-slate-50 cursor-pointer transition-all z-10 group"
+                  className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 w-12 h-12 rounded-full bg-white border border-[#e8e0d2] shadow-lg items-center justify-center hover:bg-[#fbfaf7] cursor-pointer transition-all z-10 group"
                   title={`Next: ${nextLesson.title}`}
                 >
-                  <ChevronRight className="w-5 h-5 text-slate-700 group-hover:text-[#07CCFD]" />
+                  <ChevronRight className="w-5 h-5 text-slate-700 group-hover:text-[#ddb049]" />
                 </button>
               )}
 
@@ -190,7 +190,7 @@ export const LessonClient: React.FC<Props> = ({
                       label="Reading Material"
                       color="emerald"
                     />
-                    <div className="rounded-2xl overflow-hidden shadow-sm border border-slate-200 bg-white">
+                    <div className="rounded-2xl overflow-hidden shadow-sm border border-[#e8e0d2] bg-white">
                       <TextReader
                         lessonId={lesson.id}
                         content={lesson.text_content || ''}
@@ -208,7 +208,7 @@ export const LessonClient: React.FC<Props> = ({
                       label="Practice Quiz"
                       color="purple"
                     />
-                    <div className="rounded-2xl overflow-hidden shadow-sm border border-slate-200 bg-white">
+                    <div className="rounded-2xl overflow-hidden shadow-sm border border-[#e8e0d2] bg-white">
                       <QuizPlayer
                         lessonId={lesson.id}
                         quizData={lesson.quiz_data}
@@ -219,7 +219,7 @@ export const LessonClient: React.FC<Props> = ({
                 )}
 
                 {!hasVideo && !hasText && !hasQuiz && (
-                  <div className="rounded-2xl bg-white border border-slate-200 p-10 text-center">
+                  <div className="rounded-2xl bg-white border border-[#e8e0d2] p-10 text-center">
                     <p className="text-sm text-slate-500 font-medium">
                       No content in this lesson yet
                     </p>
@@ -230,12 +230,12 @@ export const LessonClient: React.FC<Props> = ({
               {/* Meta below content */}
               <div className="mt-8 pb-2">
                 <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <div className="text-[11px] uppercase font-black tracking-widest text-[#07CCFD]">
+                  <div className="text-[11px] uppercase font-black tracking-widest text-[#ddb049]">
                     Lesson {lessonNumber}
                   </div>
 
                   {hasVideo && (
-                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-100">
+                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-amber-50 bg-amber-800 border border-amber-100">
                       Video
                     </span>
                   )}
@@ -298,20 +298,20 @@ export const LessonClient: React.FC<Props> = ({
               )}
 
               {/* NEXT / PREV NAVIGATION */}
-              <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-slate-200 pt-6">
+              <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-[#e8e0d2] pt-6">
                 {prevLesson ? (
                   <Link
                     href={`/learn/${course.id}/${prevLesson.id}`}
-                    className="flex-1 flex items-center gap-3 p-4 rounded-2xl bg-white border-2 border-slate-200 hover:border-[#07CCFD] cursor-pointer transition-all group"
+                    className="flex-1 flex items-center gap-3 p-4 rounded-2xl bg-white border-2 border-[#e8e0d2] hover:border-[#ddb049] cursor-pointer transition-all group"
                   >
-                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-hover:bg-cyan-50">
-                      <ChevronLeft className="w-5 h-5 text-slate-400 group-hover:text-[#07CCFD]" />
+                    <div className="w-10 h-10 rounded-full bg-[#fbfaf7] flex items-center justify-center shrink-0 group-hover:bg-amber-50">
+                      <ChevronLeft className="w-5 h-5 text-slate-400 group-hover:text-[#ddb049]" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-[10px] uppercase font-black text-slate-400 tracking-wider mb-0.5">
                         Previous Lesson
                       </div>
-                      <div className="text-sm font-bold text-slate-900 truncate group-hover:text-[#07CCFD]">
+                      <div className="text-sm font-bold text-slate-900 truncate group-hover:text-[#ddb049]">
                         {prevLesson.title}
                       </div>
                     </div>
@@ -333,7 +333,7 @@ export const LessonClient: React.FC<Props> = ({
                         {nextLesson.title}
                       </div>
                     </div>
-                    <div className="w-11 h-11 rounded-full bg-[#07CCFD] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="w-11 h-11 rounded-full bg-[#ddb049] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                       <ChevronRight className="w-5 h-5 text-slate-900" />
                     </div>
                   </Link>
@@ -344,7 +344,7 @@ export const LessonClient: React.FC<Props> = ({
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Link
                           href={`/learn/${course.id}`}
-                          className="flex items-center gap-3 p-4 rounded-2xl bg-white border-2 border-slate-200 hover:border-slate-300 cursor-pointer transition-all group"
+                          className="flex items-center gap-3 p-4 rounded-2xl bg-white border-2 border-[#e8e0d2] hover:border-slate-300 cursor-pointer transition-all group"
                         >
                           <div className="min-w-0 flex-1">
                             <div className="text-[10px] uppercase font-black text-slate-400 tracking-wider mb-0.5">
@@ -413,7 +413,7 @@ const SectionLabel = ({
   color: 'cyan' | 'emerald' | 'purple';
 }) => {
   const colors = {
-    cyan: 'text-[#07CCFD]',
+    cyan: 'text-[#ddb049]',
     emerald: 'text-[#20B486]',
     purple: 'text-purple-600',
   };

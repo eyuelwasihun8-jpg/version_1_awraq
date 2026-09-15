@@ -44,7 +44,7 @@ export const CourseOverviewClient: React.FC<Props> = ({
     allLessons.find((l) => !completedIds.has(l.id)) || allLessons[0];
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16">
+    <div className="min-h-screen bg-[#fbfaf7] pt-24 sm:pt-28 pb-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link
           href="/dashboard"
@@ -55,7 +55,7 @@ export const CourseOverviewClient: React.FC<Props> = ({
         </Link>
 
         {/* Header */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden mb-6">
           <div className="aspect-[3/1] bg-slate-100 relative">
             <CourseThumbnail
               thumbnailKey={course.thumbnail_url}
@@ -65,7 +65,7 @@ export const CourseOverviewClient: React.FC<Props> = ({
             />
           </div>
           <div className="p-5 sm:p-6">
-            <div className="text-[10px] uppercase font-black text-[#07CCFD] tracking-widest mb-1">
+            <div className="text-[10px] uppercase font-black text-[#ddb049] tracking-widest mb-1">
               {course.category?.replace('_', ' ') || 'Course'}
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-3">
@@ -99,7 +99,7 @@ export const CourseOverviewClient: React.FC<Props> = ({
               </div>
               <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#07CCFD] to-[#20B486] rounded-full transition-all"
+                  className="h-full bg-gradient-to-r from-[#ddb049] to-[#20B486] rounded-full transition-all"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
@@ -117,7 +117,7 @@ export const CourseOverviewClient: React.FC<Props> = ({
             ) : nextLesson ? (
               <Link
                 href={`/learn/${course.id}/${nextLesson.id}`}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] text-[#0F172A] text-sm font-bold shadow-sm cursor-pointer transition-all hover:translate-y-[1px] hover:border-b-[1px]"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] text-[#0a0704] text-sm font-bold shadow-sm cursor-pointer transition-all hover:translate-y-[1px] hover:border-b-[1px]"
               >
                 <Play className="w-4 h-4" />
                 <span>
@@ -130,7 +130,7 @@ export const CourseOverviewClient: React.FC<Props> = ({
 
         {/* Modules */}
         {modules.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 text-center">
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-10 text-center">
             <BookOpen className="w-10 h-10 text-slate-300 mx-auto mb-3" />
             <p className="text-sm text-slate-500 font-medium">
               No content available yet
@@ -180,10 +180,10 @@ const ModuleAccordion = ({
   const durationMin = Math.round(totalDuration / 60);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-4 p-4 sm:p-5 hover:bg-slate-50 transition-colors cursor-pointer text-left"
+        className="w-full flex items-center gap-4 p-4 sm:p-5 hover:bg-[#fbfaf7] transition-colors cursor-pointer text-left"
       >
         <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
           <span className="text-sm font-black text-slate-700">{index + 1}</span>
@@ -215,7 +215,7 @@ const ModuleAccordion = ({
       </button>
 
       {open && (
-        <div className="border-t border-slate-100">
+        <div className="border-t border-[#f0ebe2]">
           {lessons.length === 0 ? (
             <div className="p-6 text-center text-xs text-slate-500 font-medium">
               No lessons in this module yet
@@ -233,7 +233,7 @@ const ModuleAccordion = ({
                   <Link
                     key={l.id}
                     href={`/learn/${courseId}/${l.id}`}
-                    className="flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="flex items-center gap-3 p-4 hover:bg-[#fbfaf7] transition-colors cursor-pointer"
                   >
                     <div className="text-xs font-black text-slate-400 w-8 text-center shrink-0">
                       {index + 1}.{i + 1}
@@ -253,7 +253,7 @@ const ModuleAccordion = ({
                         <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
                           {isMulti ? (
                             <>
-                              <Play className="w-3 h-3 text-[#07CCFD]" />
+                              <Play className="w-3 h-3 text-[#ddb049]" />
                               <FileText className="w-3 h-3 text-[#20B486]" />
                               <span className="capitalize">Mixed Content</span>
                             </>

@@ -285,7 +285,7 @@ export const VideoPlayer: React.FC<Props> = ({
   if (loading) {
     return (
       <div className="aspect-video bg-slate-900 rounded-2xl flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-[#07CCFD]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#ddb049]" />
         <span className="text-xs text-slate-400 font-bold">Connecting stream...</span>
       </div>
     );
@@ -326,7 +326,7 @@ export const VideoPlayer: React.FC<Props> = ({
       {/* Buffering Indicator */}
       {isBuffering && (
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2 pointer-events-none">
-          <Loader2 className="w-10 h-10 animate-spin text-[#07CCFD]" />
+          <Loader2 className="w-10 h-10 animate-spin text-[#ddb049]" />
           <span className="text-[11px] font-bold text-white/80">Buffering video...</span>
         </div>
       )}
@@ -335,7 +335,7 @@ export const VideoPlayer: React.FC<Props> = ({
       {!isPlaying && !isBuffering && (
         <button
           onClick={togglePlay}
-          className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-[#07CCFD]/90 hover:bg-[#07CCFD] hover:scale-110 text-[#0F172A] flex items-center justify-center transition-all shadow-xl cursor-pointer"
+          className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-[#ddb049]/90 hover:bg-[#ddb049] hover:scale-110 text-[#0a0704] flex items-center justify-center transition-all shadow-xl cursor-pointer"
         >
           <Play className="w-8 h-8 fill-current ml-1" />
         </button>
@@ -361,7 +361,7 @@ export const VideoPlayer: React.FC<Props> = ({
             step="0.1"
             value={currentTime}
             onChange={handleSeek}
-            className="w-full h-1.5 bg-transparent rounded-lg appearance-none cursor-pointer accent-[#07CCFD] focus:outline-none relative z-10"
+            className="w-full h-1.5 bg-transparent rounded-lg appearance-none cursor-pointer accent-[#ddb049] focus:outline-none relative z-10"
           />
         </div>
 
@@ -411,7 +411,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 step="0.05"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-16 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-[#07CCFD]"
+                className="w-16 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-[#ddb049]"
               />
             </div>
 
@@ -441,7 +441,7 @@ export const VideoPlayer: React.FC<Props> = ({
                       onClick={() => changeSpeed(speed)}
                       className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         playbackSpeed === speed
-                          ? 'bg-[#07CCFD] text-[#0F172A]'
+                          ? 'bg-[#ddb049] text-[#0a0704]'
                           : 'text-white/80 hover:bg-white/10 hover:text-white'
                       }`}
                     >

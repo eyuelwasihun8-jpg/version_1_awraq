@@ -33,7 +33,7 @@ export const ResourcesTab: React.FC<Props> = ({ enrolledProducts }) => {
 
   if (enrolledProducts.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-12 text-center animate-fadeIn">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-8 sm:p-12 text-center animate-fadeIn">
         <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
           <Package className="w-8 h-8 text-slate-400" />
         </div>
@@ -43,7 +43,7 @@ export const ResourcesTab: React.FC<Props> = ({ enrolledProducts }) => {
         </p>
         <Link
           href="/products"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] text-[#0F172A] text-sm font-bold cursor-pointer transition-all"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] text-[#0a0704] text-sm font-bold cursor-pointer transition-all"
         >
           <span>Browse Products</span>
           <ArrowRight className="w-4 h-4" />
@@ -67,7 +67,7 @@ export const ResourcesTab: React.FC<Props> = ({ enrolledProducts }) => {
           return (
             <div
               key={product.id}
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md overflow-hidden transition-all flex flex-col"
+              className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm hover:shadow-md overflow-hidden transition-all flex flex-col"
             >
               <div className="aspect-video bg-slate-100 relative overflow-hidden">
                 {product.thumbnail_url ? (
@@ -81,7 +81,7 @@ export const ResourcesTab: React.FC<Props> = ({ enrolledProducts }) => {
                     <FileText className="w-10 h-10 text-slate-300" />
                   </div>
                 )}
-                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-[10px] uppercase font-black tracking-wider px-2.5 py-1 rounded-full text-slate-700 border border-slate-200">
+                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-[10px] uppercase font-black tracking-wider px-2.5 py-1 rounded-full text-slate-700 border border-[#e8e0d2]">
                   {product.file_type || 'File'}
                 </div>
               </div>

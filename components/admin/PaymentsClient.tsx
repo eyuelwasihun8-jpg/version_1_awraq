@@ -133,10 +133,10 @@ export const PaymentsClient: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search student, item, TX..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-[#07CCFD]"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#e8e0d2] text-sm outline-none focus:border-[#ddb049]"
           />
         </div>
-        <div className="flex gap-1 bg-white border border-slate-200 rounded-xl p-1">
+        <div className="flex gap-1 bg-white border border-[#e8e0d2] rounded-xl p-1">
           {(['pending', 'approved', 'rejected', 'all'] as StatusFilter[]).map((s) => (
             <button
               key={s}
@@ -145,7 +145,7 @@ export const PaymentsClient: React.FC = () => {
                 setPage(1);
               }}
               className={`px-3 py-2 rounded-lg text-xs font-bold capitalize cursor-pointer ${
-                status === s ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+                status === s ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-[#fbfaf7]'
               }`}
             >
               {s}
@@ -154,7 +154,7 @@ export const PaymentsClient: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden min-h-[400px]">
         {loading ? (
           <div className="py-20 flex justify-center">
             <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -199,7 +199,7 @@ export const PaymentsClient: React.FC = () => {
                 {p.receipt_url && (
                   <button
                     onClick={() => setPreviewUrl(p.receipt_url)}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#07CCFD] hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#ddb049] hover:underline cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5" /> View Receipt
                   </button>
@@ -212,7 +212,7 @@ export const PaymentsClient: React.FC = () => {
                         value={txNumber}
                         onChange={(e) => setTxNumber(e.target.value)}
                         placeholder="Transaction number"
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs font-mono outline-none focus:border-emerald-500"
+                        className="flex-1 px-3 py-2 rounded-lg border border-[#e8e0d2] text-xs font-mono outline-none focus:border-emerald-500"
                       />
                       <button
                         onClick={() => approve(p.id)}
@@ -228,7 +228,7 @@ export const PaymentsClient: React.FC = () => {
                         value={rejectReason}
                         onChange={(e) => setRejectReason(e.target.value)}
                         placeholder="Rejection reason"
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:border-red-500"
+                        className="flex-1 px-3 py-2 rounded-lg border border-[#e8e0d2] text-xs outline-none focus:border-red-500"
                       />
                       <button
                         onClick={() => reject(p.id)}
@@ -247,7 +247,7 @@ export const PaymentsClient: React.FC = () => {
         )}
 
         {pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+          <div className="p-4 border-t border-[#f0ebe2] bg-[#fbfaf7] flex items-center justify-between">
             <div className="text-xs text-slate-500 font-medium hidden sm:block">
               Page {pagination.page} of {pagination.totalPages}
             </div>
@@ -255,7 +255,7 @@ export const PaymentsClient: React.FC = () => {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={!pagination.hasPrev}
-                className="p-2 rounded-lg bg-white border border-slate-200 disabled:opacity-50 cursor-pointer"
+                className="p-2 rounded-lg bg-white border border-[#e8e0d2] disabled:opacity-50 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -263,7 +263,7 @@ export const PaymentsClient: React.FC = () => {
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={!pagination.hasNext}
-                className="p-2 rounded-lg bg-white border border-slate-200 disabled:opacity-50 cursor-pointer"
+                className="p-2 rounded-lg bg-white border border-[#e8e0d2] disabled:opacity-50 cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

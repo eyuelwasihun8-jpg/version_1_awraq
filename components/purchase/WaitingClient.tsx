@@ -115,7 +115,7 @@ export const WaitingClient: React.FC<Props> = ({ initialPayment }) => {
   // ─── APPROVED SCREEN ───
   if (payment.status === 'approved') {
     return (
-      <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#fbfaf7] pt-24 sm:pt-28 pb-16 flex items-center justify-center px-4">
         <div className="bg-white rounded-3xl border border-emerald-200 shadow-xl p-8 sm:p-10 max-w-md w-full text-center animate-slideUp">
           <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-8 h-8 text-[#20B486]" />
@@ -146,7 +146,7 @@ export const WaitingClient: React.FC<Props> = ({ initialPayment }) => {
   // ─── REJECTED SCREEN ───
   if (payment.status === 'rejected') {
     return (
-      <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#fbfaf7] pt-24 sm:pt-28 pb-16 flex items-center justify-center px-4">
         <div className="bg-white rounded-3xl border border-red-200 shadow-xl p-8 sm:p-10 max-w-md w-full animate-slideUp">
           <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-4">
             <XCircle className="w-8 h-8 text-red-500" />
@@ -166,7 +166,7 @@ export const WaitingClient: React.FC<Props> = ({ initialPayment }) => {
           <div className="flex flex-col gap-2">
             <Link
               href={retryHref}
-              className="w-full py-3 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] text-[#0F172A] text-sm font-bold text-center cursor-pointer transition-all"
+              className="w-full py-3 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] text-sm font-bold text-center cursor-pointer transition-all"
             >
               Try Uploading Again
             </Link>
@@ -184,8 +184,8 @@ export const WaitingClient: React.FC<Props> = ({ initialPayment }) => {
 
   // ─── PENDING WAITING SCREEN ───
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16 flex items-center justify-center px-4">
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-8 sm:p-10 max-w-md w-full text-center">
+    <div className="min-h-screen bg-[#fbfaf7] pt-24 sm:pt-28 pb-16 flex items-center justify-center px-4">
+      <div className="bg-white rounded-3xl border border-[#e8e0d2] shadow-xl p-8 sm:p-10 max-w-md w-full text-center">
         <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-4 relative">
           <Clock className="w-8 h-8 text-amber-500" />
           <div className="absolute inset-0 rounded-2xl border-4 border-amber-300 border-t-transparent animate-spin" />
@@ -196,7 +196,7 @@ export const WaitingClient: React.FC<Props> = ({ initialPayment }) => {
           Our team is verifying your receipt. You will be redirected automatically as soon as it's approved.
         </p>
 
-        <div className="bg-slate-50 rounded-xl p-4 mb-6 space-y-2 text-left border border-slate-100">
+        <div className="bg-[#fbfaf7] rounded-xl p-4 mb-6 space-y-2 text-left border border-[#f0ebe2]">
           <InfoRow label="Amount" value={`ETB ${Number(payment.amount).toLocaleString()}`} />
           <InfoRow label="Method" value={payment.payment_method?.toUpperCase()} />
           <InfoRow label="Status" value="Pending Review" />
@@ -204,7 +204,7 @@ export const WaitingClient: React.FC<Props> = ({ initialPayment }) => {
         </div>
 
         <div className="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium mb-4">
-          <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#07CCFD]" />
+          <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#ddb049]" />
           <span>Realtime active — listening for approval...</span>
         </div>
 

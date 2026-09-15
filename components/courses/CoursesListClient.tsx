@@ -41,10 +41,10 @@ export const CoursesListClient: React.FC<Props> = ({ initialCourses }) => {
   }, [initialCourses, search, category]);
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16">
+    <div className="min-h-screen bg-[#fbfaf7] pt-24 sm:pt-28 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-10">
-          <div className="text-xs sm:text-sm font-black text-[#07CCFD] uppercase tracking-widest mb-2">
+          <div className="text-xs sm:text-sm font-black text-[#ddb049] uppercase tracking-widest mb-2">
             Premium Programs
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight mb-3">
@@ -63,7 +63,7 @@ export const CoursesListClient: React.FC<Props> = ({ initialCourses }) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search courses..."
-              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none bg-white text-sm shadow-sm"
+              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none bg-white text-sm shadow-sm"
             />
           </div>
           <div className="relative">
@@ -71,7 +71,7 @@ export const CoursesListClient: React.FC<Props> = ({ initialCourses }) => {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full sm:w-auto pl-11 pr-8 py-3.5 rounded-xl border border-slate-200 bg-white text-sm font-bold cursor-pointer outline-none"
+              className="w-full sm:w-auto pl-11 pr-8 py-3.5 rounded-xl border border-[#e8e0d2] bg-white text-sm font-bold cursor-pointer outline-none"
             >
               {CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -87,7 +87,7 @@ export const CoursesListClient: React.FC<Props> = ({ initialCourses }) => {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center">
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] p-16 text-center">
             <BookOpen className="w-14 h-14 text-slate-300 mx-auto mb-4" />
             <h3 className="text-lg font-black text-slate-900 mb-2">No courses found</h3>
             <p className="text-sm text-slate-500 font-medium">Try adjusting your search or filters</p>
@@ -98,7 +98,7 @@ export const CoursesListClient: React.FC<Props> = ({ initialCourses }) => {
               <Link
                 key={course.id}
                 href={`/courses/${course.id}`}
-                className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg overflow-hidden transition-all cursor-pointer"
+                className="group bg-white rounded-2xl border border-[#e8e0d2] shadow-sm hover:shadow-lg overflow-hidden transition-all cursor-pointer"
               >
                 <div className="aspect-video bg-slate-100 relative overflow-hidden">
                   <CourseThumbnail
@@ -108,19 +108,19 @@ export const CoursesListClient: React.FC<Props> = ({ initialCourses }) => {
                     fallbackClassName="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-50 to-slate-100"
                     priority={i < 6}
                   />
-                  <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-[10px] uppercase font-black tracking-wider px-2.5 py-1 rounded-full text-slate-700 border border-slate-200">
+                  <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-[10px] uppercase font-black tracking-wider px-2.5 py-1 rounded-full text-slate-700 border border-[#e8e0d2]">
                     {course.category?.replace('_', ' ') || 'Course'}
                   </div>
                 </div>
 
                 <div className="p-4 sm:p-5">
-                  <h3 className="text-base font-black text-slate-900 mb-1 line-clamp-2 group-hover:text-[#07CCFD] transition-colors">
+                  <h3 className="text-base font-black text-slate-900 mb-1 line-clamp-2 group-hover:text-[#ddb049] transition-colors">
                     {course.title}
                   </h3>
                   <p className="text-xs text-slate-500 font-medium mb-3 line-clamp-2 min-h-[32px]">
                     {course.description || 'No description available'}
                   </p>
-                  <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between pt-3 border-t border-[#f0ebe2]">
                     <span className="text-[11px] font-bold text-slate-600 truncate max-w-[120px]">
                       {course.instructor?.full_name || 'Instructor'}
                     </span>

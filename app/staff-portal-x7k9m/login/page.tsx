@@ -86,10 +86,10 @@ export default function StaffLoginPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 p-8">
+        <div className="bg-white rounded-3xl shadow-2xl border border-[#e8e0d2] p-8">
           <div className="flex flex-col items-center mb-6">
             <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center mb-4 shadow-lg">
-              <Shield className="w-7 h-7 text-[#07CCFD]" />
+              <Shield className="w-7 h-7 text-[#ddb049]" />
             </div>
             <h1 className="text-2xl font-black text-slate-900 mb-1">Staff Portal</h1>
             <p className="text-xs text-slate-500 font-medium">Restricted Access</p>
@@ -107,7 +107,7 @@ export default function StaffLoginPage() {
                   required
                   autoComplete="email"
                   placeholder="staff@awraq.com"
-                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-slate-50/50"
+                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-[#fbfaf7]/50"
                 />
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function StaffLoginPage() {
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-slate-50/50"
+                  className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-[#fbfaf7]/50"
                 />
               </div>
             </div>
@@ -153,7 +153,7 @@ export default function StaffLoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-slate-100 text-center">
+          <div className="mt-6 pt-6 border-t border-[#f0ebe2] text-center">
             <a
               href="/"
               className="text-[11px] text-slate-400 hover:text-slate-600 font-medium cursor-pointer"

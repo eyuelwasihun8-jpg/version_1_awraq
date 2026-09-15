@@ -47,7 +47,7 @@ export const CoursesTab: React.FC<Props> = ({
               return (
                 <div
                   key={course.id}
-                  className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md overflow-hidden transition-all group flex flex-col"
+                  className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm hover:shadow-md overflow-hidden transition-all group flex flex-col"
                 >
                   <Link href={`/learn/${course.id}`} className="block">
                     <div className="aspect-video bg-slate-100 relative overflow-hidden">
@@ -67,11 +67,11 @@ export const CoursesTab: React.FC<Props> = ({
                   </Link>
 
                   <div className="p-4 sm:p-5 flex-1 flex flex-col">
-                    <div className="text-[10px] uppercase font-black text-[#07CCFD] tracking-widest mb-1">
+                    <div className="text-[10px] uppercase font-black text-[#ddb049] tracking-widest mb-1">
                       {course.category?.replace('_', ' ') || 'Course'}
                     </div>
                     <Link href={`/learn/${course.id}`}>
-                      <h3 className="text-base font-black text-slate-900 mb-3 line-clamp-2 hover:text-[#07CCFD] transition-colors cursor-pointer">
+                      <h3 className="text-base font-black text-slate-900 mb-3 line-clamp-2 hover:text-[#ddb049] transition-colors cursor-pointer">
                         {course.title}
                       </h3>
                     </Link>
@@ -89,7 +89,7 @@ export const CoursesTab: React.FC<Props> = ({
                           className={`h-full rounded-full transition-all ${
                             isComplete
                               ? 'bg-gradient-to-r from-amber-400 to-amber-500'
-                              : 'bg-gradient-to-r from-[#07CCFD] to-[#20B486]'
+                              : 'bg-gradient-to-r from-[#ddb049] to-[#20B486]'
                           }`}
                           style={{ width: `${pct}%` }}
                         />
@@ -99,7 +99,7 @@ export const CoursesTab: React.FC<Props> = ({
                     <div className="flex gap-2 mt-auto">
                       <Link
                         href={`/learn/${course.id}`}
-                        className="flex-1 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] text-[#0F172A] text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                        className="flex-1 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5"
                       >
                         <Play className="w-3.5 h-3.5" />
                         <span>{pct === 0 ? 'Start' : 'Continue'}</span>
@@ -136,7 +136,7 @@ export const CoursesTab: React.FC<Props> = ({
               <Link
                 key={course.id}
                 href={`/courses/${course.id}`}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md overflow-hidden transition-all group cursor-pointer"
+                className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm hover:shadow-md overflow-hidden transition-all group cursor-pointer"
               >
                 <div className="aspect-video bg-slate-100 relative overflow-hidden">
                   <CourseThumbnail
@@ -147,7 +147,7 @@ export const CoursesTab: React.FC<Props> = ({
                   />
                 </div>
                 <div className="p-4">
-                  <h3 className="text-sm font-black text-slate-900 mb-1 line-clamp-2 group-hover:text-[#07CCFD] transition-colors">
+                  <h3 className="text-sm font-black text-slate-900 mb-1 line-clamp-2 group-hover:text-[#ddb049] transition-colors">
                     {course.title}
                   </h3>
                   <div className="flex items-center justify-between mt-3">
@@ -169,7 +169,7 @@ export const CoursesTab: React.FC<Props> = ({
 };
 
 const EmptyState = () => (
-  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-12 text-center">
+  <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-8 sm:p-12 text-center">
     <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
       <BookOpen className="w-8 h-8 text-slate-400" />
     </div>
@@ -179,7 +179,7 @@ const EmptyState = () => (
     </p>
     <Link
       href="/courses"
-      className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] text-[#0F172A] text-sm font-bold cursor-pointer transition-all"
+      className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] text-[#0a0704] text-sm font-bold cursor-pointer transition-all"
     >
       <span>Browse Courses</span>
       <ArrowRight className="w-4 h-4" />

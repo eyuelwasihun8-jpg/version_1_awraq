@@ -58,7 +58,7 @@ export const UserEditClient: React.FC<Props> = ({ user, currentRole }) => {
       </div>
 
       {/* Info card */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 space-y-4">
         <h2 className="text-sm font-black text-slate-900 mb-3">Profile Information</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -72,7 +72,7 @@ export const UserEditClient: React.FC<Props> = ({ user, currentRole }) => {
       </div>
 
       {/* Permissions */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-5">
+      <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 space-y-5">
         <div>
           <h2 className="text-sm font-black text-slate-900 mb-1">Permissions</h2>
           <p className="text-xs text-slate-500 font-medium">
@@ -96,8 +96,8 @@ export const UserEditClient: React.FC<Props> = ({ user, currentRole }) => {
                 disabled={!isSuperAdmin}
                 className={`py-2.5 rounded-xl border-2 text-xs font-bold capitalize transition-all cursor-pointer ${
                   role === r
-                    ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                    ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+                    : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-slate-300'
                 } ${!isSuperAdmin ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 {r.replace('_', ' ')}
@@ -119,7 +119,7 @@ export const UserEditClient: React.FC<Props> = ({ user, currentRole }) => {
               className={`flex-1 py-3 rounded-xl border-2 text-sm font-bold cursor-pointer transition-all ${
                 isActive
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                  : 'border-[#e8e0d2] bg-white text-slate-500 hover:border-slate-300'
               } ${!isSuperAdmin ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               ✓ Active
@@ -130,7 +130,7 @@ export const UserEditClient: React.FC<Props> = ({ user, currentRole }) => {
               className={`flex-1 py-3 rounded-xl border-2 text-sm font-bold cursor-pointer transition-all ${
                 !isActive
                   ? 'border-red-500 bg-red-50 text-red-700'
-                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                  : 'border-[#e8e0d2] bg-white text-slate-500 hover:border-slate-300'
               } ${!isSuperAdmin ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               ✕ Inactive
@@ -142,7 +142,7 @@ export const UserEditClient: React.FC<Props> = ({ user, currentRole }) => {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             <span>{saving ? 'Saving...' : 'Save Changes'}</span>

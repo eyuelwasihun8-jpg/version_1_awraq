@@ -136,7 +136,7 @@ export const ModulesBuilder: React.FC<Props> = ({ courseId }) => {
       <div className="flex items-center justify-between mb-5 gap-4 flex-wrap">
         <div>
           <h2 className="text-xl font-black text-slate-900 mb-1 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-[#07CCFD]" />
+            <BookOpen className="w-5 h-5 text-[#ddb049]" />
             <span>Curriculum</span>
           </h2>
           <p className="text-xs text-slate-500 font-medium">
@@ -168,12 +168,12 @@ export const ModulesBuilder: React.FC<Props> = ({ courseId }) => {
               placeholder="e.g. Module 2: Advanced Techniques"
               autoFocus
               onKeyDown={(e) => e.key === 'Enter' && addModule()}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm min-w-[200px]"
+              className="flex-1 px-4 py-2.5 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm min-w-[200px]"
             />
             <button
               onClick={addModule}
               disabled={creating}
-              className="px-4 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] text-[#0F172A] text-sm font-bold cursor-pointer disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] text-sm font-bold cursor-pointer disabled:opacity-50 flex items-center gap-2"
             >
               {creating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -196,11 +196,11 @@ export const ModulesBuilder: React.FC<Props> = ({ courseId }) => {
       )}
 
       {loading ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-16 text-center">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-16 text-center">
           <Loader2 className="w-6 h-6 animate-spin text-slate-400 mx-auto" />
         </div>
       ) : modules.length === 0 ? (
-        <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center">
+        <div className="bg-white rounded-2xl border-2 border-dashed border-[#e8e0d2] p-12 text-center">
           <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
           <h3 className="text-base font-black text-slate-900 mb-1">No modules yet</h3>
           <p className="text-sm text-slate-500 font-medium mb-5">
@@ -208,7 +208,7 @@ export const ModulesBuilder: React.FC<Props> = ({ courseId }) => {
           </p>
           <button
             onClick={() => setAddingModule(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] cursor-pointer transition-all"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] cursor-pointer transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>Create First Module</span>

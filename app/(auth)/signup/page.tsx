@@ -51,8 +51,8 @@ export default function SignupPage() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200 p-8 text-center">
+      <div className="min-h-screen bg-[#fbfaf7] flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-[#e8e0d2] p-8 text-center">
           <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
             <CheckCircle2 className="w-8 h-8 text-emerald-600" />
           </div>
@@ -63,7 +63,7 @@ export default function SignupPage() {
           </p>
           <Link
             href="/login"
-            className="inline-block px-6 py-3 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] text-[#0F172A] font-bold text-sm cursor-pointer"
+            className="inline-block px-6 py-3 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] font-bold text-sm cursor-pointer"
           >
             Back to Sign In
           </Link>
@@ -73,11 +73,11 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-[#fbfaf7] flex flex-col">
       <div className="p-4 sm:p-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-slate-600 hover:text-[#07CCFD] font-bold text-sm transition-colors"
+          className="inline-flex items-center gap-2 text-slate-600 hover:text-[#ddb049] font-bold text-sm transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to home
@@ -86,7 +86,7 @@ export default function SignupPage() {
 
       <div className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 sm:p-8">
+          <div className="bg-white rounded-3xl shadow-xl border border-[#e8e0d2] p-6 sm:p-8">
             <div className="flex justify-center mb-6">
               <BrandLogo size="lg" />
             </div>
@@ -101,7 +101,7 @@ export default function SignupPage() {
             <button
               onClick={handleGoogle}
               disabled={googleLoading || loading}
-              className="w-full mb-4 min-h-[48px] py-3 rounded-xl bg-white border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800 text-sm font-bold transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-70"
+              className="w-full mb-4 min-h-[48px] py-3 rounded-xl bg-white border-2 border-[#e8e0d2] hover:border-slate-300 hover:bg-[#fbfaf7] text-slate-800 text-sm font-bold transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-70"
             >
               {googleLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -118,7 +118,7 @@ export default function SignupPage() {
 
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
+                <div className="w-full border-t border-[#e8e0d2]"></div>
               </div>
               <div className="relative flex justify-center text-xs">
                 <span className="bg-white px-3 text-slate-500 font-medium">or</span>
@@ -137,7 +137,7 @@ export default function SignupPage() {
                     required
                     placeholder="name@example.com"
                     autoComplete="email"
-                    className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-slate-50/50"
+                    className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-[#fbfaf7]/50"
                   />
                 </div>
               </div>
@@ -154,7 +154,7 @@ export default function SignupPage() {
                     minLength={6}
                     placeholder="At least 6 characters"
                     autoComplete="new-password"
-                    className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none transition-all bg-slate-50/50"
+                    className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-[#fbfaf7]/50"
                   />
                 </div>
               </div>
@@ -162,7 +162,7 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading || googleLoading}
-                className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[4px] border-[#05A3CA] hover:border-b-[2px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
               >
                 {loading ? (
                   <>
@@ -177,7 +177,7 @@ export default function SignupPage() {
 
             <div className="mt-6 text-center text-sm text-slate-500">
               Already have an account?{' '}
-              <Link href="/login" className="font-bold text-[#07CCFD] hover:underline">
+              <Link href="/login" className="font-bold text-[#ddb049] hover:underline">
                 Sign In
               </Link>
             </div>

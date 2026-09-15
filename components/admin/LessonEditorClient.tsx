@@ -104,9 +104,9 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
   const backToCourse = `/${PORTAL_SLUG}/courses/${course.id}`;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#fbfaf7]">
       {/* HEADER */}
-      <div className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+      <div className="sticky top-0 z-30 bg-white border-b border-[#e8e0d2] shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="min-w-0 flex-1">
@@ -117,7 +117,7 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Back to {course.title}</span>
               </Link>
-              <div className="text-[10px] uppercase font-black text-[#07CCFD] tracking-widest mb-1">
+              <div className="text-[10px] uppercase font-black text-[#ddb049] tracking-widest mb-1">
                 {lesson.course_modules?.title || 'Editing Lesson'}
               </div>
 
@@ -127,16 +127,16 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Lesson title"
-                  className="text-lg sm:text-2xl font-black text-slate-900 bg-transparent border-b-2 border-dashed border-slate-200 focus:border-[#07CCFD] outline-none px-1 py-1 min-w-[300px] flex-1"
+                  className="text-lg sm:text-2xl font-black text-slate-900 bg-transparent border-b-2 border-dashed border-[#e8e0d2] focus:border-[#ddb049] outline-none px-1 py-1 min-w-[300px] flex-1"
                 />
 
                 <div className="flex items-center gap-1">
                   {hasVideo && (
                     <div
-                      className="w-7 h-7 rounded-lg bg-cyan-50 border border-cyan-100 flex items-center justify-center"
+                      className="w-7 h-7 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center"
                       title="Has video"
                     >
-                      <Video className="w-3.5 h-3.5 text-[#07CCFD]" />
+                      <Video className="w-3.5 h-3.5 text-[#ddb049]" />
                     </div>
                   )}
                   {hasText && (
@@ -212,7 +212,7 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
         </div>
 
         {/* TABS */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 border-t border-[#f0ebe2]">
           <TabBtn
             active={tab === 'video'}
             onClick={() => setTab('video')}
@@ -257,8 +257,8 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
 const TabBtn = ({ active, onClick, icon: Icon, label, hasContent, color }: any) => {
   const colors: any = {
     cyan: {
-      active: 'text-[#07CCFD] border-[#07CCFD]',
-      dot: 'bg-[#07CCFD]',
+      active: 'text-[#ddb049] border-[#ddb049]',
+      dot: 'bg-[#ddb049]',
     },
     emerald: {
       active: 'text-[#20B486] border-[#20B486]',

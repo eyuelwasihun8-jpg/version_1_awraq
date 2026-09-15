@@ -103,7 +103,7 @@ export const TextReader: React.FC<Props> = ({
   return (
     <article
       ref={containerRef}
-      className="prose prose-slate max-w-none bg-white p-6 sm:p-8 lg:p-10 prose-headings:font-black prose-headings:text-slate-900 prose-p:text-slate-700 prose-p:font-medium prose-a:text-[#07CCFD] prose-strong:text-slate-900"
+      className="prose prose-slate max-w-none bg-white p-6 sm:p-8 lg:p-10 prose-headings:font-black prose-headings:text-slate-900 prose-p:text-slate-700 prose-p:font-medium prose-a:text-[#ddb049] prose-strong:text-slate-900"
       dangerouslySetInnerHTML={{ __html: content || '<p>No content available.</p>' }}
     />
   );

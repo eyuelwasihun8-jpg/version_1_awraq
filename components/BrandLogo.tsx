@@ -12,8 +12,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   className = '',
 }) => {
   const isDark = variant === 'dark';
-  const textColor = isDark ? 'text-gray-900' : 'text-white';
-  const bracketColor = isDark ? 'text-gray-400' : 'text-gray-500';
+  const textColor = isDark ? 'text-[#0a0704]' : 'text-white';
+  const bracketColor = isDark ? 'text-[#6b6358]' : 'text-gray-400';
 
   const dimensions = {
     sm: { icon: 'w-7 h-7', text: 'text-xs' },
@@ -24,20 +24,20 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   return (
     <div className={`flex flex-col items-center select-none cursor-pointer ${className}`}>
       <svg
-        className={`${dimensions[size].icon} text-[#F59E0B]`}
+        className={`${dimensions[size].icon} text-[#ddb049]`}
         viewBox="0 0 40 40"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
           d="M20 3L35 11.66V28.34L20 37L5 28.34V11.66L20 3Z"
-          stroke="#F59E0B"
+          stroke="#ddb049"
           strokeWidth="3.2"
           strokeLinejoin="round"
         />
         <path
           d="M14 13V27M26 13V27M14 20H26"
-          stroke="#F59E0B"
+          stroke="#ddb049"
           strokeWidth="3.2"
           strokeLinecap="round"
         />

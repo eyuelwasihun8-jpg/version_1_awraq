@@ -117,7 +117,7 @@ export const QuizBuilder: React.FC<Props> = ({ data, onChange }) => {
       {/* NO passing score field anymore */}
 
       {questions.length === 0 ? (
-        <div className="border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
+        <div className="border-2 border-dashed border-[#e8e0d2] rounded-2xl p-10 text-center">
           <HelpCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
           <p className="text-sm font-bold text-slate-600 mb-1">No questions yet</p>
           <p className="text-xs text-slate-500 font-medium">Add your first question below</p>
@@ -127,7 +127,7 @@ export const QuizBuilder: React.FC<Props> = ({ data, onChange }) => {
           {questions.map((q, i) => (
             <div
               key={q.id}
-              className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5"
+              className="bg-[#fbfaf7] border border-[#e8e0d2] rounded-2xl p-4 sm:p-5"
             >
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-7 h-7 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center shrink-0">
@@ -138,7 +138,7 @@ export const QuizBuilder: React.FC<Props> = ({ data, onChange }) => {
                     <span
                       className={`text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full border ${
                         q.type === 'single'
-                          ? 'bg-cyan-50 text-cyan-700 border-cyan-100'
+                          ? 'bg-amber-50 bg-amber-800 border-amber-100'
                           : q.type === 'true_false'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                           : 'bg-purple-50 text-purple-700 border-purple-100'
@@ -156,7 +156,7 @@ export const QuizBuilder: React.FC<Props> = ({ data, onChange }) => {
                     onChange={(e) => updateQuestion(q.id, { question: e.target.value })}
                     placeholder="Type your question here..."
                     rows={2}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 outline-none bg-white text-sm font-medium resize-none"
+                    className="w-full px-3 py-2 rounded-lg border border-[#e8e0d2] focus:border-purple-500 focus:ring-2 focus:ring-purple-100 outline-none bg-white text-sm font-medium resize-none"
                   />
                 </div>
                 <button
@@ -203,7 +203,7 @@ export const QuizBuilder: React.FC<Props> = ({ data, onChange }) => {
                       onChange={(e) => updateOption(q.id, opt.id, { text: e.target.value })}
                       placeholder={`Option ${oi + 1}`}
                       disabled={q.type === 'true_false'}
-                      className={`flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 outline-none bg-white text-sm font-medium ${
+                      className={`flex-1 px-3 py-2 rounded-lg border border-[#e8e0d2] focus:border-purple-500 focus:ring-2 focus:ring-purple-100 outline-none bg-white text-sm font-medium ${
                         opt.is_correct
                           ? 'ring-1 ring-emerald-200 bg-emerald-50/30'
                           : ''
@@ -226,7 +226,7 @@ export const QuizBuilder: React.FC<Props> = ({ data, onChange }) => {
                   <button
                     type="button"
                     onClick={() => addOption(q.id)}
-                    className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold cursor-pointer transition-all"
+                    className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-[#e8e0d2] text-slate-600 text-xs font-bold cursor-pointer transition-all"
                   >
                     <Plus className="w-3 h-3" />
                     <span>Add option</span>
@@ -245,7 +245,7 @@ export const QuizBuilder: React.FC<Props> = ({ data, onChange }) => {
                   onChange={(e) => updateQuestion(q.id, { explanation: e.target.value })}
                   placeholder="Explain why the correct answer is right..."
                   rows={2}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 outline-none bg-white text-sm font-medium resize-none"
+                  className="w-full px-3 py-2 rounded-lg border border-[#e8e0d2] focus:border-purple-500 focus:ring-2 focus:ring-purple-100 outline-none bg-white text-sm font-medium resize-none"
                 />
               </div>
             </div>
@@ -254,7 +254,7 @@ export const QuizBuilder: React.FC<Props> = ({ data, onChange }) => {
       )}
 
       {/* Add question buttons */}
-      <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-4">
+      <div className="bg-white border-2 border-dashed border-[#e8e0d2] rounded-2xl p-4">
         <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider mb-3 text-center">
           Add New Question
         </div>
@@ -262,7 +262,7 @@ export const QuizBuilder: React.FC<Props> = ({ data, onChange }) => {
           <button
             type="button"
             onClick={() => addQuestion('single')}
-            className="py-2.5 rounded-xl bg-cyan-50 hover:bg-cyan-100 border border-cyan-100 text-cyan-700 text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5"
+            className="py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-100 bg-amber-800 text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Multiple Choice</span>

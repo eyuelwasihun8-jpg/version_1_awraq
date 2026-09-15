@@ -179,7 +179,7 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-16 pt-24 sm:pt-28">
+    <div className="min-h-screen bg-[#fbfaf7] pb-24 sm:pb-16 pt-24 sm:pt-28">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back link */}
         <Link
@@ -198,7 +198,7 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
         </div>
 
         {/* Profile Photo Section */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 mb-4">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8 mb-4">
           <h2 className="text-base font-black text-slate-900 mb-5">Profile Photo</h2>
 
           <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -246,7 +246,7 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
         </div>
 
         {/* Personal Info Section */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 mb-4">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8 mb-4">
           <h2 className="text-base font-black text-slate-900 mb-5">Personal Information</h2>
 
           <div className="space-y-4">
@@ -260,7 +260,7 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm"
                 />
               </div>
             </div>
@@ -277,7 +277,7 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
                   type="email"
                   value={email}
                   disabled
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 text-sm cursor-not-allowed"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e8e0d2] bg-slate-100 text-slate-500 text-sm cursor-not-allowed"
                 />
               </div>
             </div>
@@ -286,7 +286,7 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone</label>
               <div className="flex">
-                <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-slate-200 bg-slate-100 text-slate-600 text-sm font-bold">
+                <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-[#e8e0d2] bg-slate-100 text-slate-600 text-sm font-bold">
                   +251
                 </span>
                 <div className="relative flex-1">
@@ -296,7 +296,7 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                     placeholder="9XX XXX XXX"
-                    className="w-full pl-10 pr-4 py-3 rounded-r-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm font-mono"
+                    className="w-full pl-10 pr-4 py-3 rounded-r-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm font-mono"
                   />
                 </div>
               </div>
@@ -312,8 +312,8 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
                     onClick={() => setGender(g.value)}
                     className={`py-2.5 rounded-xl border-2 text-xs font-bold cursor-pointer transition-all ${
                       gender === g.value
-                        ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+                        : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-slate-300'
                     }`}
                   >
                     {g.label}
@@ -332,8 +332,8 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
                     onClick={() => setAgeGroup(a.value)}
                     className={`py-2.5 rounded-xl border-2 text-xs font-bold cursor-pointer transition-all ${
                       ageGroup === a.value
-                        ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+                        : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-slate-300'
                     }`}
                   >
                     {a.label}
@@ -352,8 +352,8 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
                     onClick={() => setLifeStatus(s.value)}
                     className={`py-3 px-3 rounded-xl border-2 text-xs font-bold cursor-pointer transition-all flex items-center gap-2 ${
                       lifeStatus === s.value
-                        ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+                        : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-slate-300'
                     }`}
                   >
                     <span className="text-base">{s.emoji}</span>
@@ -365,11 +365,11 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
           </div>
 
           {/* Save button */}
-          <div className="flex items-center gap-3 pt-6 mt-6 border-t border-slate-100">
+          <div className="flex items-center gap-3 pt-6 mt-6 border-t border-[#f0ebe2]">
             <button
               onClick={handleSave}
               disabled={saving || !hasChanges}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] hover:border-b-[1px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] cursor-pointer disabled:opacity-50 transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] hover:border-b-[1px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] cursor-pointer disabled:opacity-50 transition-all"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               <span>{saving ? 'Saving...' : 'Save Changes'}</span>
@@ -385,12 +385,12 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
         </div>
 
         {/* Security Section */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 mb-4">
+        <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-black text-slate-900">Security</h2>
             <button
               onClick={() => setShowPasswordSection(!showPasswordSection)}
-              className="text-xs font-bold text-[#07CCFD] hover:underline cursor-pointer"
+              className="text-xs font-bold text-[#ddb049] hover:underline cursor-pointer"
             >
               {showPasswordSection ? 'Cancel' : 'Change Password'}
             </button>
@@ -410,7 +410,7 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="At least 6 characters"
                     minLength={6}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm"
                   />
                 </div>
               </div>
@@ -427,7 +427,7 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Repeat password"
                     minLength={6}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm"
                   />
                 </div>
               </div>

@@ -222,7 +222,7 @@ export const LessonEditorModal: React.FC<Props> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-slate-100 bg-white">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-[#f0ebe2] bg-white">
           <div>
             <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest">
               {isEdit ? 'Edit Lesson' : 'New Lesson'}
@@ -248,7 +248,7 @@ export const LessonEditorModal: React.FC<Props> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. 1.1 Introduction to SEO"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 text-sm"
+              className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm"
             />
           </div>
 
@@ -325,14 +325,14 @@ export const LessonEditorModal: React.FC<Props> = ({
                 </label>
               </div>
               {uploading && (
-                <div className="mt-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div className="mt-3 bg-[#fbfaf7] p-3 rounded-xl border border-[#e8e0d2]">
                   <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
                     <span>Uploading to R2</span>
                     <span>{uploadProgress}%</span>
                   </div>
                   <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#07CCFD] transition-all"
+                      className="h-full bg-[#ddb049] transition-all"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
@@ -347,7 +347,7 @@ export const LessonEditorModal: React.FC<Props> = ({
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   min="0"
-                  className="w-32 px-3 py-2 rounded-lg border border-slate-200 outline-none bg-white text-sm font-mono"
+                  className="w-32 px-3 py-2 rounded-lg border border-[#e8e0d2] outline-none bg-white text-sm font-mono"
                 />
               </div>
             </SectionCard>
@@ -368,7 +368,7 @@ export const LessonEditorModal: React.FC<Props> = ({
           )}
 
           {!enableVideo && !enableText && !enableQuiz && (
-            <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center">
+            <div className="border-2 border-dashed border-[#e8e0d2] rounded-2xl p-8 text-center">
               <p className="text-sm font-bold text-slate-600 mb-1">No content sections yet</p>
               <p className="text-xs text-slate-500 font-medium mb-4">
                 Turn on Video, Text, and/or Quiz above
@@ -377,7 +377,7 @@ export const LessonEditorModal: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setEnableVideo(true)}
-                  className="px-3 py-2 rounded-lg bg-cyan-50 text-cyan-700 text-xs font-bold cursor-pointer"
+                  className="px-3 py-2 rounded-lg bg-amber-50 bg-amber-800 text-xs font-bold cursor-pointer"
                 >
                   <Plus className="w-3 h-3 inline mr-1" />
                   Video
@@ -412,7 +412,7 @@ export const LessonEditorModal: React.FC<Props> = ({
                 className={`flex-1 py-2.5 rounded-xl border-2 text-xs font-bold cursor-pointer transition-all ${
                   !isPublished
                     ? 'border-slate-900 bg-slate-900 text-white'
-                    : 'border-slate-200 bg-white text-slate-500'
+                    : 'border-[#e8e0d2] bg-white text-slate-500'
                 }`}
               >
                 Draft
@@ -423,7 +423,7 @@ export const LessonEditorModal: React.FC<Props> = ({
                 className={`flex-1 py-2.5 rounded-xl border-2 text-xs font-bold cursor-pointer transition-all ${
                   isPublished
                     ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                    : 'border-slate-200 bg-white text-slate-500'
+                    : 'border-[#e8e0d2] bg-white text-slate-500'
                 }`}
               >
                 Published
@@ -433,7 +433,7 @@ export const LessonEditorModal: React.FC<Props> = ({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 flex items-center justify-end gap-2 p-5 border-t border-slate-100 bg-white">
+        <div className="sticky bottom-0 flex items-center justify-end gap-2 p-5 border-t border-[#f0ebe2] bg-white">
           <button
             onClick={onClose}
             disabled={saving}
@@ -444,7 +444,7 @@ export const LessonEditorModal: React.FC<Props> = ({
           <button
             onClick={handleSave}
             disabled={saving || uploading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] text-[#0F172A] text-sm font-bold cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] text-[#0a0704] text-sm font-bold cursor-pointer disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             <span>{saving ? 'Saving...' : isEdit ? 'Update Lesson' : 'Save Lesson'}</span>
@@ -458,14 +458,14 @@ export const LessonEditorModal: React.FC<Props> = ({
 const SectionToggle = ({ active, onClick, icon: Icon, label, color }: any) => {
   const map: any = {
     cyan: active
-      ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
-      : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-300',
+      ? 'border-[#ddb049] bg-amber-50 text-[#ddb049]'
+      : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-cyan-300',
     emerald: active
       ? 'border-[#20B486] bg-emerald-50 text-[#20B486]'
-      : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300',
+      : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-emerald-300',
     purple: active
       ? 'border-purple-500 bg-purple-50 text-purple-600'
-      : 'border-slate-200 bg-white text-slate-600 hover:border-purple-300',
+      : 'border-[#e8e0d2] bg-white text-slate-600 hover:border-purple-300',
   };
   return (
     <button
@@ -484,12 +484,12 @@ const SectionToggle = ({ active, onClick, icon: Icon, label, color }: any) => {
 
 const SectionCard = ({ title, icon: Icon, color, onRemove, children }: any) => {
   const colors: any = {
-    cyan: 'border-cyan-200 bg-cyan-50/30',
+    cyan: 'border-amber-200 bg-amber-50/30',
     emerald: 'border-emerald-200 bg-emerald-50/30',
     purple: 'border-purple-200 bg-purple-50/30',
   };
   const iconColors: any = {
-    cyan: 'text-[#07CCFD]',
+    cyan: 'text-[#ddb049]',
     emerald: 'text-[#20B486]',
     purple: 'text-purple-600',
   };

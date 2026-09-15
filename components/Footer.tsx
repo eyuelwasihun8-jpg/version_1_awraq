@@ -118,7 +118,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenConsultation }) => {
               <li>
                 <button
                   onClick={onOpenConsultation}
-                  className="hover:text-white transition-colors py-2 text-left min-h-[40px] text-[#07CCFD] font-semibold cursor-pointer"
+                  className="hover:text-white transition-colors py-2 text-left min-h-[40px] text-[#ddb049] font-semibold cursor-pointer"
                 >
                   Book Consultation
                 </button>

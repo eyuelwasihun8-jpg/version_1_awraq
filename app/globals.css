@@ -333,3 +333,14 @@
   50% { opacity: 1; transform: scale(1.08); }
 }
 .animate-pulse-soft { animation: pulseSoft 2.8s ease-in-out infinite; }
+/* Desktop testimonials marquee — pauses on hover via group-hover class in component */
+@keyframes testimonialsMarquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-testimonials-marquee {
+  width: max-content;
+  animation: testimonialsMarquee 35s linear infinite;
+  will-change: transform;
+}

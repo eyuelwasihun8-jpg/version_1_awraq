@@ -28,18 +28,19 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  // Refresh auth session
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
 
-  // Block old /admin
+  // 1. Block legacy /admin routes
   if (path === '/admin' || path.startsWith('/admin/')) {
     return new NextResponse('Not Found', { status: 404 });
   }
 
-  // Protect Student Areas
+  // 2. Protect Student Protected Areas
   if (path.startsWith('/dashboard') || path.startsWith('/learn')) {
     if (!user) {
       const url = request.nextUrl.clone();
@@ -48,44 +49,20 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protect Staff Portal Area
+  // 3. Protect Staff Portal Area (redirect unauthenticated to staff login)
   if (path === `/${PORTAL_SLUG}` || path.startsWith(`/${PORTAL_SLUG}/`)) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = `/${LOGIN_SLUG}`;
       return NextResponse.redirect(url);
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, is_active')
-      .eq('id', user.id)
-      .single();
-
-    if (
-      !profile?.is_active ||
-      !['super_admin', 'admin', 'sales', 'instructor'].includes(profile.role)
-    ) {
-      return new NextResponse('Not Found', { status: 404 });
-    }
   }
 
-  // If already staff and visits staff-login -> redirect to staff portal
+  // 4. If logged-in staff visits staff-login -> redirect to staff portal
   if (path === `/${LOGIN_SLUG}` && user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, is_active')
-      .eq('id', user.id)
-      .single();
-
-    if (
-      profile?.is_active &&
-      ['super_admin', 'admin', 'sales', 'instructor'].includes(profile.role)
-    ) {
-      const url = request.nextUrl.clone();
-      url.pathname = `/${PORTAL_SLUG}`;
-      return NextResponse.redirect(url);
-    }
+    const url = request.nextUrl.clone();
+    url.pathname = `/${PORTAL_SLUG}`;
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;

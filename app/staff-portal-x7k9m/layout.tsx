@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase-server';
-import { redirect } from 'next/navigation';
+import { redirect, notFound } from 'next/navigation';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 
@@ -23,11 +23,12 @@ export default async function StaffLayout({ children }: { children: React.ReactN
     .eq('id', user.id)
     .single();
 
+  // If user is not staff, return 404 safely
   if (
     !profile?.is_active ||
     !['super_admin', 'admin', 'sales', 'instructor'].includes(profile.role)
   ) {
-    redirect('/');
+    notFound();
   }
 
   return (

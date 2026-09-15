@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase-server';
 import { StudentDetailClient } from '@/components/admin/StudentDetailClient';
-import { notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,9 @@ export default async function StudentDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) redirect('/');
 
@@ -21,11 +23,26 @@ export default async function StudentDetailPage({
     .eq('id', user.id)
     .single();
 
-  if (!profile || !['super_admin', 'admin', 'sales', 'instructor'].includes(profile.role)) {
+  if (
+    !profile ||
+    !['super_admin', 'admin', 'sales', 'instructor'].includes(profile.role)
+  ) {
     redirect('/');
   }
 
-  // Pass token/auth implicitly via client component fetch
-  // We'll let the client component fetch the data so it handles loading states nicely
-  return <StudentDetailClient studentId={id} role={profile.role} />;
+  // Fetch sales reps for the assignment dropdown
+  const { data: salesReps } = await supabase
+    .from('profiles')
+    .select('id, full_name')
+    .eq('role', 'sales')
+    .eq('is_active', true)
+    .order('full_name');
+
+  return (
+    <StudentDetailClient
+      studentId={id}
+      role={profile.role}
+      salesReps={salesReps || []}
+    />
+  );
 }

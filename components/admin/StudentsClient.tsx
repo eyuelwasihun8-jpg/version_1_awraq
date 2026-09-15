@@ -2,7 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Search, Loader2, ChevronRight, GraduationCap, Download, Filter, ChevronLeft, UserPlus } from 'lucide-react';
+import {
+  Search,
+  Loader2,
+  ChevronRight,
+  GraduationCap,
+  Download,
+  Filter,
+  ChevronLeft,
+  UserPlus,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { UserAvatar } from '@/components/UserAvatar';
 
@@ -40,11 +49,15 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
   const [courseId, setCourseId] = useState('all');
   const [hasPurchases, setHasPurchases] = useState('all');
   const [sort, setSort] = useState('newest');
-  
-  // Track actual query to prevent bounce
-  const [queryObj, setQueryObj] = useState({ page: 1, search: '', courseId: 'all', hasPurchases: 'all', sort: 'newest' });
 
-  // Update query object on debounce
+  const [queryObj, setQueryObj] = useState({
+    page: 1,
+    search: '',
+    courseId: 'all',
+    hasPurchases: 'all',
+    sort: 'newest',
+  });
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setQueryObj({ page: 1, search, courseId, hasPurchases, sort });
@@ -52,7 +65,6 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
     return () => clearTimeout(timer);
   }, [search, courseId, hasPurchases, sort]);
 
-  // Fetch
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -67,17 +79,17 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
 
         const res = await fetch(`/api/admin/students?${params.toString()}`);
         const data = await res.json();
-        
+
         if (!res.ok) throw new Error(data.error);
-        
+
         setStudents(data.students);
         setPagination({
           page: data.pagination.page,
           limit: data.pagination.limit,
           total: data.pagination.total,
           totalPages: data.pagination.totalPages,
-          hasPrev: data.pagination.hasPrev ?? (data.pagination.page > 1),
-          hasNext: data.pagination.hasNext ?? (data.pagination.page < data.pagination.totalPages),
+          hasPrev: data.pagination.hasPrev ?? data.pagination.page > 1,
+          hasNext: data.pagination.hasNext ?? data.pagination.page < data.pagination.totalPages,
         });
       } catch (err: any) {
         toast.error(err.message || 'Failed to load students');
@@ -104,7 +116,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
 
       const res = await fetch(`/api/admin/students/export?${params.toString()}`);
       if (!res.ok) throw new Error('Export failed');
-      
+
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -121,15 +133,19 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
   };
 
   const canEnroll = ['super_admin', 'admin', 'sales'].includes(role);
+  const canSeeAssignments = ['super_admin', 'admin'].includes(role);
+  const isSales = role === 'sales';
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1">Students</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1">
+            {isSales ? 'My Students' : 'Students'}
+          </h1>
           <p className="text-sm text-slate-500 font-medium">
-            {pagination.total.toLocaleString()} total student{pagination.total !== 1 ? 's' : ''} found
+            {pagination.total.toLocaleString()} {isSales ? 'assigned to you' : 'total students'}
           </p>
         </div>
 
@@ -137,12 +153,16 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
           <button
             onClick={handleExport}
             disabled={downloading || students.length === 0}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-bold shadow-sm transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-bold shadow-sm transition-all disabled:opacity-50 cursor-pointer"
           >
-            {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            {downloading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
             <span className="hidden sm:inline">Export</span>
           </button>
-          
+
           {canEnroll && (
             <Link
               href={`/${PORTAL_SLUG}/students/enroll`}
@@ -167,7 +187,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm"
           />
         </div>
-        
+
         <div className="flex flex-wrap sm:flex-nowrap gap-3">
           <div className="relative flex-1 sm:w-48">
             <Filter className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -178,7 +198,9 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
             >
               <option value="all">All Courses</option>
               {courses.map((c) => (
-                <option key={c.id} value={c.id}>{c.title}</option>
+                <option key={c.id} value={c.id}>
+                  {c.title}
+                </option>
               ))}
             </select>
           </div>
@@ -216,7 +238,11 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
           <div className="py-20 text-center">
             <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <p className="text-base font-black text-slate-900 mb-1">No students found</p>
-            <p className="text-sm text-slate-500 font-medium">Try adjusting your search or filters.</p>
+            <p className="text-sm text-slate-500 font-medium">
+              {isSales
+                ? 'You have no assigned students yet.'
+                : 'Try adjusting your search or filters.'}
+            </p>
           </div>
         ) : (
           <>
@@ -236,12 +262,11 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
                   className="block p-4 hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                    
                     {/* Student Info */}
                     <div className="sm:col-span-5 flex items-center gap-3 min-w-0">
                       <UserAvatar avatarKey={s.avatarUrl} name={s.fullName} size="md" />
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-0.5">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                           <span className="text-sm font-black text-slate-900 truncate">
                             {s.fullName || 'Unnamed'}
                           </span>
@@ -251,13 +276,26 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-slate-500 font-medium truncate">
-                          {s.phone || s.email}
+                        <div className="text-xs text-slate-500 font-medium truncate flex items-center gap-2 flex-wrap">
+                          <span>{s.phone || s.email}</span>
+                          {canSeeAssignments && (
+                            <>
+                              {s.assignedToName ? (
+                                <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">
+                                  👤 {s.assignedToName}
+                                </span>
+                              ) : (
+                                <span className="bg-slate-100 text-slate-500 border border-slate-200 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">
+                                  Unassigned
+                                </span>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Stats */}
+                    {/* Enrollments */}
                     <div className="sm:col-span-2 flex sm:justify-center items-center gap-2 text-xs">
                       <span className="sm:hidden font-bold text-slate-500">Enrolled:</span>
                       <span className="font-black text-slate-900 bg-slate-100 px-2 py-1 rounded-lg">
@@ -265,12 +303,13 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
                       </span>
                     </div>
 
+                    {/* Progress */}
                     <div className="sm:col-span-2 flex sm:justify-center items-center gap-2 text-xs">
                       <span className="sm:hidden font-bold text-slate-500">Progress:</span>
                       <div className="flex items-center gap-2 w-full sm:w-auto">
                         <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden shrink-0">
-                          <div 
-                            className="h-full bg-emerald-500 rounded-full" 
+                          <div
+                            className="h-full bg-emerald-500 rounded-full"
                             style={{ width: `${s.avgProgress}%` }}
                           />
                         </div>
@@ -278,24 +317,26 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
                       </div>
                     </div>
 
+                    {/* Joined */}
                     <div className="sm:col-span-3 flex items-center justify-between sm:justify-end gap-3 text-xs text-slate-500 font-medium">
                       <span className="sm:hidden font-bold text-slate-500">Joined:</span>
                       <span>{new Date(s.createdAt).toLocaleDateString()}</span>
                       <ChevronRight className="w-4 h-4 text-slate-300 hidden sm:block" />
                     </div>
-
                   </div>
                 </Link>
               ))}
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination */}
             {pagination.totalPages > 1 && (
               <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div className="text-xs text-slate-500 font-medium hidden sm:block">
-                  Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
+                  Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
+                  {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+                  {pagination.total}
                 </div>
-                
+
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
@@ -304,7 +345,7 @@ export const StudentsClient: React.FC<Props> = ({ courses, role }) => {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  
+
                   <div className="text-sm font-bold text-slate-700 px-2">
                     Page {pagination.page} of {pagination.totalPages}
                   </div>

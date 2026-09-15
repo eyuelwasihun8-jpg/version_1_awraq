@@ -19,19 +19,24 @@ export async function POST(request: NextRequest) {
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: profile } = await supabase
+  const adminDb = createAdminClient();
+
+  const { data: profile } = await adminDb
     .from('profiles')
-    .select('role')
+    .select('role, is_active')
     .eq('id', user.id)
     .single();
 
-  // Only super_admin, admin, sales can create students
-  if (!profile || !['super_admin', 'admin', 'sales'].includes(profile.role)) {
+  if (
+    !profile ||
+    !profile.is_active ||
+    !['super_admin', 'admin', 'sales'].includes(profile.role)
+  ) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const body = await request.json();
-  const { email, fullName, phone, password: customPassword } = body;
+  const { email, fullName, phone, password: customPassword, gender, ageGroup, lifeStatus, assignedTo } = body;
 
   if (!email?.trim() || !fullName?.trim()) {
     return NextResponse.json(
@@ -45,7 +50,14 @@ export async function POST(request: NextRequest) {
       ? String(customPassword)
       : generatePassword(10);
 
-  const adminDb = createAdminClient();
+  // Auto-assign: If sales rep creates a student, assign to themselves
+  // If admin/super admin creates, use provided assignedTo (nullable)
+  let finalAssignedTo: string | null = null;
+  if (profile.role === 'sales') {
+    finalAssignedTo = user.id;
+  } else if (['super_admin', 'admin'].includes(profile.role) && assignedTo) {
+    finalAssignedTo = assignedTo;
+  }
 
   // Create auth user (auto-confirmed)
   const { data: newUser, error: createErr } = await adminDb.auth.admin.createUser({
@@ -64,20 +76,24 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Update profile
+  // Update profile with all details
   const { error: profileErr } = await adminDb
     .from('profiles')
     .update({
       full_name: fullName.trim(),
       phone: phone?.trim() || null,
+      gender: gender || null,
+      age_group: ageGroup || null,
+      life_status: lifeStatus || null,
       role: 'student',
       is_active: true,
-      onboarding_completed: true, // Skip onboarding for manually created students
+      onboarding_completed: true,
+      assigned_to: finalAssignedTo,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', newUser.user.id);
 
   if (profileErr) {
-    // Rollback auth user
     await adminDb.auth.admin.deleteUser(newUser.user.id);
     return NextResponse.json({ error: profileErr.message }, { status: 500 });
   }
@@ -93,6 +109,10 @@ export async function POST(request: NextRequest) {
       email: email.trim().toLowerCase(),
       full_name: fullName.trim(),
       phone: phone?.trim() || null,
+      gender: gender || null,
+      age_group: ageGroup || null,
+      life_status: lifeStatus || null,
+      assigned_to: finalAssignedTo,
       source: 'manual',
     },
   });
@@ -104,10 +124,11 @@ export async function POST(request: NextRequest) {
       email: newUser.user.email,
       fullName: fullName.trim(),
       phone: phone?.trim() || null,
+      assignedTo: finalAssignedTo,
     },
     credentials: {
       email: newUser.user.email,
-      password, // Only returned once
+      password,
     },
   });
 }

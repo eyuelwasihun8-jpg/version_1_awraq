@@ -1,29 +1,57 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Clock, CheckCircle2, XCircle, Loader2, Receipt, X, ImageIcon } from 'lucide-react';
+import {
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Search,
+  Eye,
+} from 'lucide-react';
 import { toast } from 'sonner';
+import { UserAvatar } from '@/components/UserAvatar';
 
-type Status = 'pending' | 'approved' | 'rejected';
+type StatusFilter = 'pending' | 'approved' | 'rejected' | 'all';
 
 export const PaymentsClient: React.FC = () => {
-  const [status, setStatus] = useState<Status>('pending');
   const [payments, setPayments] = useState<any[]>([]);
+  const [status, setStatus] = useState<StatusFilter>('pending');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1,
+    hasPrev: false,
+    hasNext: false,
+  });
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<any | null>(null);
-  const [action, setAction] = useState<'approve' | 'reject' | null>(null);
+  const [actionId, setActionId] = useState<string | null>(null);
   const [txNumber, setTxNumber] = useState('');
   const [rejectReason, setRejectReason] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/payments?status=${status}&limit=100`);
+      const params = new URLSearchParams({
+        status,
+        page: String(page),
+        limit: '10',
+      });
+      if (search.trim()) params.set('search', search.trim());
+
+      const res = await fetch(`/api/admin/payments?${params}`);
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
       setPayments(data.payments || []);
-    } catch {
-      toast.error('Failed to load payments');
+      setPagination(data.pagination);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to load payments');
     } finally {
       setLoading(false);
     }
@@ -31,59 +59,61 @@ export const PaymentsClient: React.FC = () => {
 
   useEffect(() => {
     fetchPayments();
-  }, [status]);
+  }, [status, page]);
 
-  const handleApprove = async () => {
-    if (!selected || !txNumber.trim()) {
-      toast.error('Transaction number is required');
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setPage(1);
+      fetchPayments();
+    }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const approve = async (id: string) => {
+    if (!txNumber.trim()) {
+      toast.error('Transaction number required');
       return;
     }
-    setSubmitting(true);
+    setActionId(id);
     try {
       const res = await fetch('/api/admin/payments/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId: selected.id, transactionNumber: txNumber.trim() }),
+        body: JSON.stringify({ paymentId: id, transactionNumber: txNumber.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || 'Failed');
-        return;
-      }
-      toast.success('Payment approved!');
-      setSelected(null);
-      setAction(null);
+      if (!res.ok) throw new Error(data.error || 'Approve failed');
+      toast.success('Payment approved');
       setTxNumber('');
       fetchPayments();
+    } catch (err: any) {
+      toast.error(err.message);
     } finally {
-      setSubmitting(false);
+      setActionId(null);
     }
   };
 
-  const handleReject = async () => {
-    if (!selected || !rejectReason.trim()) {
-      toast.error('Rejection reason is required');
+  const reject = async (id: string) => {
+    if (!rejectReason.trim()) {
+      toast.error('Rejection reason required');
       return;
     }
-    setSubmitting(true);
+    setActionId(id);
     try {
       const res = await fetch('/api/admin/payments/reject', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId: selected.id, rejectionReason: rejectReason.trim() }),
+        body: JSON.stringify({ paymentId: id, reason: rejectReason.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || 'Failed');
-        return;
-      }
+      if (!res.ok) throw new Error(data.error || 'Reject failed');
       toast.success('Payment rejected');
-      setSelected(null);
-      setAction(null);
       setRejectReason('');
       fetchPayments();
+    } catch (err: any) {
+      toast.error(err.message);
     } finally {
-      setSubmitting(false);
+      setActionId(null);
     }
   };
 
@@ -91,227 +121,160 @@ export const PaymentsClient: React.FC = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1">Payments</h1>
-        <p className="text-sm text-slate-500 font-medium">Review and process payment receipts</p>
+        <p className="text-sm text-slate-500 font-medium">
+          {pagination.total} total · page {pagination.page} of {pagination.totalPages}
+        </p>
       </div>
 
-      {/* Status tabs */}
-      <div className="flex gap-2 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm w-fit">
-        {(['pending', 'approved', 'rejected'] as Status[]).map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatus(s)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold capitalize cursor-pointer transition-all ${
-              status === s ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            {s === 'pending' && <Clock className="w-3.5 h-3.5" />}
-            {s === 'approved' && <CheckCircle2 className="w-3.5 h-3.5" />}
-            {s === 'rejected' && <XCircle className="w-3.5 h-3.5" />}
-            <span>{s}</span>
-          </button>
-        ))}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search student, item, TX..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-[#07CCFD]"
+          />
+        </div>
+        <div className="flex gap-1 bg-white border border-slate-200 rounded-xl p-1">
+          {(['pending', 'approved', 'rejected', 'all'] as StatusFilter[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => {
+                setStatus(s);
+                setPage(1);
+              }}
+              className={`px-3 py-2 rounded-lg text-xs font-bold capitalize cursor-pointer ${
+                status === s ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
+          <div className="py-20 flex justify-center">
             <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
           </div>
         ) : payments.length === 0 ? (
-          <div className="py-16 text-center">
-            <Receipt className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-sm font-bold text-slate-500">No {status} payments</p>
-          </div>
+          <div className="py-20 text-center text-sm font-medium text-slate-500">No payments found</div>
         ) : (
           <div className="divide-y divide-slate-100">
             {payments.map((p) => (
-              <div key={p.id} className="p-4 sm:p-5 hover:bg-slate-50 transition-colors">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-sm font-black text-slate-900">
-                        {p.user?.full_name || 'Unknown'}
-                      </span>
-                      <span className="text-xs text-slate-400">·</span>
-                      <span className="text-xs text-slate-500 font-medium">{p.user?.phone}</span>
-                    </div>
-                    <div className="text-xs text-slate-500 font-medium mb-2 line-clamp-1">
-                      {p.item_type === 'course' ? '📚' : '📄'} {p.item_title || p.item_id}
-                    </div>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span className="text-sm font-black text-slate-900">
-                        ETB {Number(p.amount).toLocaleString()}
-                      </span>
-                      <span className="text-[10px] uppercase font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                        {p.payment_method}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        {new Date(p.created_at).toLocaleString()}
-                      </span>
-                    </div>
-                    {p.transaction_number && (
-                      <div className="mt-2 text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-2 py-1 inline-block">
-                        TX: {p.transaction_number}
+              <div key={p.id} className="p-4 sm:p-5 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <UserAvatar avatarKey={p.student_avatar} name={p.student_name} size="md" />
+                    <div className="min-w-0">
+                      <div className="text-sm font-black text-slate-900 truncate">{p.student_name}</div>
+                      <div className="text-xs text-slate-500 font-medium truncate">
+                        {p.item_title} · {p.item_type}
                       </div>
-                    )}
-                    {p.rejection_reason && (
-                      <div className="mt-2 text-[11px] text-red-700 bg-red-50 border border-red-100 rounded-lg px-2 py-1">
-                        Reason: {p.rejection_reason}
+                      <div className="text-[10px] text-slate-400 font-medium">
+                        {new Date(p.created_at).toLocaleString()} · {p.payment_method?.toUpperCase()}
                       </div>
-                    )}
+                    </div>
                   </div>
-
-                  <div className="flex flex-col gap-2 shrink-0">
-                    {p.receipt_url && (
-                      <button
-                        onClick={() => setSelected(p)}
-                        className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
-                      >
-                        <ImageIcon className="w-3.5 h-3.5" />
-                        <span>Receipt</span>
-                      </button>
-                    )}
-                    {p.status === 'pending' && (
-                      <>
-                        <button
-                          onClick={() => {
-                            setSelected(p);
-                            setAction('approve');
-                          }}
-                          className="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold cursor-pointer transition-all"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelected(p);
-                            setAction('reject');
-                          }}
-                          className="px-3 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold cursor-pointer transition-all"
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
+                  <div className="text-right shrink-0">
+                    <div className="text-sm font-black text-slate-900">
+                      ETB {Number(p.amount).toLocaleString()}
+                    </div>
+                    <span
+                      className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-full border ${
+                        p.status === 'approved'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                          : p.status === 'rejected'
+                          ? 'bg-red-50 text-red-700 border-red-100'
+                          : 'bg-amber-50 text-amber-700 border-amber-100'
+                      }`}
+                    >
+                      {p.status}
+                    </span>
                   </div>
                 </div>
+
+                {p.receipt_url && (
+                  <button
+                    onClick={() => setPreviewUrl(p.receipt_url)}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#07CCFD] hover:underline cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5" /> View Receipt
+                  </button>
+                )}
+
+                {p.status === 'pending' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                    <div className="flex gap-2">
+                      <input
+                        value={txNumber}
+                        onChange={(e) => setTxNumber(e.target.value)}
+                        placeholder="Transaction number"
+                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs font-mono outline-none focus:border-emerald-500"
+                      />
+                      <button
+                        onClick={() => approve(p.id)}
+                        disabled={actionId === p.id}
+                        className="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                      >
+                        {actionId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                        Approve
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        placeholder="Rejection reason"
+                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:border-red-500"
+                      />
+                      <button
+                        onClick={() => reject(p.id)}
+                        disabled={actionId === p.id}
+                        className="px-3 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-bold cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                      >
+                        {actionId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
-      </div>
 
-      {/* Modal */}
-      {selected && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => {
-            setSelected(null);
-            setAction(null);
-            setTxNumber('');
-            setRejectReason('');
-          }}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90dvh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-base font-black text-slate-900">
-                {action === 'approve' ? 'Approve Payment' : action === 'reject' ? 'Reject Payment' : 'Receipt'}
-              </h3>
+        {pagination.totalPages > 1 && (
+          <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+            <div className="text-xs text-slate-500 font-medium hidden sm:block">
+              Page {pagination.page} of {pagination.totalPages}
+            </div>
+            <div className="flex items-center gap-2 ml-auto">
               <button
-                onClick={() => {
-                  setSelected(null);
-                  setAction(null);
-                }}
-                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center cursor-pointer"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={!pagination.hasPrev}
+                className="p-2 rounded-lg bg-white border border-slate-200 disabled:opacity-50 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-sm font-bold text-slate-700 px-2">{pagination.page}</span>
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={!pagination.hasNext}
+                className="p-2 rounded-lg bg-white border border-slate-200 disabled:opacity-50 cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-
-            <div className="p-5 space-y-4">
-              {/* Payment info */}
-              <div className="bg-slate-50 rounded-xl p-4 space-y-1 text-sm">
-                <div>
-                  <span className="text-slate-500 font-medium">Student:</span>{' '}
-                  <span className="font-bold text-slate-900">{selected.user?.full_name}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 font-medium">Amount:</span>{' '}
-                  <span className="font-bold text-slate-900">ETB {Number(selected.amount).toLocaleString()}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 font-medium">Method:</span>{' '}
-                  <span className="font-bold text-slate-900 uppercase">{selected.payment_method}</span>
-                </div>
-              </div>
-
-              {/* Receipt image */}
-              {selected.receipt_url && (
-                <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
-                  <img
-                    src={selected.receipt_url}
-                    alt="Receipt"
-                    className="w-full object-contain max-h-[400px]"
-                  />
-                </div>
-              )}
-
-              {/* Approve form */}
-              {action === 'approve' && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Transaction Number *
-                  </label>
-                  <input
-                    type="text"
-                    value={txNumber}
-                    onChange={(e) => setTxNumber(e.target.value)}
-                    placeholder="e.g. FT12345ABCD"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] focus:ring-2 focus:ring-cyan-100 outline-none bg-slate-50/50 font-mono text-sm"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Verify the transaction in your bank app, then enter the reference number.
-                  </p>
-                  <button
-                    onClick={handleApprove}
-                    disabled={submitting || !txNumber.trim()}
-                    className="w-full mt-4 min-h-[48px] py-3.5 rounded-xl bg-gradient-to-b from-[#20B486] to-[#059669] border-b-[4px] border-[#047857] hover:border-b-[2px] hover:translate-y-[2px] text-white text-sm font-bold shadow-[0_8px_20px_rgba(32,180,134,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                  >
-                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                    <span>{submitting ? 'Approving...' : 'Confirm Approval'}</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Reject form */}
-              {action === 'reject' && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Rejection Reason *
-                  </label>
-                  <textarea
-                    value={rejectReason}
-                    onChange={(e) => setRejectReason(e.target.value)}
-                    placeholder="e.g. Receipt amount doesn't match / Fake receipt / Wrong account..."
-                    rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none bg-slate-50/50 text-sm resize-none"
-                  />
-                  <button
-                    onClick={handleReject}
-                    disabled={submitting || !rejectReason.trim()}
-                    className="w-full mt-4 min-h-[48px] py-3.5 rounded-xl bg-red-500 hover:bg-red-600 border-b-[4px] border-red-700 hover:border-b-[2px] hover:translate-y-[2px] text-white text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                  >
-                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                    <span>{submitting ? 'Rejecting...' : 'Confirm Rejection'}</span>
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
+        )}
+      </div>
+
+      {previewUrl && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setPreviewUrl(null)}>
+          <img src={previewUrl} alt="Receipt" className="max-h-[85vh] max-w-full rounded-xl" />
         </div>
       )}
     </div>

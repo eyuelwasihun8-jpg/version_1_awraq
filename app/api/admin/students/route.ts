@@ -44,6 +44,8 @@ export async function GET(request: NextRequest) {
 
   // Instructors only see students in their courses
   const instructorId = role === 'instructor' ? user.id : null;
+  // Sales only see their assigned students
+  const salesId = role === 'sales' ? user.id : null;
 
   const adminDb = createAdminClient();
 
@@ -55,6 +57,7 @@ export async function GET(request: NextRequest) {
     p_limit: limit,
     p_offset: offset,
     p_instructor_id: instructorId,
+    p_sales_id: salesId,
   });
 
   if (error) {
@@ -82,6 +85,8 @@ export async function GET(request: NextRequest) {
       productsCount: Number(s.products_count || 0),
       avgProgress: Number(s.avg_progress || 0),
       lastActivity: s.last_activity,
+      assignedToId: s.assigned_to,
+      assignedToName: s.assigned_to_name,
     })),
     pagination: {
       page,

@@ -29,14 +29,55 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ role }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const allLinks = [
-    { href: `/${SLUG}`, label: 'Overview', icon: LayoutDashboard, roles: ['super_admin', 'admin', 'sales', 'instructor'] },
-    { href: `/${SLUG}/payments`, label: 'Payments', icon: Receipt, roles: ['super_admin', 'admin', 'sales'] },
-    { href: `/${SLUG}/students`, label: 'Students', icon: GraduationCap, roles: ['super_admin', 'admin', 'sales', 'instructor'] },
-    { href: `/${SLUG}/courses`, label: 'Courses', icon: BookOpen, roles: ['super_admin', 'admin', 'instructor'] },
-    { href: `/${SLUG}/products`, label: 'Products', icon: Package, roles: ['super_admin', 'admin', 'instructor'] },
-    { href: `/${SLUG}/users`, label: 'Staff Users', icon: Users, roles: ['super_admin', 'admin'] },
-    { href: `/${SLUG}/leads`, label: 'Leads (Old)', icon: UserCheck, roles: ['super_admin', 'admin'] },
-    { href: `/${SLUG}/audit`, label: 'Audit Log', icon: FileText, roles: ['super_admin'] },
+    {
+      href: `/${SLUG}`,
+      label: 'Overview',
+      icon: LayoutDashboard,
+      roles: ['super_admin', 'admin', 'sales', 'instructor'],
+    },
+    {
+      href: `/${SLUG}/payments`,
+      label: 'Payments',
+      icon: Receipt,
+      roles: ['super_admin', 'admin', 'sales'],
+    },
+    {
+      href: `/${SLUG}/students`,
+      // Sales see "My Students", everyone else sees "Students"
+      label: role === 'sales' ? 'My Students' : 'Students',
+      icon: GraduationCap,
+      roles: ['super_admin', 'admin', 'sales', 'instructor'],
+    },
+    {
+      href: `/${SLUG}/courses`,
+      label: 'Courses',
+      icon: BookOpen,
+      roles: ['super_admin', 'admin', 'instructor'],
+    },
+    {
+      href: `/${SLUG}/products`,
+      label: 'Products',
+      icon: Package,
+      roles: ['super_admin', 'admin', 'instructor'],
+    },
+    {
+      href: `/${SLUG}/users`,
+      label: 'Staff Users',
+      icon: Users,
+      roles: ['super_admin', 'admin'],
+    },
+    {
+      href: `/${SLUG}/leads`,
+      label: 'Leads',
+      icon: UserCheck,
+      roles: ['super_admin', 'admin', 'sales'],
+    },
+    {
+      href: `/${SLUG}/audit`,
+      label: 'Audit Log',
+      icon: FileText,
+      roles: ['super_admin'],
+    },
   ];
 
   const links = allLinks.filter((l) => l.roles.includes(role));
@@ -48,13 +89,16 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ role }) => {
 
   return (
     <>
+      {/* Mobile menu toggle */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 w-11 h-11 rounded-xl bg-white border border-slate-200 shadow-md flex items-center justify-center cursor-pointer"
+        aria-label="Toggle sidebar"
       >
         {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
+      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/40 z-30"
@@ -62,18 +106,27 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ role }) => {
         />
       )}
 
+      {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-200 z-40 transform transition-transform duration-300 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
+        {/* Logo */}
         <div className="p-6 border-b border-slate-100">
-          <Link href={`/${SLUG}`} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+          <Link
+            href={`/${SLUG}`}
+            className="flex items-center gap-2"
+            onClick={() => setMobileOpen(false)}
+          >
             <BrandLogo size="sm" />
-            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Staff</span>
+            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">
+              Staff
+            </span>
           </Link>
         </div>
 
+        {/* Navigation links */}
         <nav className="p-3 space-y-1">
           {links.map((link) => {
             const Icon = link.icon;
@@ -96,6 +149,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ role }) => {
           })}
         </nav>
 
+        {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-100">
           <Link
             href="/"

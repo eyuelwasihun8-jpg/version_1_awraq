@@ -41,7 +41,7 @@ export async function GET(
   // Profile + email
   const { data: profile, error: profileErr } = await adminDb
     .from('profiles')
-    .select('*')
+    .select('*, assigned_sales:profiles!profiles_assigned_to_fkey(id, full_name)')
     .eq('id', id)
     .eq('role', 'student')
     .single();
@@ -50,7 +50,12 @@ export async function GET(
     return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   }
 
-  // Instructor scope check
+  // SALES SCOPE: sales can only view their assigned students
+  if (role === 'sales' && profile.assigned_to !== user.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // INSTRUCTOR SCOPE
   if (role === 'instructor') {
     const { count } = await adminDb
       .from('enrollments')
@@ -134,7 +139,8 @@ export async function PATCH(
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const { role } = auth as { role: string };
+  const { user, role } = auth as { user: any; role: string };
+
   if (!['super_admin', 'admin', 'sales'].includes(role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -142,10 +148,31 @@ export async function PATCH(
   const body = await request.json();
   const adminDb = createAdminClient();
 
+  // If sales is trying to edit, verify they own this student
+  if (role === 'sales') {
+    const { data: existingProfile } = await adminDb
+      .from('profiles')
+      .select('assigned_to')
+      .eq('id', id)
+      .single();
+
+    if (existingProfile?.assigned_to !== user.id) {
+      return NextResponse.json({ error: 'You can only edit your assigned students' }, { status: 403 });
+    }
+  }
+
   const updates: Record<string, any> = { updated_at: new Date().toISOString() };
   if (body.fullName !== undefined) updates.full_name = body.fullName?.trim() || null;
   if (body.phone !== undefined) updates.phone = body.phone?.trim() || null;
   if (body.isActive !== undefined) updates.is_active = !!body.isActive;
+  if (body.gender !== undefined) updates.gender = body.gender || null;
+  if (body.ageGroup !== undefined) updates.age_group = body.ageGroup || null;
+  if (body.lifeStatus !== undefined) updates.life_status = body.lifeStatus || null;
+
+  // Only super_admin and admin can change assignments
+  if (body.assignedTo !== undefined && ['super_admin', 'admin'].includes(role)) {
+    updates.assigned_to = body.assignedTo || null;
+  }
 
   const { data, error } = await adminDb
     .from('profiles')
@@ -156,6 +183,20 @@ export async function PATCH(
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Audit log for assignment change
+  if (body.assignedTo !== undefined && ['super_admin', 'admin'].includes(role)) {
+    await adminDb.from('audit_logs').insert({
+      actor_id: user.id,
+      actor_role: role,
+      action: 'reassign_student',
+      target_type: 'profile',
+      target_id: id,
+      details: {
+        assigned_to: body.assignedTo,
+      },
+    });
+  }
 
   return NextResponse.json({ success: true, student: data });
 }

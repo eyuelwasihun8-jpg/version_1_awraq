@@ -38,19 +38,33 @@ export async function GET(
   const { user, role } = auth as { user: any; role: string };
   const adminDb = createAdminClient();
 
-  // Profile + email
+  // 1. Fetch main profile cleanly (no complex FK syntax)
   const { data: profile, error: profileErr } = await adminDb
     .from('profiles')
-    .select('*, assigned_sales:profiles!profiles_assigned_to_fkey(id, full_name)')
+    .select('*')
     .eq('id', id)
-    .eq('role', 'student')
     .single();
 
   if (profileErr || !profile) {
+    console.error('Student fetch error:', profileErr);
     return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   }
 
-  // SALES SCOPE: sales can only view their assigned students
+  // 2. Fetch assigned sales rep profile if exists
+  let assignedSales: { id: string; full_name: string } | null = null;
+  if (profile.assigned_to) {
+    const { data: salesProfile } = await adminDb
+      .from('profiles')
+      .select('id, full_name')
+      .eq('id', profile.assigned_to)
+      .maybeSingle();
+    
+    if (salesProfile) {
+      assignedSales = salesProfile;
+    }
+  }
+
+  // SALES SCOPE: sales reps can only view their assigned students
   if (role === 'sales' && profile.assigned_to !== user.id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -77,54 +91,92 @@ export async function GET(
     }
   }
 
-  const { data: authUser } = await adminDb.auth.admin.getUserById(id);
+  // Fetch email safely from auth
+  let email: string | null = null;
+  try {
+    const { data: authUser } = await adminDb.auth.admin.getUserById(id);
+    email = authUser?.user?.email || null;
+  } catch (e) {
+    console.error('Auth user fetch error:', e);
+  }
 
-  // Course progress
-  const { data: courseProgress } = await adminDb
-    .from('student_progress_summary')
-    .select('*')
-    .eq('user_id', id)
-    .order('enrolled_at', { ascending: false });
+  // Fetch course progress summary (fallback gracefully if empty/error)
+  let courseProgress: any[] = [];
+  try {
+    const { data } = await adminDb
+      .from('student_progress_summary')
+      .select('*')
+      .eq('user_id', id)
+      .order('enrolled_at', { ascending: false });
+    courseProgress = data || [];
+  } catch (e) {
+    console.error('Progress summary fetch error:', e);
+  }
 
-  // Digital products
-  const { data: products } = await adminDb
-    .from('purchases')
-    .select('*, digital_products(id, title, price, file_type, thumbnail_url)')
-    .eq('user_id', id)
-    .order('purchased_at', { ascending: false });
+  // Fetch digital products
+  let products: any[] = [];
+  try {
+    const { data } = await adminDb
+      .from('purchases')
+      .select('*, digital_products(id, title, price, file_type, thumbnail_url)')
+      .eq('user_id', id)
+      .order('purchased_at', { ascending: false });
+    products = data || [];
+  } catch (e) {
+    console.error('Purchases fetch error:', e);
+  }
 
-  // Payments
-  const { data: payments } = await adminDb
-    .from('payment_requests')
-    .select('*')
-    .eq('user_id', id)
-    .order('created_at', { ascending: false });
+  // Fetch payments
+  let payments: any[] = [];
+  try {
+    const { data } = await adminDb
+      .from('payment_requests')
+      .select('*')
+      .eq('user_id', id)
+      .order('created_at', { ascending: false });
+    payments = data || [];
+  } catch (e) {
+    console.error('Payments fetch error:', e);
+  }
 
-  // Certificates
-  const { data: certificates } = await adminDb
-    .from('certificates')
-    .select('*, courses(title)')
-    .eq('user_id', id)
-    .order('issued_at', { ascending: false });
+  // Fetch certificates
+  let certificates: any[] = [];
+  try {
+    const { data } = await adminDb
+      .from('certificates')
+      .select('*, courses(title)')
+      .eq('user_id', id)
+      .order('issued_at', { ascending: false });
+    certificates = data || [];
+  } catch (e) {
+    console.error('Certificates fetch error:', e);
+  }
 
-  // Quiz attempts
-  const { data: quizAttempts } = await adminDb
-    .from('lesson_quiz_attempts')
-    .select('*, lessons(title, course_id)')
-    .eq('user_id', id)
-    .order('attempted_at', { ascending: false })
-    .limit(50);
+  // Fetch quiz attempts
+  let quizAttempts: any[] = [];
+  try {
+    const { data } = await adminDb
+      .from('lesson_quiz_attempts')
+      .select('*, lessons(title, course_id)')
+      .eq('user_id', id)
+      .order('attempted_at', { ascending: false })
+      .limit(50);
+    quizAttempts = data || [];
+  } catch (e) {
+    console.error('Quiz attempts fetch error:', e);
+  }
 
   return NextResponse.json({
     student: {
       ...profile,
-      email: authUser?.user?.email || null,
+      email,
+      assigned_sales: assignedSales,
     },
-    courses: courseProgress || [],
-    products: products || [],
-    payments: payments || [],
-    certificates: certificates || [],
-    quizAttempts: quizAttempts || [],
+    courses: courseProgress,
+    products,
+    payments,
+    certificates,
+    quizAttempts,
   });
 }
 
@@ -148,7 +200,7 @@ export async function PATCH(
   const body = await request.json();
   const adminDb = createAdminClient();
 
-  // If sales is trying to edit, verify they own this student
+  // If sales is trying to edit, verify ownership
   if (role === 'sales') {
     const { data: existingProfile } = await adminDb
       .from('profiles')
@@ -178,7 +230,6 @@ export async function PATCH(
     .from('profiles')
     .update(updates)
     .eq('id', id)
-    .eq('role', 'student')
     .select()
     .single();
 

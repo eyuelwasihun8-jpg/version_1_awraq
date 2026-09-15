@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
 
     const adminDb = createAdminClient();
 
-    // Verify staff using Admin Client (bypasses RLS blocks on profiles table)
     const { data: profile } = await adminDb
       .from('profiles')
       .select('role, is_active')
@@ -39,17 +38,17 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      // Student details
       studentId: existingStudentId,
       email,
       fullName,
       phone,
       password: customPassword,
-
-      // Item & payment details
-      itemType, // 'course' | 'digital_product'
+      gender,
+      ageGroup,
+      lifeStatus,
+      itemType,
       itemId,
-      source = 'manual', // 'manual' | 'gift' | 'promotion'
+      source = 'manual',
       transactionNumber,
       notes,
       createPaymentRecord = true,
@@ -65,12 +64,22 @@ export async function POST(request: NextRequest) {
 
     let targetStudentId = existingStudentId;
     let generatedPassword = customPassword;
+    let finalFullName = fullName?.trim() || '';
+    let finalEmail = email?.trim()?.toLowerCase() || '';
+    let finalPhone = phone?.trim() || null;
 
-    // 1. CREATE STUDENT ACCOUNT IF NEW
+    // CREATE NEW STUDENT IF NEEDED
     if (!targetStudentId) {
-      if (!email?.trim() || !fullName?.trim()) {
+      if (!finalEmail || !finalFullName) {
         return NextResponse.json(
           { error: 'Email and full name are required for new students' },
+          { status: 400 }
+        );
+      }
+
+      if (!gender || !ageGroup || !lifeStatus) {
+        return NextResponse.json(
+          { error: 'Gender, age group, and life status are required' },
           { status: 400 }
         );
       }
@@ -80,13 +89,12 @@ export async function POST(request: NextRequest) {
           ? String(customPassword)
           : generatePassword(10);
 
-      // Create in Auth
       const { data: newUser, error: createErr } = await adminDb.auth.admin.createUser({
-        email: email.trim().toLowerCase(),
+        email: finalEmail,
         password: generatedPassword,
-        email_confirm: true, // Auto-confirm
+        email_confirm: true,
         user_metadata: {
-          full_name: fullName.trim(),
+          full_name: finalFullName,
         },
       });
 
@@ -99,15 +107,18 @@ export async function POST(request: NextRequest) {
 
       targetStudentId = newUser.user.id;
 
-      // Update Profile
       const { error: profileErr } = await adminDb
         .from('profiles')
         .update({
-          full_name: fullName.trim(),
-          phone: phone?.trim() || null,
+          full_name: finalFullName,
+          phone: finalPhone,
+          gender: gender || null,
+          age_group: ageGroup || null,
+          life_status: lifeStatus || null,
           role: 'student',
           is_active: true,
-          onboarding_completed: true, // Skip onboarding for manual staff enrollments
+          onboarding_completed: true,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', targetStudentId);
 
@@ -115,9 +126,22 @@ export async function POST(request: NextRequest) {
         await adminDb.auth.admin.deleteUser(targetStudentId);
         return NextResponse.json({ error: profileErr.message }, { status: 500 });
       }
+    } else {
+      // Existing student: load name/email for response
+      const { data: existingProfile } = await adminDb
+        .from('profiles')
+        .select('full_name, phone')
+        .eq('id', targetStudentId)
+        .single();
+
+      const { data: authUser } = await adminDb.auth.admin.getUserById(targetStudentId);
+
+      finalFullName = existingProfile?.full_name || finalFullName || 'Student';
+      finalEmail = authUser?.user?.email || finalEmail;
+      finalPhone = existingProfile?.phone || finalPhone;
     }
 
-    // 2. VERIFY ITEM EXISTS
+    // VERIFY ITEM
     let itemTitle = '';
     let itemPrice = 0;
 
@@ -129,7 +153,7 @@ export async function POST(request: NextRequest) {
         .single();
       if (!course) return NextResponse.json({ error: 'Course not found' }, { status: 404 });
       itemTitle = course.title;
-      itemPrice = course.price || 0;
+      itemPrice = Number(course.price || 0);
     } else {
       const { data: product } = await adminDb
         .from('digital_products')
@@ -138,13 +162,14 @@ export async function POST(request: NextRequest) {
         .single();
       if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
       itemTitle = product.title;
-      itemPrice = product.price || 0;
+      itemPrice = Number(product.price || 0);
     }
 
     let paymentId: string | null = null;
-    const finalAmount = source === 'gift' || source === 'promotion' ? 0 : (amount ?? itemPrice);
+    const finalAmount =
+      source === 'gift' || source === 'promotion' ? 0 : amount ?? itemPrice;
 
-    // 3. CREATE BOOKKEEPING PAYMENT RECORD
+    // CREATE PAYMENT RECORD
     if (createPaymentRecord) {
       const { data: payment, error: payErr } = await adminDb
         .from('payment_requests')
@@ -168,7 +193,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 4. GRANT ACCESS (ENROLLMENT / PURCHASE)
+    // GRANT ACCESS
     if (itemType === 'course') {
       const { error: enrollErr } = await adminDb.from('enrollments').upsert(
         {
@@ -187,7 +212,9 @@ export async function POST(request: NextRequest) {
         { onConflict: 'user_id,course_id' }
       );
 
-      if (enrollErr) return NextResponse.json({ error: enrollErr.message }, { status: 500 });
+      if (enrollErr) {
+        return NextResponse.json({ error: enrollErr.message }, { status: 500 });
+      }
     } else {
       const { error: purchaseErr } = await adminDb.from('purchases').upsert(
         {
@@ -206,10 +233,12 @@ export async function POST(request: NextRequest) {
         { onConflict: 'user_id,product_id' }
       );
 
-      if (purchaseErr) return NextResponse.json({ error: purchaseErr.message }, { status: 500 });
+      if (purchaseErr) {
+        return NextResponse.json({ error: purchaseErr.message }, { status: 500 });
+      }
     }
 
-    // 5. WRITE AUDIT LOG
+    // AUDIT
     await adminDb.from('audit_logs').insert({
       actor_id: user.id,
       actor_role: profile.role,
@@ -218,7 +247,10 @@ export async function POST(request: NextRequest) {
       target_id: itemId,
       details: {
         student_id: targetStudentId,
-        student_name: fullName,
+        student_name: finalFullName,
+        gender: gender || null,
+        age_group: ageGroup || null,
+        life_status: lifeStatus || null,
         source,
         transaction_number: transactionNumber || null,
         notes: notes || null,
@@ -227,18 +259,21 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `${fullName} has been enrolled successfully!`,
+      message: `${finalFullName} has been enrolled successfully!`,
       credentials: existingStudentId
         ? null
         : {
-            email: email.trim().toLowerCase(),
+            email: finalEmail,
             password: generatedPassword,
           },
       student: {
         id: targetStudentId,
-        fullName: fullName.trim(),
-        email: email.trim().toLowerCase(),
-        phone: phone?.trim() || null,
+        fullName: finalFullName,
+        email: finalEmail,
+        phone: finalPhone,
+        gender: gender || null,
+        ageGroup: ageGroup || null,
+        lifeStatus: lifeStatus || null,
       },
       item: {
         id: itemId,

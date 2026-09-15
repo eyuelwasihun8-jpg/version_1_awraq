@@ -33,9 +33,30 @@ interface Props {
   staffRole: string;
 }
 
-type Step = 1 | 2 | 3 | 4; // 1: Student, 2: Access & Payment, 3: Review, 4: Done
-
+type Step = 1 | 2 | 3 | 4;
 type SourceType = 'manual' | 'gift' | 'promotion';
+
+const GENDERS = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'other', label: 'Other' },
+];
+
+const AGE_GROUPS = [
+  { value: '13-17', label: '13 – 17' },
+  { value: '18-24', label: '18 – 24' },
+  { value: '25-34', label: '25 – 34' },
+  { value: '35-44', label: '35 – 44' },
+  { value: '45+', label: '45+' },
+];
+
+const LIFE_STATUS = [
+  { value: 'student', label: 'Student', emoji: '🎓' },
+  { value: 'worker', label: 'Employee', emoji: '💼' },
+  { value: 'business_owner', label: 'Business Owner', emoji: '🏢' },
+  { value: 'freelancer', label: 'Freelancer', emoji: '💻' },
+  { value: 'other', label: 'Other', emoji: '✨' },
+];
 
 function generatePassword(length = 10) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
@@ -50,24 +71,24 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
 
-  // Step 1: Student Details
+  // Step 1
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState(generatePassword());
   const [showPassword, setShowPassword] = useState(false);
+  const [gender, setGender] = useState('');
+  const [ageGroup, setAgeGroup] = useState('');
+  const [lifeStatus, setLifeStatus] = useState('');
 
-  // Step 2: Item & Payment
+  // Step 2
   const [itemType, setItemType] = useState<'course' | 'digital_product'>('course');
   const [itemId, setItemId] = useState('');
   const [source, setSource] = useState<SourceType>('manual');
   const [transactionNumber, setTransactionNumber] = useState('');
   const [notes, setNotes] = useState('');
 
-  // Step 3: Submitting
   const [submitting, setSubmitting] = useState(false);
-
-  // Step 4: Success Result
   const [resultData, setResultData] = useState<any>(null);
 
   const selectedItem =
@@ -75,11 +96,13 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
       ? courses.find((c) => c.id === itemId)
       : products.find((p) => p.id === itemId);
 
-  // Validation conditions
   const canGoStep2 =
     fullName.trim().length >= 2 &&
     email.trim().includes('@') &&
-    password.length >= 6;
+    password.length >= 6 &&
+    !!gender &&
+    !!ageGroup &&
+    !!lifeStatus;
 
   const canGoStep3 =
     !!itemId &&
@@ -96,6 +119,9 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
           email: email.trim().toLowerCase(),
           phone: phone.trim() || null,
           password,
+          gender,
+          ageGroup,
+          lifeStatus,
           itemType,
           itemId,
           source,
@@ -110,7 +136,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
       if (!res.ok) throw new Error(data.error || 'Enrollment failed');
 
       setResultData(data);
-      setStep(4); // Go to Done screen
+      setStep(4);
       toast.success('Student enrolled successfully!');
     } catch (err: any) {
       toast.error(err.message || 'Failed to complete enrollment');
@@ -126,32 +152,34 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
 
   const copyAllCredentials = () => {
     if (!resultData?.credentials) return;
-    const text = `Awraq Account Created\nEmail: ${resultData.credentials.email}\nPassword: ${resultData.credentials.password}\nLogin: ${window.location.origin}/login`;
+    const text = `Awraq Account Created\nName: ${resultData.student.fullName}\nEmail: ${resultData.credentials.email}\nPassword: ${resultData.credentials.password}\nLogin: ${window.location.origin}/login`;
     copyText(text, 'All credentials');
   };
 
+  const lifeStatusLabel =
+    LIFE_STATUS.find((s) => s.value === lifeStatus)?.label || lifeStatus;
+  const genderLabel = GENDERS.find((g) => g.value === gender)?.label || gender;
+  const ageLabel = AGE_GROUPS.find((a) => a.value === ageGroup)?.label || ageGroup;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-12">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <Link
-            href={`/${PORTAL_SLUG}/students`}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 mb-2 transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Students Directory</span>
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1">
-            Enroll New Student
-          </h1>
-          <p className="text-sm text-slate-500 font-medium">
-            Register a student and grant instant course or product access
-          </p>
-        </div>
+      <div>
+        <Link
+          href={`/${PORTAL_SLUG}/students`}
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 mb-2 transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Students Directory</span>
+        </Link>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1">
+          Enroll New Student
+        </h1>
+        <p className="text-sm text-slate-500 font-medium">
+          Register a student with full profile details and grant access
+        </p>
       </div>
 
-      {/* Progress Stepper */}
+      {/* Stepper */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
         <div className="flex items-center gap-2 mb-2">
           {[1, 2, 3, 4].map((s) => (
@@ -185,13 +213,13 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
         </div>
       </div>
 
-      {/* ─── STEP 1: STUDENT INFORMATION ─── */}
+      {/* STEP 1 */}
       {step === 1 && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-5 animate-fadeIn">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-5">
           <div>
             <h2 className="text-lg font-black text-slate-900 mb-1">1. Student Details</h2>
             <p className="text-xs text-slate-500 font-medium">
-              Enter student information to generate their account
+              These details will appear on Leads and the student profile
             </p>
           </div>
 
@@ -243,6 +271,79 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
               </div>
             </div>
 
+            {/* Gender */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-2">Gender *</label>
+              <div className="grid grid-cols-3 gap-2">
+                {GENDERS.map((g) => (
+                  <button
+                    key={g.value}
+                    type="button"
+                    onClick={() => setGender(g.value)}
+                    className={`py-3 rounded-xl border-2 text-sm font-bold cursor-pointer transition-all ${
+                      gender === g.value
+                        ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                    }`}
+                  >
+                    {g.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Age Group */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-2">Age Group *</label>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {AGE_GROUPS.map((a) => (
+                  <button
+                    key={a.value}
+                    type="button"
+                    onClick={() => setAgeGroup(a.value)}
+                    className={`py-3 rounded-xl border-2 text-xs sm:text-sm font-bold cursor-pointer transition-all ${
+                      ageGroup === a.value
+                        ? 'border-[#07CCFD] bg-cyan-50 text-[#07CCFD]'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                    }`}
+                  >
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Life / Work Status */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-2">
+                Work / Life Status *
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {LIFE_STATUS.map((s) => (
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => setLifeStatus(s.value)}
+                    className={`p-3 rounded-xl border-2 text-left cursor-pointer transition-all flex items-center gap-3 ${
+                      lifeStatus === s.value
+                        ? 'border-[#07CCFD] bg-cyan-50'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`}
+                  >
+                    <span className="text-xl">{s.emoji}</span>
+                    <span
+                      className={`text-sm font-black ${
+                        lifeStatus === s.value ? 'text-[#07CCFD]' : 'text-slate-800'
+                      }`}
+                    >
+                      {s.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-bold text-slate-700">Account Password *</label>
@@ -287,12 +388,14 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
         </div>
       )}
 
-      {/* ─── STEP 2: COURSE / PRODUCT & PAYMENT ─── */}
+      {/* STEP 2 */}
       {step === 2 && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-5 animate-fadeIn">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-5">
           <div>
             <h2 className="text-lg font-black text-slate-900 mb-1">2. Assign Access & Payment</h2>
-            <p className="text-xs text-slate-500 font-medium">Select what item to enroll for {fullName}</p>
+            <p className="text-xs text-slate-500 font-medium">
+              Select what to enroll for {fullName}
+            </p>
           </div>
 
           <div>
@@ -310,7 +413,11 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                     : 'border-slate-200 bg-white hover:border-slate-300'
                 }`}
               >
-                <BookOpen className={`w-5 h-5 mb-2 ${itemType === 'course' ? 'text-[#07CCFD]' : 'text-slate-400'}`} />
+                <BookOpen
+                  className={`w-5 h-5 mb-2 ${
+                    itemType === 'course' ? 'text-[#07CCFD]' : 'text-slate-400'
+                  }`}
+                />
                 <div className="text-sm font-black text-slate-900">Course</div>
               </button>
               <button
@@ -325,7 +432,11 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                     : 'border-slate-200 bg-white hover:border-slate-300'
                 }`}
               >
-                <Package className={`w-5 h-5 mb-2 ${itemType === 'digital_product' ? 'text-[#07CCFD]' : 'text-slate-400'}`} />
+                <Package
+                  className={`w-5 h-5 mb-2 ${
+                    itemType === 'digital_product' ? 'text-[#07CCFD]' : 'text-slate-400'
+                  }`}
+                />
                 <div className="text-sm font-black text-slate-900">Digital Product</div>
               </button>
             </div>
@@ -350,7 +461,9 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2">Enrollment Type *</label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">
+              Enrollment Type *
+            </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <SourceBtn
                 active={source === 'manual'}
@@ -392,12 +505,14 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">Notes (optional)</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Notes (optional)
+            </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              placeholder="e.g. Paid cash at office, enrolled by sales team..."
+              placeholder="e.g. Paid cash at office..."
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#07CCFD] outline-none text-sm resize-none"
             />
           </div>
@@ -423,31 +538,38 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
         </div>
       )}
 
-      {/* ─── STEP 3: REVIEW & CONFIRM ─── */}
+      {/* STEP 3 REVIEW */}
       {step === 3 && selectedItem && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-6 animate-fadeIn">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-6">
           <div>
             <h2 className="text-lg font-black text-slate-900 mb-1">3. Review & Confirm</h2>
-            <p className="text-xs text-slate-500 font-medium">Verify details before granting access</p>
+            <p className="text-xs text-slate-500 font-medium">
+              Verify all details before creating the account and granting access
+            </p>
           </div>
 
-          {/* Review Details Card */}
           <div className="space-y-4">
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
               <div className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">
-                Student Account Details
+                Student Profile
               </div>
               <ReviewRow label="Full Name" value={fullName} />
               <ReviewRow label="Email" value={email} />
               <ReviewRow label="Phone" value={phone || 'None'} />
+              <ReviewRow label="Gender" value={genderLabel} />
+              <ReviewRow label="Age Group" value={ageLabel} />
+              <ReviewRow label="Work / Status" value={lifeStatusLabel} />
               <ReviewRow label="Initial Password" value={password} mono />
             </div>
 
             <div className="p-4 rounded-xl bg-cyan-50/60 border border-cyan-100 space-y-3">
               <div className="text-xs font-black text-cyan-900 uppercase tracking-wider border-b border-cyan-200/60 pb-2">
-                Enrollment Details
+                Enrollment
               </div>
-              <ReviewRow label="Item Type" value={itemType === 'course' ? 'Course' : 'Digital Product'} />
+              <ReviewRow
+                label="Item Type"
+                value={itemType === 'course' ? 'Course' : 'Digital Product'}
+              />
               <ReviewRow label="Title" value={selectedItem.title} />
               <ReviewRow
                 label="Amount"
@@ -457,7 +579,7 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
                     : `ETB ${Number(selectedItem.price || 0).toLocaleString()}`
                 }
               />
-              <ReviewRow label="Enrollment Source" value={source.toUpperCase()} />
+              <ReviewRow label="Source" value={source.toUpperCase()} />
               {source === 'manual' && (
                 <ReviewRow label="TX Reference" value={transactionNumber || 'N/A'} mono />
               )}
@@ -496,21 +618,32 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
         </div>
       )}
 
-      {/* ─── STEP 4: DONE & CREDENTIALS ─── */}
+      {/* STEP 4 DONE */}
       {step === 4 && resultData && (
-        <div className="bg-white rounded-2xl border border-emerald-200 shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn">
+        <div className="bg-white rounded-2xl border border-emerald-200 shadow-lg p-6 sm:p-8 space-y-6">
           <div className="text-center">
             <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-8 h-8 text-[#20B486]" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 mb-1">Student Enrolled Successfully! 🎉</h2>
+            <h2 className="text-2xl font-black text-slate-900 mb-1">
+              Student Enrolled Successfully! 🎉
+            </h2>
             <p className="text-sm text-slate-500 font-medium">
-              <span className="font-bold text-slate-900">{resultData.student.fullName}</span> has been granted access to{' '}
+              <span className="font-bold text-slate-900">{resultData.student.fullName}</span> now
+              has access to{' '}
               <span className="font-bold text-slate-900">{resultData.item.title}</span>.
             </p>
           </div>
 
-          {/* Credentials Card */}
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-sm">
+            <ReviewRow label="Gender" value={resultData.student.gender || genderLabel} />
+            <ReviewRow label="Age Group" value={resultData.student.ageGroup || ageLabel} />
+            <ReviewRow
+              label="Work / Status"
+              value={resultData.student.lifeStatus || lifeStatusLabel}
+            />
+          </div>
+
           {resultData.credentials && (
             <div className="p-5 rounded-2xl bg-amber-50 border-2 border-amber-200">
               <div className="text-xs uppercase font-black text-amber-900 tracking-wider mb-2">
@@ -560,17 +693,14 @@ export const EnrollStudentWizard: React.FC<Props> = ({ courses, products }) => {
             </div>
           )}
 
-          {/* PROMINENT DONE BUTTON */}
-          <div className="pt-2 flex flex-col sm:flex-row gap-3">
-            <button
-              type="button"
-              onClick={() => router.push(`/${PORTAL_SLUG}/students`)}
-              className="flex-1 min-h-[50px] py-3.5 rounded-xl bg-gradient-to-b from-[#20B486] to-[#059669] border-b-[4px] border-[#047857] hover:border-b-[2px] hover:translate-y-[2px] text-white text-base font-black shadow-lg transition-all text-center cursor-pointer flex items-center justify-center gap-2"
-            >
-              <CheckCircle2 className="w-5 h-5" />
-              <span>Done (Return to Directory)</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => router.push(`/${PORTAL_SLUG}/students`)}
+            className="w-full min-h-[50px] py-3.5 rounded-xl bg-gradient-to-b from-[#20B486] to-[#059669] border-b-[4px] border-[#047857] hover:border-b-[2px] hover:translate-y-[2px] text-white text-base font-black shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <CheckCircle2 className="w-5 h-5" />
+            <span>Done (Return to Directory)</span>
+          </button>
         </div>
       )}
     </div>
@@ -591,9 +721,19 @@ const SourceBtn = ({ active, onClick, icon: Icon, label, desc }: any) => (
   </button>
 );
 
-const ReviewRow = ({ label, value, mono }: { label: string; value: string; mono?: boolean }) => (
+const ReviewRow = ({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) => (
   <div className="flex justify-between gap-2 text-xs">
     <span className="text-slate-500 font-medium">{label}:</span>
-    <span className={`font-bold text-slate-900 text-right ${mono ? 'font-mono' : ''}`}>{value}</span>
+    <span className={`font-bold text-slate-900 text-right capitalize ${mono ? 'font-mono' : ''}`}>
+      {value}
+    </span>
   </div>
 );

@@ -2,7 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, Plus, Loader2, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import {
+  BookOpen,
+  Plus,
+  Loader2,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  BarChart3,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { CourseThumbnail } from './CourseThumbnail';
 
@@ -34,12 +42,16 @@ export const CoursesClient: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1">Courses</h1>
-          <p className="text-sm text-slate-500 font-medium">Create and manage your courses</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1">
+            Courses
+          </h1>
+          <p className="text-sm text-slate-500 font-medium">
+            Create and manage your courses
+          </p>
         </div>
         <Link
           href={`/${PORTAL_SLUG}/courses/new`}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] text-[#0F172A] text-sm font-bold cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07CCFD] hover:bg-[#06B8E4] border-b-[3px] border-[#05A3CA] hover:border-b-[1px] hover:translate-y-[2px] text-[#0F172A] text-sm font-bold shadow-[0_8px_20px_rgba(7,204,253,0.3)] transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>New Course</span>
@@ -66,16 +78,20 @@ export const CoursesClient: React.FC = () => {
         ) : (
           <div className="divide-y divide-slate-100">
             {courses.map((c) => (
-              <Link
+              <div
                 key={c.id}
-                href={`/${PORTAL_SLUG}/courses/${c.id}`}
-                className="flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50 transition-colors group"
               >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
+                <Link
+                  href={`/${PORTAL_SLUG}/courses/${c.id}`}
+                  className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                >
                   <CourseThumbnail thumbnailKey={c.thumbnail_url} alt={c.title} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                      <span className="text-sm font-black text-slate-900 truncate">{c.title}</span>
+                      <span className="text-sm font-black text-slate-900 truncate">
+                        {c.title}
+                      </span>
                       {c.is_published ? (
                         <span className="text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-1">
                           <Eye className="w-2.5 h-2.5" />
@@ -93,9 +109,28 @@ export const CoursesClient: React.FC = () => {
                       {c.category?.replaceAll('_', ' ') || 'Uncategorized'}
                     </div>
                   </div>
+                </Link>
+
+                {/* Analytics quick-access button */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <Link
+                    href={`/${PORTAL_SLUG}/courses/${c.id}/analytics`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="p-2 rounded-lg text-slate-500 hover:bg-cyan-50 hover:text-[#07CCFD] transition-colors cursor-pointer"
+                    title="View analytics"
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                  </Link>
+
+                  <Link
+                    href={`/${PORTAL_SLUG}/courses/${c.id}`}
+                    className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer"
+                    title="Edit course"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
-              </Link>
+              </div>
             ))}
           </div>
         )}

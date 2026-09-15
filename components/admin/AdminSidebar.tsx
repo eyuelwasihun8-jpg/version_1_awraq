@@ -3,7 +3,19 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Receipt, Users, BookOpen, UserCheck, FileText, Menu, X, ArrowLeft, Package } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Receipt,
+  Users,
+  BookOpen,
+  UserCheck,
+  FileText,
+  Menu,
+  X,
+  ArrowLeft,
+  Package,
+  GraduationCap,
+} from 'lucide-react';
 import { BrandLogo } from '@/components/BrandLogo';
 
 interface AdminSidebarProps {
@@ -17,14 +29,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ role }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const allLinks = [
-  { href: `/${SLUG}`, label: 'Overview', icon: LayoutDashboard, roles: ['super_admin', 'admin', 'sales', 'instructor'] },
-  { href: `/${SLUG}/payments`, label: 'Payments', icon: Receipt, roles: ['super_admin', 'admin', 'sales'] },
-  { href: `/${SLUG}/courses`, label: 'Courses', icon: BookOpen, roles: ['super_admin', 'admin', 'instructor'] },
-  { href: `/${SLUG}/products`, label: 'Products', icon: Package, roles: ['super_admin', 'admin', 'instructor'] }, // 🆕 ADD
-  { href: `/${SLUG}/users`, label: 'Users', icon: Users, roles: ['super_admin', 'admin'] },
-  { href: `/${SLUG}/leads`, label: 'Leads', icon: UserCheck, roles: ['super_admin', 'admin'] },
-  { href: `/${SLUG}/audit`, label: 'Audit Log', icon: FileText, roles: ['super_admin'] },
-];
+    { href: `/${SLUG}`, label: 'Overview', icon: LayoutDashboard, roles: ['super_admin', 'admin', 'sales', 'instructor'] },
+    { href: `/${SLUG}/payments`, label: 'Payments', icon: Receipt, roles: ['super_admin', 'admin', 'sales'] },
+    { href: `/${SLUG}/students`, label: 'Students', icon: GraduationCap, roles: ['super_admin', 'admin', 'sales', 'instructor'] },
+    { href: `/${SLUG}/courses`, label: 'Courses', icon: BookOpen, roles: ['super_admin', 'admin', 'instructor'] },
+    { href: `/${SLUG}/products`, label: 'Products', icon: Package, roles: ['super_admin', 'admin', 'instructor'] },
+    { href: `/${SLUG}/users`, label: 'Staff Users', icon: Users, roles: ['super_admin', 'admin'] },
+    { href: `/${SLUG}/leads`, label: 'Leads (Old)', icon: UserCheck, roles: ['super_admin', 'admin'] },
+    { href: `/${SLUG}/audit`, label: 'Audit Log', icon: FileText, roles: ['super_admin'] },
+  ];
 
   const links = allLinks.filter((l) => l.roles.includes(role));
 

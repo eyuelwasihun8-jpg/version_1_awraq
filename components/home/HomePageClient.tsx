@@ -8,6 +8,7 @@ import { SkillsYouUseSection } from './SkillsYouUseSection';
 import { CoursesSection } from './CoursesSection';
 import { ResourcesSection } from './ResourcesSection';
 import { AboutSection } from './AboutSection';
+import { TrustedBySection } from './TrustedBySection';
 import { TestimonialsMediaSection } from './TestimonialsMediaSection';
 import { FAQSection } from './FAQSection';
 import { ContactSection } from './ContactSection';
@@ -29,7 +30,6 @@ export const HomePageClient: React.FC<HomePageClientProps> = ({
 }) => {
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-[#07CCFD]/30 overflow-x-hidden relative">
-      {/* Soft ambient gradients */}
       <div
         className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
         aria-hidden="true"
@@ -39,11 +39,14 @@ export const HomePageClient: React.FC<HomePageClientProps> = ({
         <div className="absolute bottom-[10%] left-[20%] w-[50%] h-[50%] rounded-full bg-[radial-gradient(circle,_#F86BCF_0%,_transparent_60%)] opacity-[0.05] blur-[100px]" />
       </div>
 
-      {/* Hero: headline above video + small glass Trusted By under video */}
+      {/* Headline above video + buttons under video + community strip */}
       <HeroSection
         onOpenConsultation={onOpenConsultation}
         onOpenSignIn={onOpenSignIn}
       />
+
+      {/* Full-width Trusted By (bright logos, no card backgrounds) */}
+      <TrustedBySection />
 
       <SimpleWaySection />
       <WhatYouLearnSection />
@@ -52,7 +55,7 @@ export const HomePageClient: React.FC<HomePageClientProps> = ({
       <ResourcesSection products={products} />
       <AboutSection />
 
-      {/* Replaces old big TrustedBy + plain testimonials */}
+      {/* Testimonial videos + images */}
       <TestimonialsMediaSection />
 
       <FAQSection />

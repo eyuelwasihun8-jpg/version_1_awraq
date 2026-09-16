@@ -33,16 +33,21 @@ export const RootLayoutClient: React.FC<RootLayoutClientProps> = ({ children }) 
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
 
-  const hideChrome =
-    pathname.startsWith('/learn/') ||
-    pathname.startsWith(`/${PORTAL_SLUG}`) ||
-    pathname.startsWith(`/${LOGIN_SLUG}`) ||
+  const isLearningPage = pathname.startsWith('/learn/');
+  const isStaffPortal = pathname.startsWith(`/${PORTAL_SLUG}`) || pathname.startsWith(`/${LOGIN_SLUG}`);
+
+  const hideNavbar =
+    isLearningPage ||
+    isStaffPortal ||
     pathname.startsWith('/purchase/waiting/') ||
     pathname === '/login' ||
     pathname === '/signup' ||
     pathname === '/forgot-password' ||
     pathname === '/reset-password' ||
     pathname === '/onboarding';
+
+  // Hide footer on mobile for learning pages, but show on desktop
+  const hideFooter = isLearningPage;
 
   return (
     <ModalContext.Provider
@@ -52,7 +57,7 @@ export const RootLayoutClient: React.FC<RootLayoutClientProps> = ({ children }) 
       }}
     >
       <div className="min-h-screen flex flex-col bg-white text-slate-900">
-        {!hideChrome && (
+        {!hideNavbar && (
           <Navbar
             onOpenSignIn={() => setIsSignInOpen(true)}
             onOpenConsultation={() => setIsConsultationOpen(true)}
@@ -61,9 +66,15 @@ export const RootLayoutClient: React.FC<RootLayoutClientProps> = ({ children }) 
 
         <main className="flex-1 flex flex-col">{children}</main>
 
-        {!hideChrome && <Footer onOpenConsultation={() => setIsConsultationOpen(true)} />}
+        {/* Footer: hide on mobile for learning pages, show on desktop */}
+        {!hideFooter && <Footer onOpenConsultation={() => setIsConsultationOpen(true)} />}
+        {hideFooter && (
+          <footer className="hidden lg:block">
+            <Footer onOpenConsultation={() => setIsConsultationOpen(true)} />
+          </footer>
+        )}
 
-        {!hideChrome && <MobileBottomNav />}
+        {!hideNavbar && <MobileBottomNav />}
 
         <SignInModal isOpen={isSignInOpen} onClose={() => setIsSignInOpen(false)} />
         <ConsultationModal

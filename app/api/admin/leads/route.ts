@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
   const offset = (page - 1) * limit;
 
-  // Build query on profiles table for student leads
+  // Query student profiles
   let query = supabase
     .from('profiles')
     .select(
@@ -49,14 +49,12 @@ export async function GET(request: NextRequest) {
     .eq('role', 'student')
     .order('created_at', { ascending: false });
 
-  // Add search filter if search term provided
   if (search.trim()) {
     query = query.or(
       `full_name.ilike.%${search.trim()}%,phone.ilike.%${search.trim()}%`
     );
   }
 
-  // Apply pagination
   query = query.range(offset, offset + limit - 1);
 
   const { data: leads, count, error } = await query;
@@ -67,7 +65,7 @@ export async function GET(request: NextRequest) {
   }
 
   const total = count || 0;
-  const totalPages = Math.ceil(total / limit);
+  const totalPages = Math.ceil(total / limit) || 1;
 
   return NextResponse.json({
     success: true,
@@ -76,5 +74,12 @@ export async function GET(request: NextRequest) {
     page,
     limit,
     totalPages,
+    // Add pagination object expected by LeadsClient.tsx
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
   });
 }

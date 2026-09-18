@@ -34,9 +34,21 @@ yarn-error.log*
 .env*
 .env*.local
 .env
+# ...but the template is safe and SHOULD be committed (no real values inside)
+!.env.example
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local junk / accidental dumps
+structure.txt
+*.sql.dump
+*.dump
+dump.sql
+
+# supabase CLI local state
+supabase/.temp/
+supabase/.branches/

@@ -12,17 +12,18 @@ import {
   Save,
   Eye,
   EyeOff,
-  CheckCircle2,
   Check,
+  Paperclip,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { LessonVideoEditor } from './LessonVideoEditor';
 import { LessonTextEditor } from './LessonTextEditor';
 import { LessonQuizEditor } from './LessonQuizEditor';
+import { LessonResourcesEditor } from './LessonResourcesEditor';
 
 const PORTAL_SLUG = process.env.NEXT_PUBLIC_ADMIN_SLUG || 'staff-portal-x7k9m';
 
-type TabType = 'video' | 'text' | 'quiz';
+type TabType = 'video' | 'text' | 'quiz' | 'resources';
 
 interface Props {
   course: any;
@@ -37,6 +38,7 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
   const [isPublished, setIsPublished] = useState(lesson.is_published !== false);
   const [savingMeta, setSavingMeta] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  const [resourceCount, setResourceCount] = useState<number | null>(null);
 
   const hasVideo = !!(lesson.video_key && String(lesson.video_key).trim());
   const hasText = !!(
@@ -52,6 +54,19 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
       if (res.ok) setLesson(data.lesson);
     } catch {}
   };
+
+  // Optional: load resource count for the green dot on the tab
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/admin/resources?lessonId=${lesson.id}`);
+        const data = await res.json();
+        if (res.ok) setResourceCount((data.resources || []).length);
+      } catch {
+        setResourceCount(0);
+      }
+    })();
+  }, [lesson.id, tab]);
 
   const saveMeta = async () => {
     if (!title.trim()) {
@@ -83,8 +98,10 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
   const handleFinish = async () => {
     setFinishing(true);
     try {
-      // Auto-save title/status if changed
-      if (title.trim() && (title !== lesson.title || isPublished !== (lesson.is_published !== false))) {
+      if (
+        title.trim() &&
+        (title !== lesson.title || isPublished !== (lesson.is_published !== false))
+      ) {
         await fetch(`/api/admin/lessons/${lesson.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -155,6 +172,14 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
                       <HelpCircle className="w-3.5 h-3.5 text-purple-600" />
                     </div>
                   )}
+                  {(resourceCount ?? 0) > 0 && (
+                    <div
+                      className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center"
+                      title="Has resources"
+                    >
+                      <Paperclip className="w-3.5 h-3.5 text-slate-600" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -194,7 +219,6 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
                 <span>Save Info</span>
               </button>
 
-              {/* FINISH button — main action */}
               <button
                 onClick={handleFinish}
                 disabled={finishing}
@@ -212,7 +236,7 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
         </div>
 
         {/* TABS */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 border-t border-[#f0ebe2]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 border-t border-[#f0ebe2] overflow-x-auto">
           <TabBtn
             active={tab === 'video'}
             onClick={() => setTab('video')}
@@ -237,6 +261,14 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
             hasContent={hasQuiz}
             color="purple"
           />
+          <TabBtn
+            active={tab === 'resources'}
+            onClick={() => setTab('resources')}
+            icon={Paperclip}
+            label="Resources"
+            hasContent={(resourceCount ?? 0) > 0}
+            color="slate"
+          />
         </div>
       </div>
 
@@ -249,6 +281,8 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
         {tab === 'text' && <LessonTextEditor lesson={lesson} onSaved={refreshLesson} />}
 
         {tab === 'quiz' && <LessonQuizEditor lesson={lesson} onSaved={refreshLesson} />}
+
+        {tab === 'resources' && <LessonResourcesEditor lessonId={lesson.id} />}
       </div>
     </div>
   );
@@ -268,22 +302,23 @@ const TabBtn = ({ active, onClick, icon: Icon, label, hasContent, color }: any) 
       active: 'text-purple-600 border-purple-600',
       dot: 'bg-purple-500',
     },
+    slate: {
+      active: 'text-slate-800 border-slate-800',
+      dot: 'bg-slate-600',
+    },
   };
 
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 sm:px-5 py-3 text-sm font-black cursor-pointer transition-all border-b-2 ${
+      className={`flex items-center gap-2 px-4 sm:px-5 py-3 text-sm font-black cursor-pointer transition-all border-b-2 whitespace-nowrap ${
         active ? colors[color].active : 'text-slate-500 border-transparent hover:text-slate-700'
       }`}
     >
       <Icon className="w-4 h-4" />
       <span>{label}</span>
       {hasContent && (
-        <span
-          className={`w-2 h-2 rounded-full ${colors[color].dot}`}
-          title="Has content"
-        />
+        <span className={`w-2 h-2 rounded-full ${colors[color].dot}`} title="Has content" />
       )}
     </button>
   );

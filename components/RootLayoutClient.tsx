@@ -18,7 +18,6 @@ const ModalContext = createContext<ModalContextType>({
   openConsultation: () => {},
 });
 
-// 🔑 EXPORT THIS HOOK SO OTHER COMPONENTS CAN USE IT
 export const useModals = () => useContext(ModalContext);
 
 interface RootLayoutClientProps {
@@ -34,11 +33,30 @@ export const RootLayoutClient: React.FC<RootLayoutClientProps> = ({ children }) 
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
 
   const isLearningPage = pathname.startsWith('/learn/');
-  const isStaffPortal = pathname.startsWith(`/${PORTAL_SLUG}`) || pathname.startsWith(`/${LOGIN_SLUG}`);
+  const isStaffPortal =
+    pathname.startsWith(`/${PORTAL_SLUG}`) || pathname.startsWith(`/${LOGIN_SLUG}`);
 
+  // 1. TOP NAVBAR HIDE RULES
   const hideNavbar =
     isLearningPage ||
     isStaffPortal ||
+    pathname.startsWith('/purchase/waiting/') ||
+    pathname.startsWith('/verify') ||
+    pathname.startsWith('/certificate') ||
+    pathname === '/login' ||
+    pathname === '/signup' ||
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password' ||
+    pathname === '/onboarding';
+
+  // 2. DARK FOOTER BLOCK HIDE RULES
+  // - Never show on learning (PC & Mobile)
+  // - Never show on verify, cert, staff, auth, onboarding
+  const hideFooterCompletely =
+    isLearningPage ||
+    isStaffPortal ||
+    pathname.startsWith('/verify') ||
+    pathname.startsWith('/certificate') ||
     pathname.startsWith('/purchase/waiting/') ||
     pathname === '/login' ||
     pathname === '/signup' ||
@@ -46,8 +64,18 @@ export const RootLayoutClient: React.FC<RootLayoutClientProps> = ({ children }) 
     pathname === '/reset-password' ||
     pathname === '/onboarding';
 
-  // Hide footer on mobile for learning pages, but show on desktop
-  const hideFooter = isLearningPage;
+  // 3. BOTTOM MOBILE NAV BAR (The icons at the bottom)
+  // Show on mobile for Dashboard, Profile, Home, Courses, etc.
+  // Only hide on full learning player, staff portal, or auth screens.
+  const showMobileBottomNav =
+    !isLearningPage &&
+    !isStaffPortal &&
+    !pathname.startsWith('/purchase/waiting/') &&
+    pathname !== '/login' &&
+    pathname !== '/signup' &&
+    pathname !== '/forgot-password' &&
+    pathname !== '/reset-password' &&
+    pathname !== '/onboarding';
 
   return (
     <ModalContext.Provider
@@ -66,15 +94,20 @@ export const RootLayoutClient: React.FC<RootLayoutClientProps> = ({ children }) 
 
         <main className="flex-1 flex flex-col">{children}</main>
 
-        {/* Footer: hide on mobile for learning pages, show on desktop */}
-        {!hideFooter && <Footer onOpenConsultation={() => setIsConsultationOpen(true)} />}
-        {hideFooter && (
-          <footer className="hidden lg:block">
+        {/* DARK NAVY/PURPLE FOOTER BLOCK:
+            Wrapped in `hidden lg:block` -> HIDE ON ALL MOBILE SCREENS!
+            Only visible on Desktop/PC (and completely hidden when learning on PC)
+        */}
+        {!hideFooterCompletely && (
+          <div className="hidden lg:block">
             <Footer onOpenConsultation={() => setIsConsultationOpen(true)} />
-          </footer>
+          </div>
         )}
 
-        {!hideNavbar && <MobileBottomNav />}
+        {/* MOBILE BOTTOM NAVIGATION BAR (Home, Courses, Learning, Profile icons)
+            STAYS VISIBLE ON MOBILE!
+        */}
+        {showMobileBottomNav && <MobileBottomNav />}
 
         <SignInModal isOpen={isSignInOpen} onClose={() => setIsSignInOpen(false)} />
         <ConsultationModal

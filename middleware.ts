@@ -7,21 +7,42 @@ const LOGIN_SLUG = process.env.NEXT_PUBLIC_ADMIN_LOGIN_SLUG || 'staff-login-x7k9
 // Staff roles that can access the staff portal
 const STAFF_ROLES = ['super_admin', 'admin', 'sales', 'instructor'] as const;
 
-// Retry getUser with exponential backoff to handle transient Supabase errors
-// Returns null on failure (not throwing) so public pages still render
+/**
+ * Get user safely — returns null silently if visitor is not logged in.
+ * Retries only for genuine transient network errors.
+ */
 async function getUserWithRetry(supabase: any, retries = 2): Promise<any> {
   for (let i = 0; i <= retries; i++) {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) throw error;
+      
+      if (error) {
+        // "AuthSessionMissingError" is normal when a visitor is unauthenticated.
+        // Return null immediately without retrying or logging error spam.
+        if (
+          error.name === 'AuthSessionMissingError' ||
+          error.message?.includes('Auth session missing') ||
+          error.status === 400
+        ) {
+          return null;
+        }
+        throw error;
+      }
       return user;
-    } catch (err) {
-      if (i === retries) {
-        // Log but don't throw - treat as "no user" for public pages
-        console.warn('[Middleware] getUser failed after retries:', err);
+    } catch (err: any) {
+      if (
+        err?.name === 'AuthSessionMissingError' ||
+        err?.message?.includes('Auth session missing') ||
+        err?.status === 400
+      ) {
         return null;
       }
-      // Wait before retry: 100ms, 200ms
+
+      if (i === retries) {
+        console.warn('[Middleware] Transient getUser error after retries:', err);
+        return null;
+      }
+      // Wait before retry for real network errors: 100ms, 200ms
       await new Promise(resolve => setTimeout(resolve, 100 * (i + 1)));
     }
   }
@@ -30,7 +51,7 @@ async function getUserWithRetry(supabase: any, retries = 2): Promise<any> {
 
 /**
  * Get user profile with role and is_active status.
- * Returns null if profile not found or error.
+ * Returns null if profile not found or on query error.
  */
 async function getUserProfile(supabase: any, userId: string): Promise<{ role: string; is_active: boolean } | null> {
   try {
@@ -70,10 +91,8 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh auth session with retry logic
-  // On failure, user will be null (not throw) - public pages still render
+  // Safely check auth session
   const user = await getUserWithRetry(supabase);
-
   const path = request.nextUrl.pathname;
 
   // 1. Block legacy /admin routes
@@ -81,9 +100,7 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Not Found', { status: 404 });
   }
 
-  // 2. Allow authenticated users to access public pages (courses, etc.)
-  // Don't redirect them away - they should be able to browse
-  // Only redirect from login/signup if already authenticated
+  // 2. Redirect logged-in users away from auth pages to /dashboard
   if (user) {
     const authPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
     if (authPaths.some(p => path === p || path.startsWith(p + '/'))) {
@@ -94,7 +111,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // 3. Protect Student Protected Areas
-  // Only redirect if we're SURE there's no user (not just a transient error)
   if (path.startsWith('/dashboard') || path.startsWith('/learn')) {
     if (!user) {
       const url = request.nextUrl.clone();
@@ -105,9 +121,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // 4. Protect Staff Portal Area
-  // - Redirect unauthenticated to staff login
-  // - Redirect authenticated non-staff to dashboard
-  // - Redirect inactive staff to dashboard
   if (path === `/${PORTAL_SLUG}` || path.startsWith(`/${PORTAL_SLUG}/`)) {
     if (!user) {
       const url = request.nextUrl.clone();
@@ -115,10 +128,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // User is authenticated - check role and active status
     const profile = await getUserProfile(supabase, user.id);
     if (!profile || !STAFF_ROLES.includes(profile.role as any) || !profile.is_active) {
-      // Not authorized for staff portal
       const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);

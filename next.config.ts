@@ -49,23 +49,10 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      {
-        source: '/api/:path*',
-        headers: [
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
-          {
-            key: 'Access-Control-Allow-Methods',
-            value: 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-          },
-          {
-            key: 'Access-Control-Allow-Headers',
-            value: 'Content-Type, Authorization',
-          },
-        ],
-      },
+      // NOTE: the wildcard CORS block that was here has been removed.
+      // Same-origin requests never need CORS, and `Access-Control-Allow-Origin: *`
+      // let ANY website read your API responses. If you ever need a cross-origin
+      // client, add its exact origin here instead of `*`.
     ];
   },
 };

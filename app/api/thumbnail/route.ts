@@ -10,27 +10,35 @@ const CACHE_MAX_AGE = 3300; // 55 min (signed URL lasts 60 min, cache 55 min)
 const GET_RATE_LIMIT = { max: 10, windowMs: 60 * 1000 };
 const POST_RATE_LIMIT = { max: 5, windowMs: 60 * 1000 };
 
+// Private prefixes: media behind enrollment/ownership checks. These must ONLY be
+// served by /api/video and /api/download (which verify access), never signed here.
+const BLOCKED_PREFIXES = ['courses/', 'products/', 'receipts/', 'videos/'];
+
+const IMAGE_EXT = /\.(jpg|jpeg|png|webp|gif|avif)$/i;
+
 /**
- * Allowlist for thumbnail keys.
- * ONLY thumbnails, avatars, certificates, and direct image files.
- * Videos (courses/), product files (products/) are BLOCKED here -
- * they must use /api/video and /api/download which enforce enrollment checks.
+ * Allowlist for thumbnail keys — IMAGES ONLY.
+ *
+ * Order matters: the blocked-prefix check runs BEFORE the extension check.
+ * (An earlier version tested the extension first, so `courses/lesson-1.jpg`
+ * — or any image-named key inside a private prefix — was still signed.)
+ *
+ *   1. reject malformed / traversal-ish keys outright
+ *   2. reject the private prefixes (never servable here)
+ *   3. allow only image extensions
  */
 function isAllowed(key: string): boolean {
-  // Allowed prefixes
-  if (key.startsWith('thumbnails/')) return true;
-  if (key.startsWith('avatars/')) return true;
-  if (key.startsWith('certificates/')) return true;
+  const k = key.trim();
 
-  // Allowed image extensions (only for keys not matching above prefixes)
-  // This handles any legacy direct image uploads
-  if (/\.(jpg|jpeg|png|webp|gif)$/i.test(key)) return true;
+  // 1. shape / traversal guards
+  if (!k || k.length > 512) return false;
+  if (k.startsWith('/') || k.includes('..') || k.includes('\\') || k.includes('?')) return false;
 
-  // Explicitly BLOCKED: courses/ (videos), products/ (zip files)
-  if (key.startsWith('courses/')) return false;
-  if (key.startsWith('products/')) return false;
+  // 2. private prefixes — blocked before anything else can allow them
+  if (BLOCKED_PREFIXES.some((prefix) => k.startsWith(prefix))) return false;
 
-  return false;
+  // 3. images only (covers thumbnails/, avatars/, certificates/ and legacy uploads)
+  return IMAGE_EXT.test(k);
 }
 
 // GET single (kept for backwards compat)

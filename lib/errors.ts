@@ -61,8 +61,10 @@ export function handleApiError(error: unknown): Response {
   }
 
   if (error instanceof Error) {
+    // Log the real error server-side, but never echo internals (PostgREST text,
+    // SQL hints, column names) back to the caller.
     console.error('API Error:', error);
-    return ApiError.internal(error.message).toResponse();
+    return ApiError.internal('Internal server error').toResponse();
   }
 
   console.error('Unknown API Error:', error);

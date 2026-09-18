@@ -13,7 +13,10 @@ const envSchema = z.object({
   R2_BUCKET_CONTENT: z.string().min(1),
   R2_BUCKET_RECEIPTS: z.string().min(1),
   R2_BUCKET_CERTIFICATES: z.string().min(1),
-  NEXT_PUBLIC_R2_PUBLIC_URL: z.string().url(),
+  // Optional: when empty, the app falls back to signed URLs via /api/thumbnail.
+  // (Making this required meant a missing var crashed /api/leads + /api/thumbnail
+  // at import time, with no useful error.)
+  NEXT_PUBLIC_R2_PUBLIC_URL: z.string().url().optional().or(z.literal('')),
 
   // App
   NEXT_PUBLIC_APP_URL: z.string().url(),

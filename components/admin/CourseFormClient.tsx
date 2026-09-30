@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Upload, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Upload, Save, Trash2, X, FileImage } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PORTAL_SLUG = process.env.NEXT_PUBLIC_ADMIN_SLUG || 'staff-portal-x7k9m';
@@ -33,11 +33,16 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
   const [certKey, setCertKey] = useState(course?.certificate_template_key || '');
   const [isPublished, setIsPublished] = useState(!!course?.is_published);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingThumb, setUploadingThumb] = useState(false);
+  const [uploadingCert, setUploadingCert] = useState(false);
 
-  // Server-side upload function (Zero CORS issues!)
-  const uploadFile = async (file: File, folder: string): Promise<string | null> => {
-    setUploading(true);
+  // Server-side upload (FormData → /api/admin/upload)
+  const uploadFile = async (
+    file: File,
+    folder: string,
+    setBusy: (v: boolean) => void
+  ): Promise<string | null> => {
+    setBusy(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -54,17 +59,18 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
         return null;
       }
 
-      return data.fileKey;
+      return data.fileKey as string;
     } catch {
       toast.error('Upload failed');
       return null;
     } finally {
-      setUploading(false);
+      setBusy(false);
     }
   };
 
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -72,7 +78,7 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
       return;
     }
 
-    const key = await uploadFile(file, 'thumbnails');
+    const key = await uploadFile(file, 'thumbnails', setUploadingThumb);
     if (key) {
       setThumbnailUrl(key);
       toast.success('Thumbnail uploaded successfully!');
@@ -81,12 +87,28 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
 
   const handleCertUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
-    const key = await uploadFile(file, 'certificates/templates');
+    const isSvg =
+      file.type === 'image/svg+xml' ||
+      file.name.toLowerCase().endsWith('.svg');
+
+    if (!isSvg) {
+      toast.error('Only SVG files are allowed for certificate templates');
+      return;
+    }
+
+    // Soft size guard (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('SVG must be under 2MB');
+      return;
+    }
+
+    const key = await uploadFile(file, 'certificates/templates', setUploadingCert);
     if (key) {
       setCertKey(key);
-      toast.success('Certificate template uploaded!');
+      toast.success('Certificate SVG template uploaded!');
     }
   };
 
@@ -110,7 +132,7 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
           category,
           price: parseFloat(price) || 0,
           thumbnailUrl,
-          certificateTemplateKey: certKey,
+          certificateTemplateKey: certKey || null,
           isPublished,
         }),
       });
@@ -156,6 +178,8 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
       setSaving(false);
     }
   };
+
+  const busy = saving || uploadingThumb || uploadingCert;
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -236,6 +260,7 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
           </Field>
         </div>
 
+        {/* Thumbnail */}
         <Field label="Thumbnail Image">
           <div className="flex items-center gap-3 flex-wrap">
             {thumbnailUrl ? (
@@ -245,36 +270,63 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
             ) : null}
 
             <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer transition-all">
-              {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-              <span>{uploading ? 'Uploading...' : 'Upload Image'}</span>
+              {uploadingThumb ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Upload className="w-3.5 h-3.5" />
+              )}
+              <span>{uploadingThumb ? 'Uploading...' : 'Upload Image'}</span>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleThumbnailUpload}
                 className="hidden"
-                disabled={uploading}
+                disabled={uploadingThumb || saving}
               />
             </label>
           </div>
         </Field>
 
-        <Field label="Certificate Template (PNG/JPG)">
+        {/* Certificate SVG template — per course */}
+        <Field label="Certificate Design (SVG only)">
+          <p className="text-[11px] text-slate-500 font-medium mb-2 -mt-1">
+            Upload a unique certificate background for graduates of this course. Leave empty to use
+            the default Awraq design. Recommended size: 1000×700.
+          </p>
+
           <div className="flex items-center gap-3 flex-wrap">
             {certKey ? (
-              <div className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-2.5 py-1 font-mono">
-                ✓ Uploaded
+              <div className="inline-flex items-center gap-2 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-2.5 py-1.5 font-mono max-w-full">
+                <FileImage className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate max-w-[200px]">✓ {certKey}</span>
+                <button
+                  type="button"
+                  onClick={() => setCertKey('')}
+                  className="p-0.5 rounded hover:bg-emerald-100 text-emerald-800 cursor-pointer"
+                  title="Remove template"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
-            ) : null}
+            ) : (
+              <span className="text-[11px] text-slate-400 font-medium">
+                Using default template
+              </span>
+            )}
 
             <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer transition-all">
-              {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-              <span>{uploading ? 'Uploading...' : 'Upload Template'}</span>
+              {uploadingCert ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Upload className="w-3.5 h-3.5" />
+              )}
+              <span>{uploadingCert ? 'Uploading...' : 'Upload SVG'}</span>
               <input
                 type="file"
-                accept="image/png,image/jpeg"
+                accept=".svg,image/svg+xml"
                 onChange={handleCertUpload}
                 className="hidden"
-                disabled={uploading}
+                disabled={uploadingCert || saving}
               />
             </label>
           </div>
@@ -311,7 +363,7 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
         <button
           type="button"
           onClick={handleSave}
-          disabled={saving || uploading}
+          disabled={busy}
           className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-bold shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

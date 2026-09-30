@@ -6,17 +6,15 @@ import Link from 'next/link';
 import {
   ArrowLeft,
   Copy,
-  Upload,
   Loader2,
   CheckCircle2,
   ImageIcon,
   X,
   Building2,
   Smartphone,
-  Zap,
+  ShieldCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { compressImage } from '@/lib/compressImage';
 import { CourseThumbnail } from '@/components/admin/CourseThumbnail';
 
 const PAYMENT_ACCOUNTS = {
@@ -41,8 +39,6 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
   const [rawFile, setRawFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [fileSizeInfo, setFileSizeInfo] = useState<string | null>(null);
 
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -54,63 +50,39 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
     if (!f) return;
 
     if (!f.type.startsWith('image/')) {
-      toast.error('Please select an image (JPG or PNG)');
+      toast.error('Please select an image file (JPG or PNG)');
       return;
     }
 
     setRawFile(f);
     setPreview(URL.createObjectURL(f));
-    setFileSizeInfo(null);
   };
 
   const handleSubmit = async () => {
     if (!rawFile) {
-      toast.error('Please upload your payment receipt');
+      toast.error('Please upload your payment receipt screenshot');
       return;
     }
 
     setUploading(true);
-    setUploadProgress(10);
 
     try {
-      // 1. Compress Image
-      const compressedBlob = await compressImage(rawFile, 1200, 0.7);
-      const originalMB = (rawFile.size / (1024 * 1024)).toFixed(1);
-      const compressedKB = Math.round(compressedBlob.size / 1024);
-      setFileSizeInfo(`Compressed ${originalMB}MB → ${compressedKB}KB`);
+      // 1. Upload receipt image directly via POST to /api/payment/upload-url
+      const formData = new FormData();
+      formData.append('file', rawFile);
 
-      setUploadProgress(30);
-
-      // 2. Get signed upload URL
-      const urlRes = await fetch('/api/payment/upload-url');
-      const { uploadUrl, fileKey } = await urlRes.json();
-
-      setUploadProgress(50);
-
-      // 3. Fast Upload
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('PUT', uploadUrl, true);
-        xhr.setRequestHeader('Content-Type', 'image/jpeg');
-
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) {
-            const pct = 50 + Math.round((e.loaded / e.total) * 40);
-            setUploadProgress(pct);
-          }
-        };
-
-        xhr.onload = () =>
-          xhr.status >= 200 && xhr.status < 300
-            ? resolve()
-            : reject(new Error('Upload failed'));
-        xhr.onerror = () => reject(new Error('Network error'));
-        xhr.send(compressedBlob);
+      const uploadRes = await fetch('/api/payment/upload-url', {
+        method: 'POST',
+        body: formData,
       });
 
-      setUploadProgress(95);
+      const uploadResult = await uploadRes.json();
 
-      // 4. Submit Request
+      if (!uploadRes.ok || !uploadResult.fileKey) {
+        throw new Error(uploadResult.error || 'Failed to upload receipt image');
+      }
+
+      // 2. Submit payment request record to database
       const submitRes = await fetch('/api/payment/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -119,23 +91,21 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           itemId: item.id,
           amount: item.price,
           paymentMethod: method,
-          receiptImageKey: fileKey,
+          receiptImageKey: uploadResult.fileKey,
         }),
       });
 
       const data = await submitRes.json();
+
       if (!submitRes.ok) {
-        toast.error(data.error || 'Failed to submit payment');
-        setUploading(false);
-        return;
+        throw new Error(data.error || 'Failed to submit payment request');
       }
 
-      setUploadProgress(100);
-      toast.success('Receipt uploaded instantly!');
+      toast.success('Payment submitted successfully!');
       router.push(`/purchase/waiting/${data.payment.id}`);
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to upload receipt. Please try again.');
+    } catch (err: any) {
+      console.error('Submit error:', err);
+      toast.error(err.message || 'Failed to upload receipt. Please try again.');
       setUploading(false);
     }
   };
@@ -151,6 +121,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           <span>Back</span>
         </Link>
 
+        {/* Item Header */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-4 sm:p-5 mb-6 flex items-center gap-4">
           <div className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden shrink-0">
             <CourseThumbnail
@@ -171,7 +142,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           </div>
         </div>
 
-        {/* Payment method */}
+        {/* Step 1: Payment Method */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 mb-4">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center">
@@ -216,7 +187,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           </div>
         </div>
 
-        {/* Instructions */}
+        {/* Step 2: Instructions */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 mb-4">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center">
@@ -270,7 +241,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           </div>
         </div>
 
-        {/* Upload */}
+        {/* Step 3: Upload */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 mb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -279,8 +250,8 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
               </div>
               <h2 className="text-base font-black text-slate-900">Upload payment receipt</h2>
             </div>
-            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold border border-emerald-100 flex items-center gap-1">
-              <Zap className="w-3 h-3 text-emerald-600" /> Auto-compressed
+            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-bold border border-emerald-100 flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Secure Upload
             </span>
           </div>
 
@@ -296,7 +267,6 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
                 onClick={() => {
                   setRawFile(null);
                   setPreview(null);
-                  setFileSizeInfo(null);
                 }}
                 disabled={uploading}
                 className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/95 border border-[#e8e0d2] flex items-center justify-center cursor-pointer hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
@@ -316,21 +286,6 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
               <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
             </label>
           )}
-
-          {uploading && (
-            <div className="mt-3 space-y-1.5 bg-[#fbfaf7] p-3 rounded-xl border border-[#e8e0d2]">
-              <div className="flex justify-between text-xs font-bold text-slate-700">
-                <span>{fileSizeInfo || 'Optimizing & Uploading...'}</span>
-                <span>{uploadProgress}%</span>
-              </div>
-              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#ddb049] transition-all duration-150"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         <button
@@ -342,7 +297,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           {uploading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Submitting...</span>
+              <span>Uploading & Submitting...</span>
             </>
           ) : (
             <>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Video, Upload, Loader2, Save, CheckCircle2, Trash2, Play, Clock } from 'lucide-react';
+import { Video, Upload, Loader2, Save, CheckCircle2, Trash2, Play, Clock, FileText, Type } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
@@ -12,6 +12,8 @@ interface Props {
 
 export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }) => {
   const [videoKey, setVideoKey] = useState(lesson.video_key || '');
+  const [videoTitle, setVideoTitle] = useState(lesson.video_title || '');
+  const [videoDescription, setVideoDescription] = useState(lesson.video_description || '');
   const [detectedDuration, setDetectedDuration] = useState(lesson.duration_seconds || 0);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -99,6 +101,8 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           videoKey,
+          videoTitle: videoTitle.trim() || null,
+          videoDescription: videoDescription.trim() || null,
           durationSeconds: detectedDuration || 0,
         }),
       });
@@ -121,7 +125,12 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
       const res = await fetch(`/api/admin/lessons/${lesson.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoKey: null, durationSeconds: 0 }),
+        body: JSON.stringify({
+          videoKey: null,
+          videoTitle: null,
+          videoDescription: null,
+          durationSeconds: 0,
+        }),
       });
       if (!res.ok) {
         toast.error('Failed to remove');
@@ -129,6 +138,8 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
       }
       toast.success('Video removed');
       setVideoKey('');
+      setVideoTitle('');
+      setVideoDescription('');
       setDetectedDuration(0);
       setVideoPreviewUrl(null);
       onSaved();
@@ -139,6 +150,8 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
 
   const hasChanges =
     videoKey !== (lesson.video_key || '') ||
+    videoTitle !== (lesson.video_title || '') ||
+    videoDescription !== (lesson.video_description || '') ||
     detectedDuration !== (lesson.duration_seconds || 0);
 
   return (
@@ -151,7 +164,7 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
           <div>
             <h2 className="text-xl font-black text-slate-900">Video Section</h2>
             <p className="text-sm text-slate-500 font-medium mt-0.5">
-              Upload a video. Duration is detected automatically.
+              Upload a video and add its title & description.
             </p>
           </div>
         </div>
@@ -176,7 +189,7 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
           <div className="mb-5 flex items-center gap-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
             <Clock className="w-4 h-4 text-[#ddb049]" />
             <div>
-              <div className="text-[10px] uppercase font-black bg-amber-800 tracking-wider">
+              <div className="text-[10px] uppercase font-black text-amber-800 tracking-wider">
                 Detected Duration
               </div>
               <div className="text-lg font-black text-slate-900">
@@ -189,7 +202,7 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
           </div>
         )}
 
-        <div className="mb-6">
+        <div className="mb-5">
           <label className="block text-xs font-bold text-slate-700 mb-2">
             {videoKey ? 'Replace Video' : 'Upload Video'}
           </label>
@@ -210,6 +223,44 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
               </div>
             </div>
           )}
+        </div>
+
+        {/* Video Title */}
+        <div className="mb-4">
+          <label className="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+            <Type className="w-3.5 h-3.5 text-[#ddb049]" />
+            Video Title (optional)
+          </label>
+          <input
+            type="text"
+            value={videoTitle}
+            onChange={(e) => setVideoTitle(e.target.value)}
+            placeholder="e.g. Introduction to Facebook Ads"
+            maxLength={150}
+            className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm font-medium"
+          />
+          <div className="text-[10px] text-slate-400 font-medium mt-1">
+            {videoTitle.length}/150 characters
+          </div>
+        </div>
+
+        {/* Video Description */}
+        <div className="mb-6">
+          <label className="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5 text-[#ddb049]" />
+            Video Description / Details (optional)
+          </label>
+          <textarea
+            value={videoDescription}
+            onChange={(e) => setVideoDescription(e.target.value)}
+            placeholder="Explain what this video covers, key takeaways, or important notes for students..."
+            rows={4}
+            maxLength={1000}
+            className="w-full px-4 py-3 rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none bg-[#fbfaf7]/50 text-sm font-medium resize-none leading-relaxed"
+          />
+          <div className="text-[10px] text-slate-400 font-medium mt-1">
+            {videoDescription.length}/1000 characters
+          </div>
         </div>
 
         <div className="flex items-center gap-3 pt-5 border-t border-[#f0ebe2] flex-wrap">

@@ -24,13 +24,14 @@ import {
   Download,
   Loader2,
   Save,
-  StickyNote,
+  Check,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { VideoPlayer } from './VideoPlayer';
 import { TextReader } from './TextReader';
 import { QuizPlayer } from './QuizPlayer';
 import { LessonSidebar } from './LessonSidebar';
+import { isEmptyLessonHtml } from '@/lib/sanitizeLessonHtml';
 
 interface Props {
   course: any;
@@ -59,6 +60,51 @@ export const LessonClient: React.FC<Props> = ({
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [progressState, setProgressState] = useState(allProgress);
+  const [markingComplete, setMarkingComplete] = useState(false);
+
+  // Sync state if allProgress prop changes or when switching lessons
+  useEffect(() => {
+    setProgressState((prev) => {
+      const map = new Map();
+      // 1. Seed with new server progress
+      (allProgress || []).forEach((p) => map.set(p.lesson_id, p));
+      // 2. Preserve any previously completed lessons from local state
+      (prev || []).forEach((p) => {
+        if (p.is_completed) {
+          const existing = map.get(p.lesson_id) || {};
+          map.set(p.lesson_id, { ...existing, lesson_id: p.lesson_id, is_completed: true });
+        }
+      });
+      return Array.from(map.values());
+    });
+  }, [lesson.id, allProgress]);
+
+  // Live progress fetch on route mount
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/progress/course?courseId=${course.id}`);
+        const data = await res.json();
+        if (res.ok && data.progress && isMounted) {
+          setProgressState((prev) => {
+            const map = new Map();
+            (data.progress || []).forEach((p: any) => map.set(p.lesson_id, p));
+            (prev || []).forEach((p: any) => {
+              if (p.is_completed) {
+                const existing = map.get(p.lesson_id) || {};
+                map.set(p.lesson_id, { ...existing, lesson_id: p.lesson_id, is_completed: true });
+              }
+            });
+            return Array.from(map.values());
+          });
+        }
+      } catch {}
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [lesson.id, course.id]);
 
   const completedIds = new Set(
     progressState.filter((p) => p.is_completed).map((p) => p.lesson_id)
@@ -80,24 +126,41 @@ export const LessonClient: React.FC<Props> = ({
     });
   };
 
+  const handleManualCompleteToggle = async () => {
+    setMarkingComplete(true);
+    try {
+      const res = await fetch('/api/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lessonId: lesson.id,
+          watchSeconds: lesson.duration_seconds || 60,
+          scrollPercentage: 100,
+        }),
+      });
+      if (res.ok) {
+        handleLessonComplete();
+        toast.success('Lesson marked complete! 🎉');
+      }
+    } catch {
+      toast.error('Failed to update progress');
+    } finally {
+      setMarkingComplete(false);
+    }
+  };
+
   const hasVideo = !!(lesson.video_key && String(lesson.video_key).trim());
-  const hasText = !!(
-    lesson.text_content &&
-    String(lesson.text_content).replace(/<[^>]*>/g, '').trim().length > 0
-  );
+  const hasText = !isEmptyLessonHtml(lesson.text_content);
   const hasQuiz = !!(
     lesson.quiz_data?.questions && lesson.quiz_data.questions.length > 0
   );
 
-  // Is this the last lesson AND is the entire course fully completed?
   const isLastLesson = !nextLesson;
   const courseFullyCompleted = totalCount > 0 && completedCount === totalCount;
   const showCertificateButton = isLastLesson && courseFullyCompleted;
 
-  // Mobile sidebar tabs
   const [mobileTab, setMobileTab] = useState<'outline' | 'resources' | 'notes'>('outline');
 
-  // Get current lesson title for mobile sidebar
   let currentLessonTitle = '';
   for (const m of modules) {
     const l = (m.lessons || []).find((x: any) => x.id === lesson.id);
@@ -142,7 +205,6 @@ export const LessonClient: React.FC<Props> = ({
             {completedCount}/{totalCount}
           </span>
 
-          {/* Mobile sidebar toggle */}
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="lg:hidden w-11 h-11 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center cursor-pointer transition-colors"
@@ -165,7 +227,7 @@ export const LessonClient: React.FC<Props> = ({
           onClose={() => setSidebarOpen(false)}
         />
 
-        <div className="flex-1 overflow-y-auto relative">
+        <div className="flex-1 overflow-y-auto relative min-w-0">
           {!sidebarOpen && !mobileSidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
@@ -184,7 +246,6 @@ export const LessonClient: React.FC<Props> = ({
                 onClick={() => setMobileSidebarOpen(false)}
               />
               <aside className="fixed top-0 right-0 bottom-0 w-full sm:w-[380px] max-w-[90vw] bg-white z-50 lg:hidden flex flex-col shadow-2xl animate-slideIn">
-                {/* Mobile Sidebar Header */}
                 <div className="p-4 border-b border-[#e8e0d2] flex items-center justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest mb-0.5">
@@ -201,7 +262,6 @@ export const LessonClient: React.FC<Props> = ({
                   </button>
                 </div>
 
-                {/* Mobile Tabs */}
                 <div className="flex border-b border-[#f0ebe2] bg-white">
                   <MobileTabButton
                     active={mobileTab === 'outline'}
@@ -223,7 +283,6 @@ export const LessonClient: React.FC<Props> = ({
                   />
                 </div>
 
-                {/* Mobile Tab Content */}
                 <div className="flex-1 overflow-y-auto">
                   {mobileTab === 'outline' && (
                     <MobileOutlineTab
@@ -249,8 +308,8 @@ export const LessonClient: React.FC<Props> = ({
             </>
           )}
 
-          <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
-            <div className="relative">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto min-w-0 w-full">
+            <div className="relative min-w-0">
               {/* Desktop side arrows */}
               {prevLesson && (
                 <button
@@ -276,25 +335,78 @@ export const LessonClient: React.FC<Props> = ({
                 </button>
               )}
 
-              {/* CONTENT SECTIONS */}
-              <div className="space-y-6">
-                {hasVideo && (
-                  <div>
-                    <SectionLabel icon={Video} label="Video Lesson" color="cyan" />
-                    <div className="rounded-2xl overflow-hidden shadow-lg bg-black">
-                      <VideoPlayer
-                        courseId={course.id}
-                        lessonId={lesson.id}
-                        durationSeconds={lesson.duration_seconds || 0}
-                        initialProgress={initialProgress}
-                        onCompleted={handleLessonComplete}
-                      />
+              {/* LESSON HEADER — Always at the top */}
+              <div className="mb-6 pb-5 border-b border-[#e8e0d2] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap mb-2">
+                    <div className="text-[11px] uppercase font-black tracking-widest text-[#ddb049]">
+                      Lesson {lessonNumber}
                     </div>
+
+                    {hasVideo && (
+                      <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-100">
+                        Video
+                      </span>
+                    )}
+                    {hasText && (
+                      <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                        Text
+                      </span>
+                    )}
+                    {hasQuiz && (
+                      <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100">
+                        Quiz
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight break-words">
+                    {lesson.title}
+                  </h2>
+                </div>
+
+                {/* Mark as Complete Toggle Button */}
+                <div className="shrink-0">
+                  {completedIds.has(lesson.id) ? (
+                    <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>Completed</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleManualCompleteToggle}
+                      disabled={markingComplete}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer transition-all disabled:opacity-50 shadow-sm"
+                    >
+                      {markingComplete ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Check className="w-3.5 h-3.5" />
+                      )}
+                      <span>Mark Complete</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* CONTENT SECTIONS */}
+              <div className="space-y-6 min-w-0">
+                {hasVideo && (
+                  <div className="min-w-0">
+                    <SectionLabel icon={Video} label="Video Lesson" color="cyan" />
+                    <VideoPlayer
+                      courseId={course.id}
+                      lessonId={lesson.id}
+                      durationSeconds={lesson.duration_seconds || 0}
+                      initialProgress={initialProgress}
+                      onCompleted={handleLessonComplete}
+                      videoTitle={lesson.video_title}
+                      videoDescription={lesson.video_description}
+                    />
                   </div>
                 )}
 
                 {hasText && (
-                  <div>
+                  <div className="min-w-0">
                     <SectionLabel
                       icon={FileText}
                       label="Reading Material"
@@ -312,7 +424,7 @@ export const LessonClient: React.FC<Props> = ({
                 )}
 
                 {hasQuiz && (
-                  <div>
+                  <div className="min-w-0">
                     <SectionLabel
                       icon={HelpCircle}
                       label="Practice Quiz"
@@ -337,45 +449,9 @@ export const LessonClient: React.FC<Props> = ({
                 )}
               </div>
 
-              {/* Meta below content */}
-              <div className="mt-8 pb-2">
-                <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <div className="text-[11px] uppercase font-black tracking-widest text-[#ddb049]">
-                    Lesson {lessonNumber}
-                  </div>
-
-                  {hasVideo && (
-                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-amber-50 bg-amber-800 border border-amber-100">
-                      Video
-                    </span>
-                  )}
-                  {hasText && (
-                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-                      Text
-                    </span>
-                  )}
-                  {hasQuiz && (
-                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100">
-                      Quiz
-                    </span>
-                  )}
-
-                  {completedIds.has(lesson.id) && (
-                    <span className="inline-flex items-center gap-1 text-emerald-600 text-[11px] font-bold">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Completed
-                    </span>
-                  )}
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                  {lesson.title}
-                </h2>
-              </div>
-
-              {/* 🎉 CERTIFICATE CELEBRATION BANNER (Only Last Lesson + Course Completed) */}
+              {/* 🎉 CERTIFICATE CELEBRATION BANNER */}
               {showCertificateButton && (
-                <div className="mt-6 rounded-2xl bg-gradient-to-br from-amber-100 via-amber-50 to-yellow-50 border-2 border-amber-300 p-6 sm:p-8 text-center shadow-xl relative overflow-hidden">
-                  {/* Decorative dots */}
+                <div className="mt-8 rounded-2xl bg-gradient-to-br from-amber-100 via-amber-50 to-yellow-50 border-2 border-amber-300 p-6 sm:p-8 text-center shadow-xl relative overflow-hidden">
                   <div className="absolute top-4 left-4 w-2 h-2 rounded-full bg-amber-400 opacity-60" />
                   <div className="absolute top-8 right-6 w-3 h-3 rounded-full bg-amber-500 opacity-40" />
                   <div className="absolute bottom-6 left-10 w-2 h-2 rounded-full bg-amber-400 opacity-50" />
@@ -408,7 +484,7 @@ export const LessonClient: React.FC<Props> = ({
               )}
 
               {/* NEXT / PREV NAVIGATION */}
-              <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-[#e8e0d2] pt-6">
+              <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-[#e8e0d2] pt-6">
                 {prevLesson ? (
                   <Link
                     href={`/learn/${course.id}/${prevLesson.id}`}
@@ -449,7 +525,6 @@ export const LessonClient: React.FC<Props> = ({
                   </Link>
                 ) : (
                   <>
-                    {/* GRID: 2 buttons if course is complete, 1 button otherwise */}
                     {showCertificateButton ? (
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Link
@@ -563,7 +638,6 @@ const MobileOutlineTab = ({ course, modules, completedIds, currentLessonId, onLe
   modules.forEach((m: any) => {
     initialExpanded[m.id] = (m.lessons || []).some((l: any) => l.id === currentLessonId);
   });
-  // Merge with existing expanded state
   const mergedExpanded = { ...initialExpanded, ...expanded };
 
   const q = search.trim().toLowerCase();

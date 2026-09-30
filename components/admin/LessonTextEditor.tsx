@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { FileText, Loader2, Save, Trash2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { RichTextEditor } from './RichTextEditor';
+import { isEmptyLessonHtml, sanitizeLessonTextContent } from '@/lib/sanitizeLessonHtml';
 
 interface Props {
   lesson: any;
@@ -11,15 +12,18 @@ interface Props {
 }
 
 export const LessonTextEditor: React.FC<Props> = ({ lesson, onSaved }) => {
-  const [content, setContent] = useState(lesson.text_content || '');
+  // Never seed the editor with placeholder garbage from DB
+  const initial = isEmptyLessonHtml(lesson.text_content) ? '' : lesson.text_content || '';
+  const [content, setContent] = useState(initial);
   const [saving, setSaving] = useState(false);
 
-  const stripped = content.replace(/<[^>]*>/g, '').trim();
-  const wordCount = stripped ? stripped.split(/\s+/).length : 0;
-  const estimatedTime = Math.max(60, Math.round((wordCount / 200) * 60));
+  const clean = sanitizeLessonTextContent(content);
+  const hasContent = !!clean;
+  const hasChanges = (clean || '') !== (sanitizeLessonTextContent(lesson.text_content) || '');
 
-  const hasContent = stripped.length > 0;
-  const hasChanges = content !== (lesson.text_content || '');
+  const stripped = clean ? clean.replace(/<[^>]*>/g, '').trim() : '';
+  const wordCount = stripped ? stripped.split(/\s+/).filter(Boolean).length : 0;
+  const estimatedTime = Math.max(60, Math.round((wordCount / 200) * 60));
 
   const handleSave = async () => {
     if (!hasContent) {
@@ -32,7 +36,7 @@ export const LessonTextEditor: React.FC<Props> = ({ lesson, onSaved }) => {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          textContent: content,
+          textContent: clean, // never placeholder
           durationSeconds: estimatedTime,
         }),
       });
@@ -79,7 +83,7 @@ export const LessonTextEditor: React.FC<Props> = ({ lesson, onSaved }) => {
           <div>
             <h2 className="text-xl font-black text-slate-900">Text Section</h2>
             <p className="text-sm text-slate-500 font-medium mt-0.5">
-              Reading material for this lesson.
+              Reading material for this lesson. Nothing appears for students until you save real content.
             </p>
           </div>
         </div>
@@ -89,7 +93,7 @@ export const LessonTextEditor: React.FC<Props> = ({ lesson, onSaved }) => {
           <RichTextEditor
             content={content}
             onChange={setContent}
-            placeholder="Start writing your lesson content..."
+            placeholder="Write your lesson reading material…"
           />
         </div>
 
@@ -110,7 +114,7 @@ export const LessonTextEditor: React.FC<Props> = ({ lesson, onSaved }) => {
             <span>{saving ? 'Saving...' : 'Save Text Section'}</span>
           </button>
 
-          {lesson.text_content && (
+          {(lesson.text_content && !isEmptyLessonHtml(lesson.text_content)) && (
             <button
               onClick={handleRemove}
               disabled={saving}
@@ -121,7 +125,7 @@ export const LessonTextEditor: React.FC<Props> = ({ lesson, onSaved }) => {
             </button>
           )}
 
-          {hasChanges && (
+          {hasChanges && hasContent && (
             <div className="ml-auto flex items-center gap-1.5 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Unsaved changes

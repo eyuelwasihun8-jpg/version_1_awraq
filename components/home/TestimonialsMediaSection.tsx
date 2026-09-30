@@ -14,77 +14,27 @@ type TestimonialItem = {
   rating?: number;
 };
 
-const TESTIMONIALS: TestimonialItem[] = [
-  {
-    id: '1',
-    name: 'Sara Kebede',
-    role: 'Social Media Manager',
-    type: 'video',
-    src: '/videos/testimonials/sara.mp4',
-    poster: '/images/testimonials/sara.jpg',
-    quote: 'I landed freelance clients within 3 weeks of finishing the course.',
-    rating: 5,
-  },
-  {
-    id: '2',
-    name: 'Nahom Solomon',
-    role: 'Business Owner',
-    type: 'image',
-    src: '/images/testimonials/nahom.jpg',
-    quote: 'Clear lessons. Practical strategy. My ads finally made sense.',
-    rating: 5,
-  },
-  {
-    id: '3',
-    name: 'Mahlet Tesfaye',
-    role: 'Content Creator',
-    type: 'video',
-    src: '/videos/testimonials/mahlet.mp4',
-    poster: '/images/testimonials/mahlet.jpg',
-    quote: 'The step-by-step system helped me grow my personal brand fast.',
-    rating: 5,
-  },
-  {
-    id: '4',
-    name: 'Abebe Kebede',
-    role: 'Marketing Intern',
-    type: 'image',
-    src: '/images/testimonials/abebe.jpg',
-    quote: 'Best practical digital marketing training I have taken.',
-    rating: 4,
-  },
-  {
-    id: '5',
-    name: 'Hanna Alemu',
-    role: 'Freelance Marketer',
-    type: 'image',
-    src: '/images/testimonials/hanna.jpg',
-    quote: 'I finally understood ads, funnels, and content in one place.',
-    rating: 5,
-  },
-  {
-    id: '6',
-    name: 'Yonas Bekele',
-    role: 'Startup Founder',
-    type: 'video',
-    src: '/videos/testimonials/yonas.mp4',
-    poster: '/images/testimonials/yonas.jpg',
-    quote: 'We applied the lessons and saw better lead quality immediately.',
-    rating: 5,
-  },
-];
-
 export const TestimonialsMediaSection: React.FC = () => {
+  const [items, setItems] = useState<TestimonialItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeItem, setActiveItem] = useState<TestimonialItem | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
 
-  // Mobile carousel state
   const [mobileIndex, setMobileIndex] = useState(0);
   const [pausedMobile, setPausedMobile] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchDeltaX = useRef(0);
 
-  // Detect desktop vs mobile
+  useEffect(() => {
+    fetch('/api/testimonials')
+      .then((res) => res.json())
+      .then((data) => {
+        setItems(data.testimonials || []);
+      })
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   useEffect(() => {
     const check = () => setIsDesktop(window.innerWidth >= 1024);
     check();
@@ -92,14 +42,13 @@ export const TestimonialsMediaSection: React.FC = () => {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Mobile auto-rotate every 3s
   useEffect(() => {
-    if (isDesktop || pausedMobile || activeItem) return;
+    if (isDesktop || pausedMobile || activeItem || items.length === 0) return;
     const t = setInterval(() => {
-      setMobileIndex((i) => (i + 1) % TESTIMONIALS.length);
+      setMobileIndex((i) => (i + 1) % items.length);
     }, 3000);
     return () => clearInterval(t);
-  }, [isDesktop, pausedMobile, activeItem, TESTIMONIALS.length]);
+  }, [isDesktop, pausedMobile, activeItem, items.length]);
 
   const openItem = (item: TestimonialItem) => setActiveItem(item);
   const closeItem = () => setActiveItem(null);
@@ -117,18 +66,18 @@ export const TestimonialsMediaSection: React.FC = () => {
 
   const onTouchEnd = () => {
     const delta = touchDeltaX.current;
-    if (Math.abs(delta) > 50) {
-      if (delta < 0) {
-        setMobileIndex((i) => (i + 1) % TESTIMONIALS.length);
-      } else {
-        setMobileIndex((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
-      }
+    if (Math.abs(delta) > 50 && items.length > 0) {
+      if (delta < 0) setMobileIndex((i) => (i + 1) % items.length);
+      else setMobileIndex((i) => (i - 1 + items.length) % items.length);
     }
     touchStartX.current = null;
     touchDeltaX.current = 0;
-    // resume autoplay shortly after interaction
     setTimeout(() => setPausedMobile(false), 1200);
   };
+
+  if (loading || items.length === 0) {
+    return null; // Don't show section if loading or if no testimonials are created in DB
+  }
 
   return (
     <section className="relative py-16 sm:py-20 bg-gradient-to-b from-white via-slate-50 to-white overflow-hidden">
@@ -148,14 +97,14 @@ export const TestimonialsMediaSection: React.FC = () => {
           </p>
         </div>
 
-        {/* ═══════════════ DESKTOP: horizontal marquee ═══════════════ */}
+        {/* DESKTOP marquee */}
         <div className="hidden lg:block relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-slate-50 to-transparent z-10" />
           <div className="pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-slate-50 to-transparent z-10" />
 
           <div className="overflow-hidden group/marquee">
             <div className="flex gap-5 w-max animate-testimonials-marquee group-hover/marquee:[animation-play-state:paused] py-2">
-              {[...TESTIMONIALS, ...TESTIMONIALS].map((item, idx) => (
+              {[...items, ...items].map((item, idx) => (
                 <div key={`${item.id}-${idx}`} className="w-[280px] shrink-0">
                   <TestimonialCard item={item} onOpen={() => openItem(item)} />
                 </div>
@@ -164,7 +113,7 @@ export const TestimonialsMediaSection: React.FC = () => {
           </div>
         </div>
 
-        {/* ═══════════════ MOBILE/TABLET: carousel ═══════════════ */}
+        {/* MOBILE carousel */}
         <div className="lg:hidden">
           <div
             className="relative overflow-hidden"
@@ -178,7 +127,7 @@ export const TestimonialsMediaSection: React.FC = () => {
               className="flex transition-transform duration-500 ease-out"
               style={{ transform: `translateX(-${mobileIndex * 100}%)` }}
             >
-              {TESTIMONIALS.map((item) => (
+              {items.map((item) => (
                 <div key={item.id} className="w-full shrink-0 px-1">
                   <div className="max-w-sm mx-auto">
                     <TestimonialCard item={item} onOpen={() => openItem(item)} />
@@ -188,12 +137,11 @@ export const TestimonialsMediaSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Controls */}
           <div className="mt-5 flex items-center justify-center gap-3">
             <button
               onClick={() => {
                 setPausedMobile(true);
-                setMobileIndex((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
+                setMobileIndex((i) => (i - 1 + items.length) % items.length);
                 setTimeout(() => setPausedMobile(false), 1500);
               }}
               className="w-10 h-10 rounded-full bg-white border border-[#e8e0d2] shadow-sm flex items-center justify-center cursor-pointer hover:bg-[#fbfaf7]"
@@ -203,7 +151,7 @@ export const TestimonialsMediaSection: React.FC = () => {
             </button>
 
             <div className="flex items-center gap-1.5">
-              {TESTIMONIALS.map((t, i) => (
+              {items.map((t, i) => (
                 <button
                   key={t.id}
                   onClick={() => {
@@ -222,7 +170,7 @@ export const TestimonialsMediaSection: React.FC = () => {
             <button
               onClick={() => {
                 setPausedMobile(true);
-                setMobileIndex((i) => (i + 1) % TESTIMONIALS.length);
+                setMobileIndex((i) => (i + 1) % items.length);
                 setTimeout(() => setPausedMobile(false), 1500);
               }}
               className="w-10 h-10 rounded-full bg-white border border-[#e8e0d2] shadow-sm flex items-center justify-center cursor-pointer hover:bg-[#fbfaf7]"
@@ -234,7 +182,7 @@ export const TestimonialsMediaSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Lightbox / player modal */}
+      {/* Lightbox / Video Modal */}
       {activeItem && (
         <div
           className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
@@ -261,12 +209,16 @@ export const TestimonialsMediaSection: React.FC = () => {
                 className="w-full aspect-video bg-black"
               />
             ) : (
-              <div className="w-full bg-slate-900 flex items-center justify-center">
-                <img
-                  src={activeItem.src}
-                  alt={activeItem.name}
-                  className="w-full max-h-[75vh] object-contain"
-                />
+              <div className="w-full bg-slate-900 flex items-center justify-center min-h-[240px]">
+                {activeItem.src ? (
+                  <img
+                    src={activeItem.src}
+                    alt={activeItem.name}
+                    className="w-full max-h-[75vh] object-contain"
+                  />
+                ) : (
+                  <div className="p-10 text-white/70 text-sm font-medium">Photo story</div>
+                )}
               </div>
             )}
 
@@ -305,7 +257,6 @@ export const TestimonialsMediaSection: React.FC = () => {
   );
 };
 
-/* ─── Card ─── */
 const TestimonialCard = ({
   item,
   onOpen,
@@ -313,7 +264,6 @@ const TestimonialCard = ({
   item: TestimonialItem;
   onOpen: () => void;
 }) => {
-  const [imgFailed, setImgFailed] = useState(false);
   const mediaSrc = item.type === 'video' ? item.poster || item.src : item.src;
 
   return (
@@ -321,41 +271,39 @@ const TestimonialCard = ({
       className="group relative rounded-3xl overflow-hidden border border-white/60 bg-white/70 backdrop-blur-xl shadow-[0_10px_40px_rgba(15,23,42,0.06)] hover:shadow-[0_18px_50px_rgba(15,23,42,0.12)] transition-all cursor-pointer h-full"
       onClick={onOpen}
     >
-      <div className="aspect-[4/5] relative bg-slate-200">
-        {!imgFailed ? (
+      <div className="aspect-[4/5] relative bg-slate-900">
+        {mediaSrc ? (
           <img
             src={mediaSrc}
             alt={item.name}
             className="w-full h-full object-cover"
-            onError={() => setImgFailed(true)}
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300" />
+          <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 flex items-center justify-center p-6 text-center">
+            <Quote className="w-10 h-10 text-[#ddb049] opacity-40 mb-2" />
+          </div>
         )}
 
-        {/* type badge */}
         <div
-          className={`absolute top-3 left-3 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider backdrop-blur-md border ${
+          className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider backdrop-blur-md border ${
             item.type === 'video'
-              ? 'bg-black/45 text-white border-white/20'
-              : 'bg-white/70 text-slate-800 border-white/60'
+              ? 'bg-black/60 text-white border-white/20'
+              : 'bg-white/80 text-slate-900 border-white/60'
           }`}
         >
           {item.type === 'video' ? 'Video' : 'Story'}
         </div>
 
-        {/* play affordance for video */}
         {item.type === 'video' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/15 group-hover:bg-slate-900/25 transition-colors">
-            <div className="w-14 h-14 rounded-full bg-white/25 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/20 group-hover:bg-slate-900/35 transition-colors">
+            <div className="w-14 h-14 rounded-full bg-white/30 backdrop-blur-md border border-white/50 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
               <Play className="w-6 h-6 text-white fill-white ml-0.5" />
             </div>
           </div>
         )}
 
-        {/* bottom info glass */}
         <div className="absolute inset-x-0 bottom-0 p-3">
-          <div className="rounded-2xl border border-white/50 bg-white/55 backdrop-blur-xl p-3 shadow-sm">
+          <div className="rounded-2xl border border-white/50 bg-white/80 backdrop-blur-xl p-3 shadow-sm">
             {item.rating && (
               <div className="flex items-center gap-0.5 mb-1.5">
                 {Array.from({ length: 5 }).map((_, i) => (

@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Rate limit: 30 quiz submissions per hour per user
+  const rl = rateLimit(`quiz-submit:${user.id}`, 30, 60 * 60 * 1000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Too many quiz attempts. Please slow down.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter || 3600) } }
+    );
+  }
 
   const body = await request.json();
   const { lessonId, answers } = body;
@@ -21,17 +31,18 @@ export async function POST(request: NextRequest) {
 
   if (!lesson) return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
 
-  // FIXED: Accept ANY lesson that has quiz_data, not just lesson_type = 'quiz'
-  // This supports mixed lessons (video + text + quiz)
+  // Accept any lesson that has quiz_data (supports mixed lessons)
   if (!lesson.quiz_data || !lesson.quiz_data.questions?.length) {
     return NextResponse.json({ error: 'This lesson has no quiz' }, { status: 400 });
   }
 
+  // Must be actively enrolled (revoked enrollments blocked)
   const { data: enrollment } = await supabase
     .from('enrollments')
     .select('id')
     .eq('user_id', user.id)
     .eq('course_id', lesson.course_id)
+    .eq('is_active', true)
     .maybeSingle();
 
   if (!enrollment) {
@@ -70,7 +81,6 @@ export async function POST(request: NextRequest) {
 
   const score = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
 
-  // Save attempt (no passing score logic — quizzes are always optional)
   const { data: attempt, error } = await supabase
     .from('lesson_quiz_attempts')
     .insert({
@@ -78,7 +88,7 @@ export async function POST(request: NextRequest) {
       lesson_id: lessonId,
       answers,
       score,
-      passed: score === 100, // Passed = got 100%, purely for display
+      passed: score === 100,
     })
     .select()
     .single();

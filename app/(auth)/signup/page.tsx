@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Mail, Lock, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase-browser';
 import { BrandLogo } from '@/components/BrandLogo';
+import { TurnstileWidget } from '@/components/TurnstileWidget';
 import { toast } from 'sonner';
 
 export default function SignupPage() {
@@ -13,39 +14,91 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileReset, setTurnstileReset] = useState(0);
+
+  const runGuard = async (token: string) => {
+    const res = await fetch('/api/auth/guard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'signup', turnstileToken: token }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || 'Security check failed');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    const supabase = createClient();
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-    });
-
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
+    if (!turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+      toast.error('Please complete the security check');
       return;
     }
 
-    setEmailSent(true);
-    toast.success('Check your email to confirm your account!');
-    setLoading(false);
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await runGuard(turnstileToken);
+
+      const supabase = createClient();
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      });
+
+      if (error) {
+        toast.error(error.message);
+        setTurnstileToken('');
+        setTurnstileReset((k) => k + 1);
+        setLoading(false);
+        return;
+      }
+
+      setEmailSent(true);
+      toast.success('Check your email to confirm your account!');
+    } catch (err: any) {
+      toast.error(err.message || 'Signup failed');
+      setTurnstileToken('');
+      setTurnstileReset((k) => k + 1);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogle = async () => {
+    if (!turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+      toast.error('Please complete the security check first');
+      return;
+    }
+
     setGoogleLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/onboarding` },
-    });
-    if (error) {
-      toast.error(error.message);
+    try {
+      await runGuard(turnstileToken);
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+        },
+      });
+      if (error) {
+        toast.error(error.message);
+        setGoogleLoading(false);
+        setTurnstileToken('');
+        setTurnstileReset((k) => k + 1);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Security check failed');
       setGoogleLoading(false);
+      setTurnstileToken('');
+      setTurnstileReset((k) => k + 1);
     }
   };
 
@@ -118,7 +171,7 @@ export default function SignupPage() {
 
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#e8e0d2]"></div>
+                <div className="w-full border-t border-[#e8e0d2]" />
               </div>
               <div className="relative flex justify-center text-xs">
                 <span className="bg-white px-3 text-slate-500 font-medium">or</span>
@@ -157,6 +210,20 @@ export default function SignupPage() {
                     className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-[#fbfaf7]/50"
                   />
                 </div>
+              </div>
+
+              {/* Turnstile — always required on signup */}
+              <div className="flex justify-center py-1">
+                <TurnstileWidget
+                  action="signup"
+                  resetKey={turnstileReset}
+                  onVerify={(t) => setTurnstileToken(t)}
+                  onExpire={() => setTurnstileToken('')}
+                  onError={() => {
+                    setTurnstileToken('');
+                    toast.error('Security check failed to load');
+                  }}
+                />
               </div>
 
               <button

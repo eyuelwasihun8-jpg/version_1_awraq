@@ -24,27 +24,51 @@ export default async function CourseDetailPage({
   const { count: lessonCount } = await supabase
     .from('lessons')
     .select('id', { count: 'exact', head: true })
-    .eq('course_id', id);
+    .eq('course_id', id)
+    .neq('is_published', false);
 
-  // Number of students who enrolled in this course
+  // Active enrollments only
   const { count: studentCount } = await supabase
     .from('enrollments')
     .select('id', { count: 'exact', head: true })
-    .eq('course_id', id);
-
-  // Reviews / testimonials for this course
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select(
-      'id, rating, review_text, created_at, user:profiles(full_name, avatar_url)'
-    )
     .eq('course_id', id)
+    .eq('is_active', true);
+
+  // ONLY published reviews, max 6 (2 rows × 3)
+  const { data: reviewsRaw } = await supabase
+    .from('reviews')
+    .select('id, rating, review_text, created_at, user_id')
+    .eq('course_id', id)
+    .eq('is_published', true)
     .order('created_at', { ascending: false })
-    .limit(30);
+    .limit(6);
+
+  const userIds = Array.from(new Set((reviewsRaw || []).map((r) => r.user_id)));
+  let profileMap = new Map<string, { full_name: string | null; avatar_url: string | null }>();
+
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .in('id', userIds);
+    (profiles || []).forEach((p) => profileMap.set(p.id, p));
+  }
+
+  const reviews = (reviewsRaw || []).map((r) => ({
+    ...r,
+    user: profileMap.get(r.user_id) || null,
+  }));
+
+  // Average from ALL published reviews
+  const { data: allPublished } = await supabase
+    .from('reviews')
+    .select('rating')
+    .eq('course_id', id)
+    .eq('is_published', true);
 
   const avgRating =
-    reviews && reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    allPublished && allPublished.length > 0
+      ? allPublished.reduce((sum, r) => sum + r.rating, 0) / allPublished.length
       : 0;
 
   const {
@@ -58,6 +82,7 @@ export default async function CourseDetailPage({
       .select('id')
       .eq('user_id', user.id)
       .eq('course_id', id)
+      .eq('is_active', true)
       .maybeSingle();
     isEnrolled = !!enrollment;
   }
@@ -67,8 +92,9 @@ export default async function CourseDetailPage({
       course={course}
       lessonCount={lessonCount || 0}
       studentCount={studentCount || 0}
-      reviews={reviews || []}
+      reviews={reviews}
       averageRating={Math.round(avgRating * 10) / 10}
+      totalReviews={allPublished?.length || 0}
       isLoggedIn={!!user}
       isEnrolled={isEnrolled}
     />

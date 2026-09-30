@@ -1,58 +1,55 @@
 import React from 'react';
+import Link from 'next/link';
 
 interface BrandLogoProps {
   variant?: 'light' | 'dark';
   size?: 'sm' | 'md' | 'lg';
+  iconOnly?: boolean;
   className?: string;
+  showLink?: boolean;
 }
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   variant = 'dark',
   size = 'md',
+  iconOnly = false,
   className = '',
+  showLink = false,
 }) => {
-  const isDark = variant === 'dark';
-  const textColor = isDark ? 'text-[#0a0704]' : 'text-white';
-  const bracketColor = isDark ? 'text-[#6b6358]' : 'text-gray-400';
-
-  const dimensions = {
-    sm: { icon: 'w-7 h-7', text: 'text-xs' },
-    md: { icon: 'w-9 h-9', text: 'text-sm' },
-    lg: { icon: 'w-11 h-11', text: 'text-base' },
+  // Height constraints carefully tuned so it stays centered inside the navbar
+  const heightClasses = {
+    sm: 'max-h-6 sm:max-h-7',
+    md: 'max-h-8 sm:max-h-9',
+    lg: 'max-h-10 sm:max-h-12',
   };
 
-  return (
-    <div className={`flex flex-col items-center select-none cursor-pointer ${className}`}>
-      <svg
-        className={`${dimensions[size].icon} text-[#ddb049]`}
-        viewBox="0 0 40 40"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M20 3L35 11.66V28.34L20 37L5 28.34V11.66L20 3Z"
-          stroke="#ddb049"
-          strokeWidth="3.2"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M14 13V27M26 13V27M14 20H26"
-          stroke="#ddb049"
-          strokeWidth="3.2"
-          strokeLinecap="round"
-        />
-      </svg>
+  const isLightVariant = variant === 'light';
+  const logoSrc = iconOnly ? '/awraq-icon.png' : '/awraq-logo-black.png';
 
-      <div className="flex items-center gap-0.5 mt-0.5 leading-none">
-        <span className={`text-[10px] font-mono font-medium ${bracketColor}`}>[</span>
-        <span
-          className={`font-sans font-black tracking-widest uppercase ${textColor} ${dimensions[size].text}`}
-          style={{ letterSpacing: '0.18em' }}
-        >
-          AWRAQ
-        </span>
-        <span className={`text-[10px] font-mono font-medium ${bracketColor}`}>]</span>
-      </div>
+  const logoElement = (
+    <div className={`inline-flex items-center justify-center my-auto py-1 select-none ${className}`}>
+      <img
+        src={logoSrc}
+        alt="Awraq Skills"
+        className={`${heightClasses[size]} w-auto object-contain transition-transform active:scale-95 ${
+          isLightVariant ? 'brightness-0 invert' : ''
+        }`}
+        onError={(e) => {
+          if (!iconOnly) {
+            (e.target as HTMLImageElement).src = '/awraq-icon.png';
+          }
+        }}
+      />
     </div>
   );
+
+  if (showLink) {
+    return (
+      <Link href="/" className="inline-flex items-center my-auto cursor-pointer">
+        {logoElement}
+      </Link>
+    );
+  }
+
+  return logoElement;
 };

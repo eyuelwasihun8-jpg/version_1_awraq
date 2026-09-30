@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { sanitizeLessonTextContent } from '@/lib/sanitizeLessonHtml';
 
 async function requireStaff(supabase: any) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: 'Unauthorized', status: 401 };
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
   if (!profile || !['super_admin', 'admin', 'instructor'].includes(profile.role)) {
     return { error: 'Forbidden', status: 403 };
   }
   return { user };
-}
-
-function deriveLessonType(hasVideo: boolean, hasText: boolean, hasQuiz: boolean) {
-  const count = [hasVideo, hasText, hasQuiz].filter(Boolean).length;
-  if (count > 1) return 'mixed';
-  if (hasVideo) return 'video';
-  if (hasText) return 'text';
-  if (hasQuiz) return 'quiz';
-  return 'text';
 }
 
 export async function GET(request: NextRequest) {
@@ -61,13 +59,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'courseId, moduleId and title required' }, { status: 400 });
   }
 
-  const hasVideo = !!(videoKey && String(videoKey).trim());
-  const hasText = !!(textContent && String(textContent).replace(/<[^>]*>/g, '').trim().length > 0);
-  const hasQuiz = !!(quizData?.questions && Array.isArray(quizData.questions) && quizData.questions.length > 0);
+  const cleanText = sanitizeLessonTextContent(textContent);
 
-  if (!hasVideo && !hasText && !hasQuiz) {
+  const hasVideo = !!(videoKey && String(videoKey).trim());
+  const hasText = !!cleanText;
+  const hasQuiz = !!(
+    quizData?.questions &&
+    Array.isArray(quizData.questions) &&
+    quizData.questions.length > 0
+  );
+
+  const wantsPublished = isPublished !== false;
+
+  // Draft lessons can be created empty. Published lessons need real content.
+  if (wantsPublished && !hasVideo && !hasText && !hasQuiz) {
     return NextResponse.json(
-      { error: 'Add at least one of: Video, Text, or Quiz' },
+      { error: 'A published lesson needs at least one section (Video, Text, or Quiz). Save as Draft instead.' },
       { status: 400 }
     );
   }
@@ -84,7 +91,10 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const lessonType = deriveLessonType(hasVideo, hasText, hasQuiz);
+  // Fall back to 'text' as default so DB CHECK never fails when creating drafts
+  const count = [hasVideo, hasText, hasQuiz].filter(Boolean).length;
+  const lessonType =
+    count > 1 ? 'mixed' : hasVideo ? 'video' : hasText ? 'text' : hasQuiz ? 'quiz' : 'text';
 
   const { data, error } = await supabase
     .from('lessons')
@@ -94,11 +104,11 @@ export async function POST(request: NextRequest) {
       title: title.trim(),
       lesson_type: lessonType,
       video_key: hasVideo ? videoKey : null,
-      text_content: hasText ? textContent : null,
+      text_content: cleanText,
       quiz_data: hasQuiz ? quizData : null,
       order_index: orderIndex ?? 0,
       duration_seconds: durationSeconds ?? (hasVideo ? 0 : 60),
-      is_published: isPublished !== false,
+      is_published: wantsPublished,
     })
     .select()
     .single();

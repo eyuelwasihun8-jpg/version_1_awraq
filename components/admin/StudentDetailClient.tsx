@@ -19,6 +19,11 @@ import {
   XCircle,
   HelpCircle,
   UserCog,
+  Star,
+  MessageSquareQuote,
+  Eye,
+  EyeOff,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { UserAvatar } from '@/components/UserAvatar';
@@ -39,6 +44,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
   const [updating, setUpdating] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [assigning, setAssigning] = useState(false);
+  const [reviewBusyId, setReviewBusyId] = useState<string | null>(null);
 
   const fetchDetail = async () => {
     try {
@@ -131,6 +137,43 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
     }
   };
 
+  const toggleReviewPublish = async (reviewId: string, currentlyPublished: boolean) => {
+    if (!canManage) return;
+    setReviewBusyId(reviewId);
+    try {
+      const res = await fetch(`/api/admin/reviews/${reviewId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPublished: !currentlyPublished }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      toast.success(currentlyPublished ? 'Unpublished' : 'Published on course page');
+      fetchDetail();
+    } catch (err: any) {
+      toast.error(err.message || 'Update failed');
+    } finally {
+      setReviewBusyId(null);
+    }
+  };
+
+  const deleteReview = async (reviewId: string) => {
+    if (!canManage) return;
+    if (!confirm('Delete this review permanently?')) return;
+    setReviewBusyId(reviewId);
+    try {
+      const res = await fetch(`/api/admin/reviews/${reviewId}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      toast.success('Review deleted');
+      fetchDetail();
+    } catch (err: any) {
+      toast.error(err.message || 'Delete failed');
+    } finally {
+      setReviewBusyId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -141,7 +184,8 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
 
   if (!data) return null;
 
-  const { student, courses, products, payments, certificates, quizAttempts } = data;
+  const { student, courses, products, payments, certificates, quizAttempts, reviews } =
+    data;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
@@ -231,7 +275,6 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
               <InfoBox label="Enrollments" value={courses.length} />
             </div>
 
-            {/* Assignment section — Admin/Super Admin only */}
             {canAssign && (
               <div className="mt-6 pt-6 border-t border-[#f0ebe2]">
                 <div className="flex items-center gap-3 flex-wrap">
@@ -255,9 +298,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
                         </option>
                       ))}
                     </select>
-                    {assigning && (
-                      <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
-                    )}
+                    {assigning && <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />}
                   </div>
                 </div>
                 {student.assigned_sales && (
@@ -276,7 +317,6 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
               </div>
             )}
 
-            {/* Sales view — show which sales owns this student */}
             {role === 'sales' && (
               <div className="mt-6 pt-6 border-t border-[#f0ebe2]">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">
@@ -292,7 +332,6 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Col: Courses & Quizzes */}
         <div className="lg:col-span-2 space-y-6">
           {/* Courses */}
           <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
@@ -378,6 +417,98 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
             )}
           </div>
 
+          {/* Course Reviews / Testimonials */}
+          <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-[#f0ebe2]">
+              <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <MessageSquareQuote className="w-5 h-5 text-[#ddb049]" />
+                Course Reviews ({(reviews || []).length})
+              </h2>
+              <p className="text-xs text-slate-500 font-medium mt-1">
+                Publish to show on the course page (max 6 newest published)
+              </p>
+            </div>
+
+            {!(reviews || []).length ? (
+              <div className="p-8 text-center text-sm text-slate-500 font-medium">
+                No reviews submitted yet
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {(reviews || []).map((r: any) => (
+                  <div key={r.id} className="p-5">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="min-w-0">
+                        <div className="text-sm font-black text-slate-900 truncate">
+                          {r.courses?.title || 'Course'}
+                        </div>
+                        <div className="flex items-center gap-0.5 mt-1">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                              key={s}
+                              className={`w-3.5 h-3.5 ${
+                                s <= r.rating
+                                  ? 'fill-amber-400 text-amber-400'
+                                  : 'text-slate-200'
+                              }`}
+                            />
+                          ))}
+                          <span className="text-[10px] text-slate-400 font-medium ml-2">
+                            {new Date(r.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <span
+                        className={`shrink-0 text-[9px] uppercase font-black px-2 py-0.5 rounded-full border ${
+                          r.is_published
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                            : 'bg-amber-50 text-amber-700 border-amber-100'
+                        }`}
+                      >
+                        {r.is_published ? 'Published' : 'Pending'}
+                      </span>
+                    </div>
+
+                    {r.review_text && (
+                      <p className="text-sm text-slate-700 font-medium leading-relaxed italic mb-3">
+                        “{r.review_text}”
+                      </p>
+                    )}
+
+                    {canManage && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          disabled={reviewBusyId === r.id}
+                          onClick={() => toggleReviewPublish(r.id, !!r.is_published)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 cursor-pointer disabled:opacity-50"
+                        >
+                          {reviewBusyId === r.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : r.is_published ? (
+                            <EyeOff className="w-3.5 h-3.5" />
+                          ) : (
+                            <Eye className="w-3.5 h-3.5" />
+                          )}
+                          {r.is_published ? 'Unpublish' : 'Publish'}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={reviewBusyId === r.id}
+                          onClick={() => deleteReview(r.id)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-xs font-bold text-red-600 cursor-pointer disabled:opacity-50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Quiz Attempts */}
           <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
             <div className="p-5 border-b border-[#f0ebe2]">
@@ -393,10 +524,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
             ) : (
               <div className="divide-y divide-slate-100">
                 {quizAttempts.map((q: any) => (
-                  <div
-                    key={q.id}
-                    className="p-4 flex items-center justify-between gap-4"
-                  >
+                  <div key={q.id} className="p-4 flex items-center justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-bold text-slate-900 truncate">
                         {q.lessons?.title}
@@ -426,9 +554,7 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
           </div>
         </div>
 
-        {/* Right Col: Certs & Payments */}
         <div className="space-y-6">
-          {/* Certificates */}
           <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5">
             <h2 className="text-base font-black text-slate-900 flex items-center gap-2 mb-4">
               <Award className="w-4 h-4 text-amber-500" /> Certificates ({certificates.length})
@@ -459,7 +585,6 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
             )}
           </div>
 
-          {/* Payments */}
           {canManage && (
             <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
               <div className="p-5 border-b border-[#f0ebe2]">
@@ -485,8 +610,8 @@ export const StudentDetailClient: React.FC<Props> = ({ studentId, role, salesRep
                             p.status === 'approved'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                               : p.status === 'rejected'
-                              ? 'bg-red-50 text-red-700 border-red-100'
-                              : 'bg-amber-50 text-amber-700 border-amber-100'
+                                ? 'bg-red-50 text-red-700 border-red-100'
+                                : 'bg-amber-50 text-amber-700 border-amber-100'
                           }`}
                         >
                           {p.status}
@@ -515,7 +640,9 @@ const InfoBox = ({ label, value }: any) => (
     <div className="text-[10px] uppercase font-black text-slate-400 tracking-wider mb-0.5">
       {label}
     </div>
-    <div className="text-sm font-bold text-slate-900 truncate capitalize">{value || '—'}</div>
+    <div className="text-sm font-bold text-slate-900 truncate capitalize">
+      {value || '—'}
+    </div>
   </div>
 );
 

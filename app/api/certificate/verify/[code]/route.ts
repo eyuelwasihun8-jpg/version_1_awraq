@@ -1,39 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/turnstile';
 
+/**
+ * GET /api/certificate/verify/[code]
+ * Public endpoint - verifies certificate authenticity by code.
+ * Rate limited to prevent code enumeration attacks.
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
-  const { code } = await params;
-  const supabase = createAdminClient();
+  // Anti-enumeration rate limit: 30 requests per minute per IP
+  const ip = getClientIp(request) || 'unknown';
+  const rl = rateLimit(`cert-verify:${ip}`, 30, 60 * 1000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Too many verification requests. Please try again in a minute.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter || 60) } }
+    );
+  }
 
-  const { data: cert } = await supabase
+  const { code } = await params;
+
+  if (!code || !code.trim()) {
+    return NextResponse.json({ valid: false, error: 'Certificate code required' }, { status: 400 });
+  }
+
+  const cleanCode = code.trim().toUpperCase();
+
+  // Basic format validation before hitting DB
+  if (!/^CERT-\d{4}-[A-Z0-9]+$/i.test(cleanCode)) {
+    return NextResponse.json({ valid: false, error: 'Invalid certificate format' }, { status: 400 });
+  }
+
+  const adminDb = createAdminClient();
+
+  const { data: cert, error } = await adminDb
     .from('certificates')
-    .select(`
-      student_name,
-      issued_at,
-      certificate_code,
-      courses ( title, instructor_id )
-    `)
-    .eq('certificate_code', code.toUpperCase())
+    .select('id, certificate_code, student_name, issued_at, course_id, user_id')
+    .eq('certificate_code', cleanCode)
     .maybeSingle();
+
+  if (error) {
+    console.error('Certificate verify error:', error);
+    return NextResponse.json(
+      { valid: false, error: 'Verification service unavailable' },
+      { status: 500 }
+    );
+  }
 
   if (!cert) {
     return NextResponse.json(
-      { valid: false, message: 'Certificate not found' },
+      { valid: false, error: 'Certificate not found or invalid' },
       { status: 404 }
     );
   }
 
-  let instructorName = 'Awraq Instructor';
-  const courseData = cert.courses as any;
+  // Fetch course info
+  const { data: course } = await adminDb
+    .from('courses')
+    .select('id, title, instructor_id')
+    .eq('id', cert.course_id)
+    .single();
 
-  if (courseData?.instructor_id) {
-    const { data: instructor } = await supabase
+  // Fetch instructor name
+  let instructorName = 'Awraq Instructor';
+  if (course?.instructor_id) {
+    const { data: instructor } = await adminDb
       .from('profiles')
       .select('full_name')
-      .eq('id', courseData.instructor_id)
+      .eq('id', course.instructor_id)
       .single();
     if (instructor?.full_name) instructorName = instructor.full_name;
   }
@@ -44,17 +82,14 @@ export async function GET(
     day: 'numeric',
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://awraqskills.com';
-
   return NextResponse.json({
     valid: true,
-    data: {
+    certificate: {
+      certificateId: cert.certificate_code,
       studentName: cert.student_name,
-      courseName: courseData?.title || 'Digital Marketing',
+      courseName: course?.title || 'Awraq Course',
       instructorName,
       issueDate: formattedDate,
-      certificateId: cert.certificate_code,
-      verificationUrl: `${appUrl}/verify/${cert.certificate_code}`,
       organizationName: 'Awraq Skills',
     },
   });

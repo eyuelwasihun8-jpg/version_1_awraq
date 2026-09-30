@@ -13,13 +13,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'productId required' }, { status: 400 });
   }
 
-  // Verify purchase
+  // Must be an active purchase (revoked purchases blocked)
   const { data: purchase } = await supabase
     .from('purchases')
     .select('id')
     .eq('user_id', user.id)
     .eq('product_id', productId)
-    .single();
+    .eq('is_active', true)
+    .maybeSingle();
 
   if (!purchase) {
     return NextResponse.json({ error: 'Not purchased' }, { status: 403 });

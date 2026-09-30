@@ -18,6 +18,7 @@ import {
   GraduationCap,
   Target,
   HelpCircle,
+  Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { UserAvatar } from '@/components/UserAvatar';
@@ -72,10 +73,25 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
     );
   }
 
-  const { course, summary, distribution, sourceBreakdown, lessonStats, modulesWithStats, quizStats, recentEnrollments, mostAbandoned, mostCompleted, reviews } =
-    data;
+  const {
+    course,
+    summary,
+    distribution,
+    sourceBreakdown,
+    lessonStats,
+    modulesWithStats,
+    quizStats,
+    recentEnrollments,
+    mostAbandoned,
+    mostCompleted,
+    reviews,
+  } = data;
 
   const maxDist = Math.max(...Object.values(distribution as Record<string, number>), 1);
+
+  const hasMismatch =
+    (summary.enrollmentsWithoutPayment || 0) > 0 &&
+    summary.approvedPayments < sourceBreakdown.purchase;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-10">
@@ -118,40 +134,17 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard
-          icon={Users}
-          label="Enrolled Students"
-          value={summary.totalEnrolled}
-          color="cyan"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Avg Completion"
-          value={`${summary.avgCompletion}%`}
-          color="emerald"
-        />
-        <StatCard
-          icon={DollarSign}
-          label="Revenue"
-          value={`ETB ${Number(summary.totalRevenue).toLocaleString()}`}
-          color="amber"
-        />
-        <StatCard
-          icon={Award}
-          label="Certificates"
-          value={summary.certificatesIssued}
-          color="purple"
-        />
+        <StatCard icon={Users} label="Enrolled Students" value={summary.totalEnrolled} color="cyan" />
+        <StatCard icon={TrendingUp} label="Avg Completion" value={`${summary.avgCompletion}%`} color="emerald" />
+        <StatCard icon={DollarSign} label="Revenue" value={`ETB ${Number(summary.totalRevenue).toLocaleString()}`} color="amber" />
+        <StatCard icon={Award} label="Certificates" value={summary.certificatesIssued} color="purple" />
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MiniStat label="Completed" value={summary.completedStudents} />
         <MiniStat label="In Progress" value={summary.inProgress} />
         <MiniStat label="Not Started" value={summary.notStarted} />
-        <MiniStat
-          label="Rating"
-          value={summary.reviewCount > 0 ? `${summary.avgRating}/5` : '—'}
-        />
+        <MiniStat label="Rating" value={summary.reviewCount > 0 ? `${summary.avgRating}/5` : '—'} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -170,15 +163,11 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
             <div className="space-y-3">
               {Object.entries(distribution).map(([label, count]) => (
                 <div key={label} className="flex items-center gap-3">
-                  <div className="w-14 text-xs font-bold text-slate-600 shrink-0">
-                    {label}
-                  </div>
+                  <div className="w-14 text-xs font-bold text-slate-600 shrink-0">{label}</div>
                   <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-[#ddb049] to-[#20B486] rounded-full transition-all"
-                      style={{
-                        width: `${(Number(count) / maxDist) * 100}%`,
-                      }}
+                      style={{ width: `${(Number(count) / maxDist) * 100}%` }}
                     />
                   </div>
                   <div className="w-8 text-xs font-black text-slate-900 text-right">
@@ -209,13 +198,9 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
               <div className="divide-y divide-slate-100">
                 {lessonStats.map((l: any, i: number) => (
                   <div key={l.id} className="p-4 flex items-center gap-3">
-                    <div className="text-xs font-black text-slate-400 w-6 shrink-0">
-                      {i + 1}
-                    </div>
+                    <div className="text-xs font-black text-slate-400 w-6 shrink-0">{i + 1}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-slate-900 truncate">
-                        {l.title}
-                      </div>
+                      <div className="text-sm font-bold text-slate-900 truncate">{l.title}</div>
                       <div className="text-[10px] text-slate-500 font-medium capitalize">
                         {l.lessonType} · {l.completedCount}/{summary.totalEnrolled} completed
                       </div>
@@ -227,8 +212,8 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
                             l.completionRate >= 70
                               ? 'bg-emerald-500'
                               : l.completionRate >= 40
-                              ? 'bg-amber-500'
-                              : 'bg-red-500'
+                                ? 'bg-amber-500'
+                                : 'bg-red-500'
                           }`}
                           style={{ width: `${l.completionRate}%` }}
                         />
@@ -238,8 +223,8 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
                           l.completionRate >= 70
                             ? 'text-emerald-600'
                             : l.completionRate >= 40
-                            ? 'text-amber-600'
-                            : 'text-red-600'
+                              ? 'text-amber-600'
+                              : 'text-red-600'
                         }`}
                       >
                         {l.completionRate}%
@@ -260,23 +245,16 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
               </h2>
               <div className="space-y-3">
                 {modulesWithStats.map((m: any, i: number) => (
-                  <div
-                    key={m.id}
-                    className="p-4 rounded-xl bg-[#fbfaf7] border border-[#f0ebe2]"
-                  >
+                  <div key={m.id} className="p-4 rounded-xl bg-[#fbfaf7] border border-[#f0ebe2]">
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
                           Module {i + 1}
                         </div>
-                        <div className="text-sm font-black text-slate-900">
-                          {m.title}
-                        </div>
+                        <div className="text-sm font-black text-slate-900">{m.title}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-black text-slate-900">
-                          {m.avgCompletion}%
-                        </div>
+                        <div className="text-lg font-black text-slate-900">{m.avgCompletion}%</div>
                         <div className="text-[10px] text-slate-500 font-medium">
                           {m.lessonCount} lessons
                         </div>
@@ -305,19 +283,18 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
               </div>
               <div className="divide-y divide-slate-100">
                 {quizStats.map((q: any) => (
-                  <div key={q.lessonId} className="p-4 flex items-center justify-between gap-3">
+                  <div
+                    key={q.lessonId}
+                    className="p-4 flex items-center justify-between gap-3"
+                  >
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-bold text-slate-900 truncate">
-                        {q.title}
-                      </div>
+                      <div className="text-sm font-bold text-slate-900 truncate">{q.title}</div>
                       <div className="text-[10px] text-slate-500 font-medium">
                         {q.attemptCount} attempts · {q.passRate}% pass rate
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-lg font-black text-purple-600">
-                        {q.avgScore}%
-                      </div>
+                      <div className="text-lg font-black text-purple-600">{q.avgScore}%</div>
                       <div className="text-[10px] text-slate-500 font-medium">avg score</div>
                     </div>
                   </div>
@@ -377,20 +354,63 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
           <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5">
             <h2 className="text-base font-black text-slate-900 mb-4">Enrollment Sources</h2>
             <div className="space-y-2">
-              <SourceRow label="Online Purchase" count={sourceBreakdown.purchase} total={summary.totalEnrolled} />
-              <SourceRow label="Manual / Cash" count={sourceBreakdown.manual} total={summary.totalEnrolled} />
-              <SourceRow label="Gift" count={sourceBreakdown.gift} total={summary.totalEnrolled} />
-              <SourceRow label="Promotion" count={sourceBreakdown.promotion} total={summary.totalEnrolled} />
+              <SourceRow
+                label="Online Purchase"
+                count={sourceBreakdown.purchase}
+                total={summary.totalEnrolled}
+              />
+              <SourceRow
+                label="Manual / Cash"
+                count={sourceBreakdown.manual}
+                total={summary.totalEnrolled}
+              />
+              <SourceRow
+                label="Gift"
+                count={sourceBreakdown.gift}
+                total={summary.totalEnrolled}
+              />
+              <SourceRow
+                label="Promotion"
+                count={sourceBreakdown.promotion}
+                total={summary.totalEnrolled}
+              />
+              {sourceBreakdown.unknown > 0 && (
+                <SourceRow
+                  label="Unknown / Legacy"
+                  count={sourceBreakdown.unknown}
+                  total={summary.totalEnrolled}
+                />
+              )}
             </div>
+
+            {hasMismatch && (
+              <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="text-[11px] font-medium text-amber-800 leading-relaxed">
+                  <span className="font-black">
+                    {summary.enrollmentsWithoutPayment} enrollment
+                    {summary.enrollmentsWithoutPayment !== 1 ? 's' : ''}
+                  </span>{' '}
+                  marked as “Online Purchase” have no matching approved payment.
+                  These were likely added manually or before the payment flow
+                  existed. Revenue reflects real payments only.
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Payments summary */}
           {['super_admin', 'admin', 'sales'].includes(role) && (
             <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5">
-              <h2 className="text-base font-black text-slate-900 mb-4 flex items-center gap-2">
+              <h2 className="text-base font-black text-slate-900 mb-1 flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-emerald-600" />
                 Payments
               </h2>
+              <p className="text-[11px] text-slate-500 font-medium mb-4 flex items-start gap-1">
+                <Info className="w-3 h-3 mt-0.5 shrink-0" />
+                <span>Only counts real payment requests for this course.</span>
+              </p>
+
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
                   <div className="text-lg font-black text-emerald-700">
@@ -417,6 +437,7 @@ export const CourseAnalyticsClient: React.FC<Props> = ({ courseId, role }) => {
                   </div>
                 </div>
               </div>
+
               <div className="mt-4 pt-4 border-t border-[#f0ebe2] text-center">
                 <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
                   Total Revenue
@@ -548,9 +569,7 @@ const StatCard = ({
 const MiniStat = ({ label, value }: { label: string; value: string | number }) => (
   <div className="bg-white rounded-xl border border-[#e8e0d2] p-3 text-center shadow-sm">
     <div className="text-lg font-black text-slate-900">{value}</div>
-    <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
-      {label}
-    </div>
+    <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider">{label}</div>
   </div>
 );
 

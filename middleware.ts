@@ -111,13 +111,24 @@ export async function middleware(request: NextRequest) {
   }
 
   // 3. Protect Student Protected Areas
-  if (path.startsWith('/dashboard') || path.startsWith('/learn')) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/login';
-      url.searchParams.set('redirect', path);
-      return NextResponse.redirect(url);
-    }
+  const STUDENT_PROTECTED_PREFIXES = [
+    '/dashboard',
+    '/learn',
+    '/purchase',
+    '/profile',
+    '/certificate',
+    '/onboarding',
+  ];
+
+  const isStudentProtected = STUDENT_PROTECTED_PREFIXES.some(
+    (p) => path === p || path.startsWith(`${p}/`)
+  );
+
+  if (isStudentProtected && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    url.searchParams.set('redirect', path);
+    return NextResponse.redirect(url);
   }
 
   // 4. Protect Staff Portal Area

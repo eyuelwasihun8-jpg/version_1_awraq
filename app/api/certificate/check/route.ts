@@ -12,7 +12,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'courseId required' }, { status: 400 });
   }
 
-  // Already has a certificate?
+  // 1. Enforce active enrollment check (P0-1 Fix)
+  const { data: enrollment } = await supabase
+    .from('enrollments')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('course_id', courseId)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (!enrollment) {
+    return NextResponse.json({ eligible: false, reason: 'Not enrolled or access revoked' });
+  }
+
+  // 2. Already has a certificate issued?
   const { data: existing } = await supabase
     .from('certificates')
     .select('*')
@@ -28,14 +41,15 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Check completion — all lessons must be complete
+  // 3. Check completion — all PUBLISHED lessons must be complete (P1-3 Fix)
   const { data: lessons } = await supabase
     .from('lessons')
     .select('id')
-    .eq('course_id', courseId);
+    .eq('course_id', courseId)
+    .neq('is_published', false);
 
   if (!lessons || lessons.length === 0) {
-    return NextResponse.json({ eligible: false, reason: 'No lessons in course' });
+    return NextResponse.json({ eligible: false, reason: 'No published lessons in course' });
   }
 
   const lessonIds = lessons.map((l) => l.id);

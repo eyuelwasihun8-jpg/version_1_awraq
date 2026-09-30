@@ -13,6 +13,7 @@ import {
   X,
   User,
   GraduationCap,
+  Send,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { UserAvatar } from './UserAvatar';
@@ -29,6 +30,8 @@ const NAV_LINKS = [
   { label: 'Resources', section: 'resources' },
   { label: 'Contact', section: 'contact' },
 ];
+
+const TELEGRAM_URL = 'https://t.me/AwraqHustlehub';
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenConsultation,
@@ -245,6 +248,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                           <BookOpen className="w-4 h-4" />
                           Browse Courses
                         </Link>
+                        <a
+                          href={TELEGRAM_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setProfileMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-[#0a0704] hover:bg-[#f3efe6]"
+                        >
+                          <Send className="w-4 h-4 text-[#0088cc]" />
+                          Join Community
+                        </a>
                       </div>
                       <div className="p-2 border-t border-[#e8e0d2]">
                         <button
@@ -266,12 +279,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     Sign In
                   </button>
-                  <button
-                    onClick={onOpenConsultation}
-                    className="hidden sm:inline-flex text-[#0a0704] text-sm font-black px-4 lg:px-5 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] hover:border-b-[1px] hover:translate-y-[2px] shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all cursor-pointer whitespace-nowrap"
+
+                  {/* ═══ Join Community button (Telegram) ═══ */}
+                  <a
+                    href={TELEGRAM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hidden sm:inline-flex items-center gap-2 text-[#0a0704] text-sm font-black px-4 lg:px-5 py-2.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[3px] border-[#b8862f] hover:border-b-[1px] hover:translate-y-[2px] shadow-[0_8px_20px_rgba(221,176,73,0.3)] transition-all cursor-pointer whitespace-nowrap"
                   >
-                    Book Consultation
-                  </button>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Join Community</span>
+                  </a>
 
                   <button
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -307,15 +325,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               ))}
             </nav>
             <div className="pt-4 border-t border-[#e8e0d2] flex flex-col gap-3">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenConsultation();
-                }}
-                className="w-full min-h-[48px] bg-[#ddb049] text-[#0a0704] py-3 rounded-xl font-black text-sm cursor-pointer shadow-md"
+              {/* Join Community (Telegram) — mobile */}
+              <a
+                href={TELEGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full min-h-[48px] bg-[#ddb049] text-[#0a0704] py-3 rounded-xl font-black text-sm cursor-pointer shadow-md inline-flex items-center justify-center gap-2"
               >
-                Book Consultation
-              </button>
+                <Send className="w-4 h-4" />
+                Join Our Community
+              </a>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

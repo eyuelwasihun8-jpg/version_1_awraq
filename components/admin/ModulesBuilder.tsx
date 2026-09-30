@@ -93,12 +93,13 @@ export const ModulesBuilder: React.FC<Props> = ({ courseId }) => {
     } catch {}
   };
 
-  // Auto-creates a blank lesson AND redirects to full-screen editor
+  // Create a title-only DRAFT lesson and open the editor.
+  // No placeholder text is ever saved.
   const createBlankLesson = async (moduleId: string) => {
     setCreatingLessonInModule(moduleId);
     try {
-      const module = modules.find((m) => m.id === moduleId);
-      const orderIndex = module?.lessons?.length || 0;
+      const mod = modules.find((m) => m.id === moduleId);
+      const orderIndex = mod?.lessons?.length || 0;
 
       const res = await fetch('/api/admin/lessons', {
         method: 'POST',
@@ -107,10 +108,12 @@ export const ModulesBuilder: React.FC<Props> = ({ courseId }) => {
           courseId,
           moduleId,
           title: `New Lesson ${orderIndex + 1}`,
-          textContent: '<p>Add your content here...</p>',
+          textContent: null, // no placeholder
+          videoKey: null,
+          quizData: null,
           orderIndex,
           durationSeconds: 60,
-          isPublished: false,
+          isPublished: false, // draft — API allows empty draft
         }),
       });
 
@@ -120,7 +123,7 @@ export const ModulesBuilder: React.FC<Props> = ({ courseId }) => {
         return;
       }
 
-      toast.success('Lesson created! Opening editor...');
+      toast.success('Draft lesson created. Add content, then publish.');
       router.push(`/${PORTAL_SLUG}/courses/${courseId}/lessons/${data.lesson.id}`);
     } finally {
       setCreatingLessonInModule(null);

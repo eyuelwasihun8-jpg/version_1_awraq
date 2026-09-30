@@ -42,6 +42,59 @@ interface Props {
   onCompleted: () => void;
 }
 
+/** Rebuild grading feedback from a saved attempt + current quiz questions */
+function buildResultFromAttempt(attempt: any, questions: QuizQuestion[]) {
+  const attemptAnswers: Array<{ questionId: string; selectedOptionIds: string[] }> =
+    Array.isArray(attempt?.answers) ? attempt.answers : [];
+
+  let correctCount = 0;
+  const feedback: any[] = [];
+
+  for (const question of questions) {
+    const userAnswer = attemptAnswers.find((a) => a.questionId === question.id);
+    const correctOptionIds = new Set<string>(
+      (question.options || [])
+        .filter((o) => o.is_correct)
+        .map((o) => o.id)
+    );
+    const selectedIds = new Set<string>(userAnswer?.selectedOptionIds || []);
+
+    const isCorrect =
+      correctOptionIds.size === selectedIds.size &&
+      Array.from(correctOptionIds).every((id) => selectedIds.has(id));
+
+    if (isCorrect) correctCount++;
+
+    feedback.push({
+      questionId: question.id,
+      isCorrect,
+      correctOptionIds: Array.from(correctOptionIds),
+      selectedOptionIds: Array.from(selectedIds),
+    });
+  }
+
+  const totalQuestions = questions.length;
+  const score =
+    typeof attempt?.score === 'number'
+      ? attempt.score
+      : totalQuestions > 0
+        ? Math.round((correctCount / totalQuestions) * 100)
+        : 0;
+
+  return {
+    success: true,
+    score,
+    correctCount:
+      typeof attempt?.score === 'number'
+        ? Math.round((attempt.score / 100) * totalQuestions)
+        : correctCount,
+    totalQuestions,
+    feedback,
+    attempt,
+    fromHistory: true,
+  };
+}
+
 export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted }) => {
   const questions = quizData?.questions || [];
 
@@ -51,17 +104,44 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
   const [pastAttempts, setPastAttempts] = useState<any[]>([]);
   const [loadingAttempts, setLoadingAttempts] = useState(true);
   const [showPast, setShowPast] = useState(false);
+  const [isRetakeMode, setIsRetakeMode] = useState(false);
 
+  // Load past attempts and restore latest as completed result
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
+      setLoadingAttempts(true);
       try {
         const res = await fetch(`/api/quiz/submit?lessonId=${lessonId}`);
         const data = await res.json();
-        setPastAttempts(data.attempts || []);
+        if (cancelled) return;
+
+        const attempts = data.attempts || [];
+        setPastAttempts(attempts);
+
+        // If student already answered before and is not mid-retake → show latest result
+        if (attempts.length > 0 && questions.length > 0) {
+          const latest = attempts[0]; // API returns newest first
+          const restored = buildResultFromAttempt(latest, questions);
+          setResult(restored);
+          setIsRetakeMode(false);
+          // Keep lesson marked complete
+          onCompleted();
+        } else {
+          setResult(null);
+        }
+      } catch {
+        // silent — form still usable
       } finally {
-        setLoadingAttempts(false);
+        if (!cancelled) setLoadingAttempts(false);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonId]);
 
   const toggleAnswer = (qId: string, oId: string, isMulti: boolean) => {
@@ -114,9 +194,12 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
         return;
       }
 
-      setResult(data);
+      setResult({ ...data, fromHistory: false });
+      setIsRetakeMode(false);
       onCompleted();
+      toast.success(`Quiz submitted — ${data.score}%`);
 
+      // Refresh history (newest first)
       const attemptsRes = await fetch(`/api/quiz/submit?lessonId=${lessonId}`);
       const attemptsData = await attemptsRes.json();
       setPastAttempts(attemptsData.attempts || []);
@@ -125,38 +208,58 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
     }
   };
 
-  const handleRetry = () => {
+  /** Clear answers and show blank quiz form again */
+  const handleRetake = () => {
     setResult(null);
     setAnswers({});
     setShowPast(false);
+    setIsRetakeMode(true);
   };
 
-  // ─── RESULT SCREEN ───
+  // ─── LOADING ───
+  if (loadingAttempts) {
+    return (
+      <div className="p-10 text-center">
+        <Loader2 className="w-6 h-6 animate-spin text-purple-500 mx-auto mb-2" />
+        <p className="text-xs font-medium text-slate-500">Loading quiz…</p>
+      </div>
+    );
+  }
+
+  // ─── RESULT SCREEN (fresh submit OR restored previous attempt) ───
   if (result) {
-    const score = result.score;
+    const score = result.score ?? 0;
     const isGreat = score >= 80;
     const isGood = score >= 60;
 
     return (
       <div className="p-6 sm:p-8">
         <div className="max-w-2xl mx-auto">
+          {result.fromHistory && (
+            <div className="mb-4 flex items-center gap-2 text-[11px] font-bold text-slate-500 bg-[#fbfaf7] border border-[#e8e0d2] rounded-xl px-3 py-2">
+              <History className="w-3.5 h-3.5 text-[#ddb049]" />
+              <span>
+                Showing your previous attempt
+                {result.attempt?.attempted_at
+                  ? ` · ${new Date(result.attempt.attempted_at).toLocaleDateString()}`
+                  : ''}
+              </span>
+            </div>
+          )}
+
           {/* Score card */}
           <div
             className={`rounded-2xl p-6 sm:p-8 mb-6 text-center border-2 ${
               isGreat
                 ? 'bg-emerald-50 border-emerald-200'
                 : isGood
-                ? 'bg-amber-50 border-amber-200'
-                : 'bg-amber-50 border-amber-200'
+                  ? 'bg-amber-50 border-amber-200'
+                  : 'bg-amber-50 border-amber-200'
             }`}
           >
             <div
               className={`w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center ${
-                isGreat
-                  ? 'bg-[#20B486]'
-                  : isGood
-                  ? 'bg-[#ddb049]'
-                  : 'bg-amber-500'
+                isGreat ? 'bg-[#20B486]' : isGood ? 'bg-[#ddb049]' : 'bg-amber-500'
               }`}
             >
               {isGreat ? (
@@ -177,11 +280,13 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
             </div>
           </div>
 
-          {/* Question review with explanations */}
+          {/* Question review */}
           <div className="space-y-4 mb-6">
             <h3 className="text-sm font-black text-slate-900">Question Review</h3>
             {questions.map((q, i) => {
-              const feedback = result.feedback.find((f: any) => f.questionId === q.id);
+              const feedback = (result.feedback || []).find(
+                (f: any) => f.questionId === q.id
+              );
               const isCorrect = feedback?.isCorrect;
               const correctIds = new Set<string>(feedback?.correctOptionIds || []);
               const selectedIds = new Set<string>(feedback?.selectedOptionIds || []);
@@ -191,7 +296,9 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
                 <div
                   key={q.id}
                   className={`p-4 rounded-2xl border-2 ${
-                    isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'
+                    isCorrect
+                      ? 'bg-emerald-50 border-emerald-200'
+                      : 'bg-red-50 border-red-200'
                   }`}
                 >
                   <div className="flex items-start gap-3 mb-3">
@@ -264,13 +371,52 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
             })}
           </div>
 
+          {/* Retake */}
           <button
-            onClick={handleRetry}
+            onClick={handleRetake}
             className="w-full py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>Try Quiz Again</span>
+            <span>Retake Quiz</span>
           </button>
+
+          {pastAttempts.length > 1 && (
+            <button
+              onClick={() => setShowPast(!showPast)}
+              className="w-full mt-3 py-2.5 text-[11px] font-bold text-[#ddb049] hover:underline cursor-pointer inline-flex items-center justify-center gap-1.5"
+            >
+              <History className="w-3.5 h-3.5" />
+              <span>
+                {showPast ? 'Hide' : 'View'} all {pastAttempts.length} attempts
+              </span>
+            </button>
+          )}
+
+          {showPast && pastAttempts.length > 0 && (
+            <div className="mt-3 space-y-1.5">
+              {pastAttempts.map((a, idx) => (
+                <div
+                  key={a.id || idx}
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-[#fbfaf7] border border-[#f0ebe2] text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="font-bold text-slate-900">{a.score}%</span>
+                    {idx === 0 && (
+                      <span className="text-[9px] uppercase font-black tracking-wider text-[#ddb049] bg-amber-50 px-1.5 py-0.5 rounded">
+                        Latest
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-slate-400 text-[10px] font-medium">
+                    {a.attempted_at
+                      ? new Date(a.attempted_at).toLocaleDateString()
+                      : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -286,7 +432,7 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
     );
   }
 
-  // ─── QUIZ FORM ───
+  // ─── QUIZ FORM (first time OR after Retake) ───
   return (
     <div className="p-6 sm:p-8">
       <div className="max-w-2xl mx-auto">
@@ -296,11 +442,15 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
               <HelpCircle className="w-4 h-4 text-purple-600" />
             </div>
             <div className="text-[10px] uppercase font-black text-purple-600 tracking-widest">
-              Practice Quiz · {questions.length} Question{questions.length !== 1 ? 's' : ''}
+              Practice Quiz · {questions.length} Question
+              {questions.length !== 1 ? 's' : ''}
+              {isRetakeMode ? ' · Retake' : ''}
             </div>
           </div>
           <p className="text-xs text-slate-500 font-medium">
-            Optional practice · Try as many times as you want to learn
+            {isRetakeMode
+              ? 'Retake mode — your previous attempts are saved in history'
+              : 'Optional practice · Try as many times as you want to learn'}
           </p>
 
           {!loadingAttempts && pastAttempts.length > 0 && (
@@ -326,12 +476,11 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
                   <div className="flex items-center gap-2">
                     <Trophy className="w-3.5 h-3.5 text-amber-500" />
                     <span className="font-bold text-slate-900">{a.score}%</span>
-                    <span className="text-[10px] text-slate-500 font-medium">
-                      ({Math.round((a.score / 100) * (a.answers?.length || 0))}/{a.answers?.length || 0} correct)
-                    </span>
                   </div>
                   <span className="text-slate-400 text-[10px] font-medium">
-                    {new Date(a.attempted_at).toLocaleDateString()}
+                    {a.attempted_at
+                      ? new Date(a.attempted_at).toLocaleDateString()
+                      : ''}
                   </span>
                 </div>
               ))}
@@ -346,7 +495,9 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
           <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-purple-500 rounded-full transition-all"
-              style={{ width: `${(answeredCount / questions.length) * 100}%` }}
+              style={{
+                width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%`,
+              }}
             />
           </div>
         </div>
@@ -376,6 +527,7 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
                   return (
                     <button
                       key={opt.id}
+                      type="button"
                       onClick={() => toggleAnswer(q.id, opt.id, isMulti)}
                       className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all text-left ${
                         isSelected
@@ -399,7 +551,9 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
                             isSelected ? 'border-[#ddb049]' : 'border-slate-300'
                           }`}
                         >
-                          {isSelected && <div className="w-2 h-2 rounded-full bg-[#ddb049]" />}
+                          {isSelected && (
+                            <div className="w-2 h-2 rounded-full bg-[#ddb049]" />
+                          )}
                         </div>
                       )}
                       <span
@@ -418,6 +572,7 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
         </div>
 
         <button
+          type="button"
           onClick={handleSubmit}
           disabled={submitting || answeredCount === 0}
           className="w-full mt-6 min-h-[52px] py-4 rounded-xl bg-purple-600 hover:bg-purple-700 border-b-[4px] border-purple-800 hover:border-b-[2px] hover:translate-y-[2px] text-white text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -429,11 +584,26 @@ export const QuizPlayer: React.FC<Props> = ({ lessonId, quizData, onCompleted })
             </>
           ) : (
             <>
-              <span>Submit Quiz</span>
+              <span>{isRetakeMode ? 'Submit Retake' : 'Submit Quiz'}</span>
               <ChevronRight className="w-4 h-4" />
             </>
           )}
         </button>
+
+        {isRetakeMode && pastAttempts.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              const latest = pastAttempts[0];
+              setResult(buildResultFromAttempt(latest, questions));
+              setIsRetakeMode(false);
+              setAnswers({});
+            }}
+            className="w-full mt-3 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+          >
+            Cancel retake — show previous result
+          </button>
+        )}
       </div>
     </div>
   );

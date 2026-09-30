@@ -16,11 +16,13 @@ export default async function LearnCoursePage({
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
+  // Must be actively enrolled (revoked enrollments blocked)
   const { data: enrollment } = await supabase
     .from('enrollments')
     .select('id')
     .eq('user_id', user.id)
     .eq('course_id', courseId)
+    .eq('is_active', true)
     .maybeSingle();
 
   if (!enrollment) redirect(`/courses/${courseId}`);

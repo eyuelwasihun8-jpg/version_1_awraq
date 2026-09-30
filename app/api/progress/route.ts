@@ -14,40 +14,40 @@ export async function POST(request: NextRequest) {
 
     if (!lessonId) throw ApiError.badRequest('lessonId required');
 
-    // Verify enrollment and get lesson duration
+    // Verify enrollment and get lesson info
     const { data: lesson, error: lessonError } = await supabase
       .from('lessons')
-      .select('course_id, duration_seconds, lesson_type')
+      .select('course_id, duration_seconds, lesson_type, video_key, text_content, quiz_data')
       .eq('id', lessonId)
       .single();
 
     if (lessonError || !lesson) throw ApiError.notFound('Lesson not found');
 
+    // Must be actively enrolled
     const { data: enrollment } = await supabase
       .from('enrollments')
       .select('id')
       .eq('user_id', user.id)
       .eq('course_id', lesson.course_id)
-      .single();
+      .eq('is_active', true)
+      .maybeSingle();
 
     if (!enrollment) throw ApiError.forbidden('Not enrolled');
 
-    // Fetch existing to prevent decrease
+    // Fetch existing metrics to prevent decrease
     const { data: existing } = await supabase
       .from('lesson_progress')
-      .select('watch_seconds, scroll_percentage, time_on_page_seconds, is_completed')
+      .select('watch_seconds, scroll_percentage, time_on_page_seconds, is_completed, completed_at')
       .eq('user_id', user.id)
       .eq('lesson_id', lessonId)
       .maybeSingle();
 
     const duration = lesson.duration_seconds ?? 0;
 
-    // SERVER-SIDE VALIDATION: Robust caps to prevent manipulation
-    // 1. watchSeconds: cap at lesson duration (or 2x as absolute safety net)
-    //    For video lessons, duration_seconds is required
+    // 1. watchSeconds: prevent decrease
     let validatedWatch = existing?.watch_seconds ?? 0;
     if (typeof watchSeconds === 'number' && watchSeconds > 0) {
-      const absoluteMax = duration > 0 ? Math.min(watchSeconds, duration) : Math.min(watchSeconds, 7200); // 2hr absolute cap
+      const absoluteMax = duration > 0 ? Math.min(watchSeconds, duration) : Math.min(watchSeconds, 7200);
       validatedWatch = Math.max(validatedWatch, absoluteMax);
     }
 
@@ -58,32 +58,31 @@ export async function POST(request: NextRequest) {
       validatedScroll = Math.max(validatedScroll, clamped);
     }
 
-    // 3. timeOnPageSeconds: prevent decrease, reasonable cap (24 hours)
+    // 3. timeOnPageSeconds: prevent decrease
     let validatedTime = existing?.time_on_page_seconds ?? 0;
     if (typeof timeOnPageSeconds === 'number' && timeOnPageSeconds > 0) {
       const capped = Math.min(timeOnPageSeconds, 24 * 60 * 60);
       validatedTime = Math.max(validatedTime, capped);
     }
 
-    // Determine completion based on lesson type
-    let isCompleted = existing?.is_completed ?? false;
+    // Determine completion (never revert a completed lesson back to incomplete)
+    let isCompleted = existing?.is_completed || false;
+
     if (!isCompleted) {
-      if (lesson.lesson_type === 'video') {
-        // Video: require duration_seconds, 90% watched = completed
-        if (duration <= 0) {
-          // Cannot determine completion without duration - don't auto-complete
-          isCompleted = false;
-        } else {
-          isCompleted = validatedWatch >= duration * 0.9;
-        }
-      } else if (lesson.lesson_type === 'text') {
-        // Text: 100% scrolled = completed
-        isCompleted = validatedScroll >= 100;
-      } else if (lesson.lesson_type === 'quiz') {
-        // Quiz: completion handled by quiz submit API
-        isCompleted = false;
+      const hasVideo = !!(lesson.video_key && lesson.video_key.trim());
+      const hasText = !!(lesson.text_content && lesson.text_content.replace(/<[^>]*>/g, '').trim());
+
+      const videoOk = hasVideo ? (duration > 0 ? validatedWatch >= duration * 0.8 : validatedWatch >= 1) : false;
+      const textOk = hasText ? validatedScroll >= 80 : false;
+
+      if (videoOk || textOk) {
+        isCompleted = true;
       }
     }
+
+    const completedAt = isCompleted
+      ? (existing?.completed_at || new Date().toISOString())
+      : null;
 
     const { data, error } = await supabase
       .from('lesson_progress')
@@ -95,6 +94,7 @@ export async function POST(request: NextRequest) {
           scroll_percentage: validatedScroll,
           time_on_page_seconds: validatedTime,
           is_completed: isCompleted,
+          completed_at: completedAt,
         },
         { onConflict: 'user_id,lesson_id' }
       )

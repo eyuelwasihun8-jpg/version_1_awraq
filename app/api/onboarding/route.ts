@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { rateLimit } from '@/lib/rate-limit';
+
+const RATE_LIMIT = { max: 5, windowMs: 60 * 60 * 1000 };
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -7,10 +10,17 @@ export async function POST(request: NextRequest) {
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const rl = rateLimit(`onboarding:${user.id}`, RATE_LIMIT.max, RATE_LIMIT.windowMs);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Too many attempts. Please wait a moment.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter || 3600) } }
+    );
+  }
+
   const body = await request.json();
   const { fullName, phone, gender, ageGroup, lifeStatus } = body;
 
-  // Validate required fields
   if (!fullName?.trim() || !phone?.trim() || !gender || !ageGroup || !lifeStatus) {
     return NextResponse.json({ error: 'All fields required' }, { status: 400 });
   }
@@ -49,7 +59,6 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ success: true, profile: data });
 }
 
-// GET current onboarding status (used to decide whether to show the modal)
 export async function GET() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

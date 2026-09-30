@@ -1,14 +1,34 @@
 import { createClient } from '@/lib/supabase-server';
 import { HomePageClient } from '@/components/home/HomePageClient';
 import type { Course, DigitalProduct } from '@/lib/types';
+import { redirect } from 'next/navigation';
 
-// Force dynamic rendering so newly published courses appear immediately
+// Force dynamic rendering so user session and newly published courses update instantly
 export const dynamic = 'force-dynamic';
 
 async function getHomeData() {
   const supabase = await createClient();
 
-  // Fetch published courses with instructor info
+  // 1. If student is logged in, redirect directly to Dashboard ("My Learning")
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_completed')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.onboarding_completed) {
+      redirect('/onboarding');
+    } else {
+      redirect('/dashboard');
+    }
+  }
+
+  // 2. Guest visitors -> Fetch homepage courses and products
   const { data: coursesRaw, error: courseErr } = await supabase
     .from('courses')
     .select('*, instructor:profiles(full_name, avatar_url)')
@@ -20,7 +40,6 @@ async function getHomeData() {
     console.error('Homepage courses fetch error:', courseErr);
   }
 
-  // Fetch published digital products
   const { data: productsRaw, error: prodErr } = await supabase
     .from('digital_products')
     .select('*')
@@ -39,7 +58,6 @@ async function getHomeData() {
 }
 
 export default async function HomePage() {
-  const { courses, products } = await getHomeData();
-
-  return <HomePageClient courses={courses} products={products} />;
+  const data = await getHomeData();
+  return <HomePageClient courses={data.courses} products={data.products} />;
 }

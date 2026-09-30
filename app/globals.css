@@ -42,7 +42,7 @@
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
 
-  /* Legacy Awraq aliases (so old class names can map gradually) */
+  /* Legacy Awraq aliases */
   --color-brand-primary: var(--gold);
   --color-brand-primary-hover: var(--gold-hover);
   --color-brand-primary-light: var(--gold-soft);
@@ -55,11 +55,9 @@
 :root {
   --radius: 1rem;
 
-  /* Core brand hex */
   --gold-hex: #ddb049;
   --ink-hex: #0a0704;
 
-  /* Surfaces */
   --background: #fbfaf7;
   --foreground: #0a0704;
   --card: #ffffff;
@@ -67,11 +65,9 @@
   --popover: #ffffff;
   --popover-foreground: #0a0704;
 
-  /* Primary actions = GOLD */
   --primary: #ddb049;
   --primary-foreground: #0a0704;
 
-  /* Secondary / ink */
   --secondary: #0a0704;
   --secondary-foreground: #fbfaf7;
 
@@ -88,7 +84,6 @@
   --input: #e8e0d2;
   --ring: #ddb049;
 
-  /* Brand scale */
   --gold: #ddb049;
   --gold-hover: #c99a3a;
   --gold-border: #b8862f;
@@ -100,12 +95,10 @@
   --ink-soft: #1a1510;
   --ink-muted: #3d3429;
 
-  /* Keep functional greens for success only */
   --success: #16a34a;
   --success-soft: rgba(22, 163, 74, 0.12);
   --warning: #d97706;
 
-  /* Gradients / shadows */
   --gradient-hero:
     radial-gradient(ellipse at top left, rgba(221, 176, 73, 0.18), transparent 50%),
     radial-gradient(ellipse at bottom right, rgba(221, 176, 73, 0.10), transparent 55%),
@@ -116,7 +109,6 @@
   --shadow-card: 0 1px 3px rgba(10, 7, 4, 0.05), 0 20px 50px -20px rgba(10, 7, 4, 0.18);
   --shadow-gold: 0 10px 30px -10px rgba(221, 176, 73, 0.55);
 
-  /* Old variable names used in existing CSS */
   --color-bg-primary: var(--background);
   --color-bg-secondary: var(--card);
   --color-bg-tertiary: var(--muted);
@@ -230,7 +222,6 @@
   border-radius: 3px;
 }
 
-/* Viewport helpers */
 .min-h-screen {
   min-height: 100vh;
   min-height: 100dvh;
@@ -284,6 +275,7 @@
   }
 }
 .animate-marquee {
+  display: flex;
   width: max-content;
   animation: marquee 25s linear infinite;
   will-change: transform;
@@ -292,21 +284,96 @@
   animation-play-state: paused;
 }
 
+/* Trusted-by logos — seamless continuous scroll */
 @keyframes marqueeTrusted {
   0% {
-    transform: translateX(0%);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
+
 .animate-marquee-trusted {
+  display: flex;
+  flex-wrap: nowrap;
   width: max-content;
-  animation: marqueeTrusted 28s linear infinite;
+  animation: marqueeTrusted 35s linear infinite;
   will-change: transform;
+  backface-visibility: hidden;
 }
+
+/* Keep moving on hover (continuous) */
 .animate-marquee-trusted:hover {
   animation-play-state: running;
+}
+
+/* Trusted section helpers */
+.trusted-marquee-viewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.trusted-marquee-fade-left,
+.trusted-marquee-fade-right {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  z-index: 2;
+}
+
+.trusted-marquee-fade-left {
+  left: 0;
+  background: linear-gradient(to right, #0a0704 0%, transparent 100%);
+}
+
+.trusted-marquee-fade-right {
+  right: 0;
+  background: linear-gradient(to left, #0a0704 0%, transparent 100%);
+}
+
+@media (min-width: 640px) {
+  .trusted-marquee-fade-left,
+  .trusted-marquee-fade-right {
+    width: 80px;
+  }
+}
+
+.trusted-logo-item {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.25rem; /* 52px — room for bigger logos without thick section */
+  padding-inline: 1.25rem;
+}
+
+.trusted-logo-item img {
+  height: 2.75rem; /* 44px */
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+  opacity: 0.95;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .trusted-logo-item {
+    height: 3.5rem;
+    padding-inline: 1.75rem;
+  }
+  .trusted-logo-item img {
+    height: 3rem; /* 48px */
+    max-width: 170px;
+  }
+}
+
+.trusted-logo-item:hover img {
+  opacity: 1;
+  transform: scale(1.06);
 }
 
 @keyframes testimonialsMarquee {
@@ -419,7 +486,6 @@
   animation: pulseSoft 2.8s ease-in-out infinite;
 }
 
-/* Glass helpers */
 .glass-panel {
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.6);
@@ -434,7 +500,6 @@
   -webkit-backdrop-filter: blur(16px);
 }
 
-/* Focus / selection */
 :focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
@@ -456,7 +521,44 @@
   overflow: hidden;
 }
 
-/* Optional page background helper */
 .bg-hero-awraq {
   background: var(--gradient-hero);
+}
+
+/* ───────── Custom Awraq Logo Loader ───────── */
+@keyframes logo-float-glow {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 0 12px rgba(221, 176, 73, 0.25));
+  }
+  50% {
+    transform: translateY(-10px) scale(1.05);
+    filter: drop-shadow(0 18px 30px rgba(221, 176, 73, 0.65));
+  }
+}
+
+@keyframes golden-pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+}
+
+.animate-logo-float {
+  animation: logo-float-glow 2.2s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+.animate-pulse-ring {
+  animation: golden-pulse-ring 2.2s ease-in-out infinite;
+  will-change: transform, opacity;
 }

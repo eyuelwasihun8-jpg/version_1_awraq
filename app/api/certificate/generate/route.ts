@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { getDownloadUrl, BUCKETS } from '@/lib/r2';
+import { rateLimit } from '@/lib/rate-limit';
 
 function generateCertCode(): string {
   const year = new Date().getFullYear();
@@ -10,9 +12,20 @@ function generateCertCode(): string {
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Rate limit: 10 certificate requests per hour per user
+  const rl = rateLimit(`cert-generate:${user.id}`, 10, 60 * 60 * 1000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Too many certificate requests. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter || 3600) } }
+    );
+  }
 
   const body = await request.json();
   const { courseId } = body;
@@ -21,7 +34,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'courseId required' }, { status: 400 });
   }
 
-  // 1. Get user profile for full name
+  // Enforce active enrollment check
+  const { data: enrollment } = await supabase
+    .from('enrollments')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('course_id', courseId)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (!enrollment) {
+    return NextResponse.json({ error: 'Not enrolled or access revoked' }, { status: 403 });
+  }
+
+  // Get user profile for full name
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name')
@@ -30,10 +56,10 @@ export async function POST(request: NextRequest) {
 
   const currentStudentName = profile?.full_name || 'Student';
 
-  // 2. Fetch course & instructor info
+  // Fetch course + instructor + template key
   const { data: course } = await supabase
     .from('courses')
-    .select('id, title, instructor_id')
+    .select('id, title, instructor_id, certificate_template_key')
     .eq('id', courseId)
     .single();
 
@@ -51,14 +77,15 @@ export async function POST(request: NextRequest) {
     if (instructor?.full_name) instructorName = instructor.full_name;
   }
 
-  // 3. Verify 100% course completion
+  // Verify 100% course completion (published lessons only)
   const { data: lessons } = await supabase
     .from('lessons')
     .select('id')
-    .eq('course_id', courseId);
+    .eq('course_id', courseId)
+    .neq('is_published', false);
 
   if (!lessons || lessons.length === 0) {
-    return NextResponse.json({ error: 'No lessons found for this course' }, { status: 400 });
+    return NextResponse.json({ error: 'No published lessons found for this course' }, { status: 400 });
   }
 
   const { data: progress } = await supabase
@@ -75,10 +102,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 4. Use Admin Client to safely read/write certificates
+  // Admin client for certificates table (bypass RLS for insertion)
   const adminDb = createAdminClient();
 
-  // Try to find existing certificate
   let { data: cert } = await adminDb
     .from('certificates')
     .select('*')
@@ -86,7 +112,7 @@ export async function POST(request: NextRequest) {
     .eq('course_id', courseId)
     .maybeSingle();
 
-  // 5. If it doesn't exist yet, insert a new row
+  // Insert if certificate does not exist yet
   if (!cert) {
     const newCertCode = generateCertCode();
     const newIssuedAt = new Date().toISOString();
@@ -104,7 +130,6 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (insertErr) {
-      // If it failed due to unique constraint (already created in parallel), fetch existing
       if (insertErr.code === '23505') {
         const { data: existingCert } = await adminDb
           .from('certificates')
@@ -112,7 +137,6 @@ export async function POST(request: NextRequest) {
           .eq('user_id', user.id)
           .eq('course_id', courseId)
           .single();
-        
         cert = existingCert;
       } else {
         console.error('Certificate insert error:', insertErr);
@@ -139,6 +163,20 @@ export async function POST(request: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://awraqskills.com';
 
+  // Sign course-specific certificate template URL
+  let templateUrl: string | null = null;
+  if (course.certificate_template_key) {
+    try {
+      templateUrl = await getDownloadUrl(
+        BUCKETS.content,
+        course.certificate_template_key,
+        3600
+      );
+    } catch (err) {
+      console.error('Failed to sign certificate template:', err);
+    }
+  }
+
   return NextResponse.json({
     success: true,
     data: {
@@ -149,6 +187,7 @@ export async function POST(request: NextRequest) {
       certificateId: certCode,
       verificationUrl: `${appUrl}/verify/${certCode}`,
       organizationName: 'Awraq Skills',
+      templateUrl,
     },
   });
 }

@@ -16,6 +16,7 @@ import {
 import { toast } from 'sonner';
 import { RichTextEditor } from './RichTextEditor';
 import { QuizBuilder, QuizData } from './QuizBuilder';
+import { sanitizeLessonTextContent, isEmptyLessonHtml } from '@/lib/sanitizeLessonHtml';
 
 interface Props {
   courseId: string;
@@ -40,18 +41,18 @@ export const LessonEditorModal: React.FC<Props> = ({
   const [duration, setDuration] = useState(lesson?.duration_seconds?.toString() || '0');
   const [isPublished, setIsPublished] = useState(lesson?.is_published !== false);
 
-  // Which sections are enabled
+  // Which sections are enabled — never treat placeholder text as content
   const [enableVideo, setEnableVideo] = useState(!!lesson?.video_key);
-  const [enableText, setEnableText] = useState(
-    !!(lesson?.text_content && String(lesson.text_content).replace(/<[^>]*>/g, '').trim())
-  );
+  const [enableText, setEnableText] = useState(!isEmptyLessonHtml(lesson?.text_content));
   const [enableQuiz, setEnableQuiz] = useState(
     !!(lesson?.quiz_data?.questions && lesson.quiz_data.questions.length > 0)
   );
 
-  // Content
+  // Content — don't seed with placeholder garbage
   const [videoKey, setVideoKey] = useState(lesson?.video_key || '');
-  const [textContent, setTextContent] = useState(lesson?.text_content || '');
+  const [textContent, setTextContent] = useState(
+    isEmptyLessonHtml(lesson?.text_content) ? '' : lesson?.text_content || ''
+  );
   const [quizData, setQuizData] = useState<QuizData>(
     (lesson?.quiz_data as QuizData) || { passing_score: 70, questions: [] }
   );
@@ -149,9 +150,11 @@ export const LessonEditorModal: React.FC<Props> = ({
       return;
     }
 
+    // Sanitize text — placeholder / empty → null
+    const cleanText = enableText ? sanitizeLessonTextContent(textContent) : null;
+
     const hasVideo = enableVideo && !!videoKey;
-    const hasText =
-      enableText && !!textContent.replace(/<[^>]*>/g, '').trim();
+    const hasText = !!cleanText;
     const hasQuiz = enableQuiz && (quizData.questions?.length || 0) > 0;
 
     if (!hasVideo && !hasText && !hasQuiz) {
@@ -186,7 +189,7 @@ export const LessonEditorModal: React.FC<Props> = ({
         durationSeconds: parseInt(duration) || (hasVideo ? 0 : 60),
         isPublished,
         videoKey: hasVideo ? videoKey : null,
-        textContent: hasText ? textContent : null,
+        textContent: cleanText,
         quizData: hasQuiz ? quizData : null,
       };
 

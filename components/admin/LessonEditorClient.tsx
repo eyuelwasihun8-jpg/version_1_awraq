@@ -20,6 +20,7 @@ import { LessonVideoEditor } from './LessonVideoEditor';
 import { LessonTextEditor } from './LessonTextEditor';
 import { LessonQuizEditor } from './LessonQuizEditor';
 import { LessonResourcesEditor } from './LessonResourcesEditor';
+import { isEmptyLessonHtml } from '@/lib/sanitizeLessonHtml';
 
 const PORTAL_SLUG = process.env.NEXT_PUBLIC_ADMIN_SLUG || 'staff-portal-x7k9m';
 
@@ -41,10 +42,8 @@ export const LessonEditorClient: React.FC<Props> = ({ course, initialLesson }) =
   const [resourceCount, setResourceCount] = useState<number | null>(null);
 
   const hasVideo = !!(lesson.video_key && String(lesson.video_key).trim());
-  const hasText = !!(
-    lesson.text_content &&
-    String(lesson.text_content).replace(/<[^>]*>/g, '').trim().length > 0
-  );
+  // Uses shared sanitizer — placeholder text is never counted as real content
+  const hasText = !isEmptyLessonHtml(lesson.text_content);
   const hasQuiz = !!(lesson.quiz_data?.questions && lesson.quiz_data.questions.length > 0);
 
   const refreshLesson = async () => {

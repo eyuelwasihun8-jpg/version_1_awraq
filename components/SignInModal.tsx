@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import { X, Mail, Lock, Loader2 } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { createClient } from '@/lib/supabase-browser';
+import { TurnstileWidget } from '@/components/TurnstileWidget';
 import { toast } from 'sonner';
 
 interface SignInModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const FAIL_THRESHOLD = 3;
 
 export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
@@ -19,6 +22,11 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileReset, setTurnstileReset] = useState(0);
+
+  const needsChallenge = isRegister || failedAttempts >= FAIL_THRESHOLD;
 
   useEffect(() => {
     if (isOpen) {
@@ -31,17 +39,51 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
     };
   }, [isOpen]);
 
+  // Reset challenge token when switching modes
+  useEffect(() => {
+    setTurnstileToken('');
+    setTurnstileReset((k) => k + 1);
+  }, [isRegister]);
+
   if (!isOpen) return null;
+
+  const runGuard = async () => {
+    const action = isRegister
+      ? 'signup'
+      : needsChallenge
+        ? 'login_challenge'
+        : 'login';
+
+    const res = await fetch('/api/auth/guard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action,
+        turnstileToken,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || 'Security check failed');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
+    if (needsChallenge && !turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+      toast.error('Please complete the security check');
+      return;
+    }
+
+    setLoading(true);
     const supabase = createClient();
 
     try {
+      await runGuard();
+
       if (isRegister) {
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
@@ -51,6 +93,8 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
 
         if (error) {
           toast.error(error.message);
+          setTurnstileToken('');
+          setTurnstileReset((k) => k + 1);
           setLoading(false);
           return;
         }
@@ -65,15 +109,18 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
         });
 
         if (error) {
+          setFailedAttempts((n) => n + 1);
+          setTurnstileToken('');
+          setTurnstileReset((k) => k + 1);
           toast.error(error.message);
           setLoading(false);
           return;
         }
 
+        setFailedAttempts(0);
         toast.success('Welcome back!');
         onClose();
-        
-        // Instant check
+
         fetch('/api/onboarding')
           .then((r) => r.json())
           .then((data) => {
@@ -87,26 +134,41 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
             window.location.href = '/onboarding';
           });
       }
-    } catch {
-      toast.error('Something went wrong. Please try again.');
+    } catch (err: any) {
+      toast.error(err.message || 'Something went wrong. Please try again.');
+      setTurnstileToken('');
+      setTurnstileReset((k) => k + 1);
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    if (needsChallenge && !turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+      toast.error('Please complete the security check first');
+      return;
+    }
+
     setGoogleLoading(true);
-    const supabase = createClient();
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
-      },
-    });
-
-    if (error) {
-      toast.error(error.message);
+    try {
+      await runGuard();
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+        },
+      });
+      if (error) {
+        toast.error(error.message);
+        setGoogleLoading(false);
+        setTurnstileToken('');
+        setTurnstileReset((k) => k + 1);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Security check failed');
       setGoogleLoading(false);
+      setTurnstileToken('');
+      setTurnstileReset((k) => k + 1);
     }
   };
 
@@ -132,7 +194,6 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
           <X className="w-5 h-5" />
         </button>
 
-        {/* Left visual */}
         <div className="hidden md:flex md:col-span-5 bg-gradient-to-b from-slate-50 via-slate-50 to-emerald-50/40 p-8 flex-col justify-between border-r border-[#f0ebe2]">
           <div className="space-y-4">
             <div className="bg-white rounded-2xl p-4 shadow-md border border-[#f0ebe2]">
@@ -159,7 +220,6 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
           </div>
         </div>
 
-        {/* Form */}
         <div className="col-span-1 md:col-span-7 p-6 sm:p-10 md:p-12 flex flex-col justify-center">
           <div className="flex items-center gap-3 mb-5">
             <BrandLogo size="sm" />
@@ -174,7 +234,6 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
               : 'Sign in to access your courses and resources'}
           </p>
 
-          {/* Google OAuth */}
           <button
             type="button"
             onClick={handleGoogleLogin}
@@ -206,7 +265,6 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
             <span>Continue with Google</span>
           </button>
 
-          {/* Divider */}
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-[#e8e0d2]" />
@@ -261,6 +319,25 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
               )}
             </div>
 
+            {needsChallenge && (
+              <div className="space-y-2">
+                {!isRegister && failedAttempts >= FAIL_THRESHOLD && (
+                  <p className="text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                    Extra security check required after multiple failed attempts.
+                  </p>
+                )}
+                <div className="flex justify-center">
+                  <TurnstileWidget
+                    action={isRegister ? 'signup' : 'login'}
+                    resetKey={turnstileReset}
+                    onVerify={(t) => setTurnstileToken(t)}
+                    onExpire={() => setTurnstileToken('')}
+                    onError={() => setTurnstileToken('')}
+                  />
+                </div>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading || googleLoading}
@@ -291,7 +368,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
               </>
             ) : (
               <>
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <button
                   type="button"
                   onClick={() => setIsRegister(true)}

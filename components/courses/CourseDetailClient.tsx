@@ -14,6 +14,7 @@ import {
   Lock,
   Users,
   MessageSquareQuote,
+  ArrowRight,
 } from 'lucide-react';
 import { useModals } from '@/components/RootLayoutClient';
 import { CourseThumbnail } from '@/components/admin/CourseThumbnail';
@@ -24,6 +25,7 @@ interface Props {
   studentCount: number;
   reviews: any[];
   averageRating: number;
+  totalReviews: number;
   isLoggedIn: boolean;
   isEnrolled: boolean;
 }
@@ -34,6 +36,7 @@ export const CourseDetailClient: React.FC<Props> = ({
   studentCount,
   reviews,
   averageRating,
+  totalReviews,
   isLoggedIn,
   isEnrolled,
 }) => {
@@ -67,6 +70,28 @@ export const CourseDetailClient: React.FC<Props> = ({
           <ArrowLeft className="w-4 h-4" />
           Back to Courses
         </Link>
+
+        {isEnrolled && (
+          <div className="mb-6 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 shadow-sm">
+            <div className="w-11 h-11 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] uppercase font-black tracking-widest text-emerald-700 mb-0.5">
+                You are enrolled
+              </div>
+              <p className="text-sm font-bold text-slate-800">
+                You already have access to this course. Head to My Learning to continue.
+              </p>
+            </div>
+            <button
+              onClick={handleStartLearning}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-b from-[#20B486] to-[#059669] text-white text-sm font-bold cursor-pointer shrink-0"
+            >
+              Continue Learning
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-6">
@@ -105,7 +130,7 @@ export const CourseDetailClient: React.FC<Props> = ({
                       </div>
                       <span className="text-sm font-bold text-slate-700">{averageRating}</span>
                       <span className="text-xs text-slate-500 font-medium">
-                        ({reviews.length} review{reviews.length !== 1 ? 's' : ''})
+                        ({totalReviews} review{totalReviews !== 1 ? 's' : ''})
                       </span>
                       <span className="text-slate-300">·</span>
                     </>
@@ -122,7 +147,11 @@ export const CourseDetailClient: React.FC<Props> = ({
                   <div className="flex items-center gap-2.5 pb-4 border-b border-[#f0ebe2] mb-4">
                     <div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
                       {course.instructor.avatar_url ? (
-                        <img src={course.instructor.avatar_url} alt="" className="w-full h-full object-cover" />
+                        <img
+                          src={course.instructor.avatar_url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
                         <User className="w-4 h-4 text-slate-400" />
                       )}
@@ -144,7 +173,9 @@ export const CourseDetailClient: React.FC<Props> = ({
                 </div>
 
                 <div>
-                  <h2 className="text-base sm:text-lg font-black text-slate-900 mb-2">About This Course</h2>
+                  <h2 className="text-base sm:text-lg font-black text-slate-900 mb-2">
+                    About This Course
+                  </h2>
                   <p className="text-sm text-slate-600 font-medium whitespace-pre-line leading-relaxed">
                     {course.description || 'No description available for this course yet.'}
                   </p>
@@ -153,7 +184,9 @@ export const CourseDetailClient: React.FC<Props> = ({
             </div>
 
             <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6">
-              <h2 className="text-base sm:text-lg font-black text-slate-900 mb-4">What You'll Get</h2>
+              <h2 className="text-base sm:text-lg font-black text-slate-900 mb-4">
+                What You&apos;ll Get
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
                   'Full lifetime access',
@@ -174,7 +207,9 @@ export const CourseDetailClient: React.FC<Props> = ({
             <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 lg:p-8">
               <div className="flex items-center gap-2 mb-2">
                 <MessageSquareQuote className="w-5 h-5 text-[#ddb049]" />
-                <h2 className="text-base sm:text-lg font-black text-slate-900">Student Testimonials</h2>
+                <h2 className="text-base sm:text-lg font-black text-slate-900">
+                  Student Testimonials
+                </h2>
               </div>
               <p className="text-xs text-slate-500 font-medium mb-6">
                 Real feedback from people who completed this course
@@ -184,42 +219,59 @@ export const CourseDetailClient: React.FC<Props> = ({
                 <div className="text-center py-10 bg-[#fbfaf7] rounded-xl border border-dashed border-[#e8e0d2]">
                   <Star className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                   <p className="text-sm font-bold text-slate-600 mb-1">No testimonials yet</p>
+                  <p className="text-xs text-slate-500">
+                    Be the first to complete this course and share your experience
+                  </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {reviews.map((r) => (
-                    <div key={r.id} className="p-4 sm:p-5 rounded-2xl bg-[#fbfaf7] border border-[#f0ebe2]">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-white border border-[#e8e0d2] overflow-hidden shrink-0 flex items-center justify-center">
+                    <div
+                      key={r.id}
+                      className="flex flex-col p-4 sm:p-5 rounded-2xl bg-[#fbfaf7] border border-[#f0ebe2] h-full"
+                    >
+                      <div className="flex items-center gap-0.5 mb-3">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star
+                            key={s}
+                            className={`w-3.5 h-3.5 ${
+                              s <= r.rating
+                                ? 'fill-amber-400 text-amber-400'
+                                : 'text-slate-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      {r.review_text ? (
+                        <p className="text-sm text-slate-700 font-medium leading-relaxed italic flex-1 mb-4">
+                          “{r.review_text}”
+                        </p>
+                      ) : (
+                        <div className="flex-1 mb-4" />
+                      )}
+
+                      <div className="flex items-center gap-2.5 pt-3 border-t border-[#e8e0d2] mt-auto">
+                        <div className="w-9 h-9 rounded-full bg-white border border-[#e8e0d2] overflow-hidden shrink-0 flex items-center justify-center">
                           {r.user?.avatar_url ? (
-                            <img src={r.user.avatar_url} alt="" className="w-full h-full object-cover" />
+                            <img
+                              src={r.user.avatar_url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
                             <User className="w-4 h-4 text-slate-400" />
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <span className="text-sm font-black text-slate-900">
-                              {r.user?.full_name || 'Student'}
-                            </span>
-                            <div className="flex items-center gap-0.5">
-                              {[1, 2, 3, 4, 5].map((s) => (
-                                <Star
-                                  key={s}
-                                  className={`w-3 h-3 ${
-                                    s <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'
-                                  }`}
-                                />
-                              ))}
-                            </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-black text-slate-900 truncate">
+                            {r.user?.full_name || 'Student'}
+                          </div>
+                          <div className="text-[10px] text-slate-500 font-medium">
+                            Course Graduate
                           </div>
                         </div>
                       </div>
-                      {r.review_text ? (
-                        <p className="text-sm text-slate-700 font-medium leading-relaxed italic">
-                          “{r.review_text}”
-                        </p>
-                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -229,37 +281,122 @@ export const CourseDetailClient: React.FC<Props> = ({
 
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6">
-              <div className="mb-4">
-                <div className="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-1">Price</div>
-                <div className="text-3xl sm:text-4xl font-black text-slate-900">
-                  ETB {Number(course.price || 0).toLocaleString()}
-                </div>
-              </div>
-
-              <div className="mb-4 flex items-center gap-2 text-xs font-bold text-slate-600 bg-[#fbfaf7] rounded-xl px-3 py-2.5 border border-[#f0ebe2]">
-                <Users className="w-3.5 h-3.5 text-[#ddb049] shrink-0" />
-                <span>
-                  {studentCount === 0
-                    ? 'Be the first to enroll'
-                    : `Join ${formatStudents(studentCount)} student${studentCount !== 1 ? 's' : ''}`}
-                </span>
-              </div>
-
               {isEnrolled ? (
-                <button
-                  onClick={handleStartLearning}
-                  className="w-full min-h-[48px] py-3.5 rounded-xl bg-gradient-to-b from-[#20B486] to-[#059669] text-white text-sm font-bold cursor-pointer"
-                >
-                  Continue Learning
-                </button>
+                <>
+                  <div className="mb-4">
+                    <div className="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-1">
+                      Price
+                    </div>
+                    <div className="text-3xl sm:text-4xl font-black text-slate-900">
+                      ETB {Number(course.price || 0).toLocaleString()}
+                    </div>
+                  </div>
+
+                  <div className="mb-4 flex items-center gap-2 text-xs font-bold text-slate-600 bg-[#fbfaf7] rounded-xl px-3 py-2.5 border border-[#f0ebe2]">
+                    <Users className="w-3.5 h-3.5 text-[#ddb049] shrink-0" />
+                    <span>
+                      {studentCount === 0
+                        ? 'Be the first to enroll'
+                        : `Join ${formatStudents(studentCount)} student${studentCount !== 1 ? 's' : ''}`}
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-center">
+                      <div className="inline-flex items-center gap-1.5 text-emerald-700 text-xs font-black uppercase tracking-wider mb-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Already Enrolled
+                      </div>
+                      <p className="text-[11px] text-emerald-800/80 font-medium leading-relaxed">
+                        You already have access to this course. Continue where you left off.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleStartLearning}
+                      className="w-full min-h-[48px] py-3.5 rounded-xl bg-gradient-to-b from-[#20B486] to-[#059669] text-white text-sm font-bold cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      Continue Learning
+                    </button>
+                    <Link
+                      href="/dashboard"
+                      className="block w-full text-center text-xs font-bold text-slate-500 hover:text-slate-900 py-1"
+                    >
+                      Go to My Dashboard →
+                    </Link>
+                  </div>
+                </>
+              ) : isLoggedIn ? (
+                <>
+                  <div className="mb-4">
+                    <div className="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-1">
+                      Price
+                    </div>
+                    <div className="text-3xl sm:text-4xl font-black text-slate-900">
+                      ETB {Number(course.price || 0).toLocaleString()}
+                    </div>
+                  </div>
+
+                  <div className="mb-4 flex items-center gap-2 text-xs font-bold text-slate-600 bg-[#fbfaf7] rounded-xl px-3 py-2.5 border border-[#f0ebe2]">
+                    <Users className="w-3.5 h-3.5 text-[#ddb049] shrink-0" />
+                    <span>
+                      {studentCount === 0
+                        ? 'Be the first to enroll'
+                        : `Join ${formatStudents(studentCount)} student${studentCount !== 1 ? 's' : ''}`}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={handlePurchase}
+                    className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] text-sm font-bold cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    Purchase This Course
+                  </button>
+                </>
               ) : (
-                <button
-                  onClick={handlePurchase}
-                  className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] text-[#0a0704] text-sm font-bold cursor-pointer flex items-center justify-center gap-2"
-                >
-                  {!isLoggedIn && <Lock className="w-4 h-4" />}
-                  <span>{isLoggedIn ? 'Purchase This Course' : 'Sign In to Purchase'}</span>
-                </button>
+                <>
+                  {/* Locked price for anonymous users */}
+                  <div className="mb-5 rounded-2xl bg-gradient-to-br from-amber-50 via-white to-amber-50 border-2 border-amber-200 p-5 text-center">
+                    <div className="w-14 h-14 rounded-2xl bg-[#ddb049] flex items-center justify-center mx-auto mb-3 shadow-lg">
+                      <Lock className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="text-[10px] uppercase font-black tracking-widest text-[#ddb049] mb-1">
+                      Members Only
+                    </div>
+                    <h3 className="text-lg font-black text-slate-900 mb-2 leading-tight">
+                      Sign up to view price
+                    </h3>
+                    <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                      Create your free account to unlock pricing and purchase this course.
+                    </p>
+                  </div>
+
+                  <div className="mb-4 flex items-center gap-2 text-xs font-bold text-slate-600 bg-[#fbfaf7] rounded-xl px-3 py-2.5 border border-[#f0ebe2]">
+                    <Users className="w-3.5 h-3.5 text-[#ddb049] shrink-0" />
+                    <span>
+                      {studentCount === 0
+                        ? 'Be the first to enroll'
+                        : `Join ${formatStudents(studentCount)} student${studentCount !== 1 ? 's' : ''}`}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={openSignIn}
+                    className="w-full min-h-[48px] py-3.5 rounded-xl bg-[#ddb049] hover:bg-[#c99a3a] border-b-[4px] border-[#b8862f] hover:border-b-[2px] hover:translate-y-[2px] text-[#0a0704] text-sm font-black cursor-pointer flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(221,176,73,0.35)] transition-all"
+                  >
+                    Sign Up Free
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <p className="text-center text-[10px] text-slate-500 font-medium mt-3">
+                    Already have an account?{' '}
+                    <button
+                      onClick={openSignIn}
+                      className="text-[#ddb049] font-bold hover:underline cursor-pointer"
+                    >
+                      Sign in
+                    </button>
+                  </p>
+                </>
               )}
             </div>
           </div>

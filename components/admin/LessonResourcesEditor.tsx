@@ -9,12 +9,13 @@ import {
   Trash2,
   Upload,
   ExternalLink,
-  File,
+  File as FileIcon,
   Presentation,
   X,
   CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { compressImage } from '@/lib/compressImage';
 
 interface Resource {
   id: string;
@@ -41,13 +42,18 @@ function iconFor(resource: Resource) {
   if (resource.resource_type === 'pdf') return FileText;
   const key = (resource.file_key || resource.title || '').toLowerCase();
   if (key.endsWith('.ppt') || key.endsWith('.pptx')) return Presentation;
-  return File;
+  return FileIcon;
+}
+
+function isImageFile(file: File) {
+  return file.type.startsWith('image/');
 }
 
 export const LessonResourcesEditor: React.FC<Props> = ({ lessonId }) => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [addingLink, setAddingLink] = useState(false);
   const [linkTitle, setLinkTitle] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
@@ -76,12 +82,68 @@ export const LessonResourcesEditor: React.FC<Props> = ({ lessonId }) => {
     fetchResources();
   }, [lessonId]);
 
+  /**
+   * Raw stream upload: Sends raw file binary directly in body, avoiding FormData size limits.
+   */
+  const uploadViaServer = async (file: File): Promise<string> => {
+    setProgress(15);
+
+    let uploadBlob: Blob = file;
+    let uploadName = file.name;
+    let uploadType = file.type || 'application/octet-stream';
+
+    // Compress images if it's an image
+    if (isImageFile(file)) {
+      try {
+        setProgress(25);
+        const compressed = await compressImage(file, 1600, 0.75);
+        uploadBlob = compressed;
+        uploadName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+        uploadType = 'image/jpeg';
+        setProgress(40);
+      } catch {
+        uploadBlob = file;
+      }
+    }
+
+    setProgress(55);
+
+    const folder = `resources/${lessonId}`;
+    const url = `/api/admin/upload?folder=${encodeURIComponent(
+      folder
+    )}&filename=${encodeURIComponent(uploadName)}`;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': uploadType,
+        },
+        body: uploadBlob, // Sends raw binary bytes
+        signal: controller.signal,
+      });
+
+      setProgress(85);
+
+      const data = await res.json();
+      if (!res.ok || !data.fileKey) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setProgress(100);
+      return data.fileKey as string;
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Reset input so same file can be re-selected
     e.target.value = '';
+    if (!file) return;
 
     const maxMb = 50;
     if (file.size > maxMb * 1024 * 1024) {
@@ -90,38 +152,15 @@ export const LessonResourcesEditor: React.FC<Props> = ({ lessonId }) => {
     }
 
     setUploading(true);
+    setProgress(5);
+
     try {
-      // 1) Get presigned upload URL
-      const urlRes = await fetch('/api/admin/upload-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contentType: file.type || 'application/octet-stream',
-          folder: `resources/${lessonId}`,
-        }),
-      });
-      const urlData = await urlRes.json();
-      if (!urlRes.ok) {
-        toast.error(urlData.error || 'Failed to get upload URL');
-        return;
-      }
+      const fileKey = await uploadViaServer(file);
 
-      // 2) Upload file to R2
-      const putRes = await fetch(urlData.uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': file.type || 'application/octet-stream',
-        },
-        body: file,
-      });
-      if (!putRes.ok) {
-        toast.error('Upload to storage failed');
-        return;
-      }
-
-      // 3) Save resource row
       const resourceType = detectResourceType(file);
       const title = file.name.replace(/\.[^/.]+$/, '') || file.name;
+
+      setProgress(92);
 
       const saveRes = await fetch('/api/admin/resources', {
         method: 'POST',
@@ -130,22 +169,27 @@ export const LessonResourcesEditor: React.FC<Props> = ({ lessonId }) => {
           lessonId,
           title,
           resourceType,
-          fileKey: urlData.fileKey,
+          fileKey,
         }),
       });
+
       const saveData = await saveRes.json();
       if (!saveRes.ok) {
-        toast.error(saveData.error || 'Failed to save resource');
-        return;
+        throw new Error(saveData.error || 'Failed to save resource');
       }
 
-      toast.success('Resource uploaded');
-      fetchResources();
-    } catch (err) {
-      console.error(err);
-      toast.error('Upload failed');
+      toast.success('Resource uploaded successfully!');
+      await fetchResources();
+    } catch (err: any) {
+      console.error('Resource upload error:', err);
+      if (err?.name === 'AbortError') {
+        toast.error('Upload timed out. Try a smaller file.');
+      } else {
+        toast.error(err?.message || 'Upload failed');
+      }
     } finally {
       setUploading(false);
+      setProgress(0);
     }
   };
 
@@ -159,7 +203,6 @@ export const LessonResourcesEditor: React.FC<Props> = ({ lessonId }) => {
       return;
     }
     try {
-      // Basic URL check
       // eslint-disable-next-line no-new
       new URL(linkUrl.trim());
     } catch {
@@ -231,7 +274,7 @@ export const LessonResourcesEditor: React.FC<Props> = ({ lessonId }) => {
               ref={fileInputRef}
               type="file"
               className="hidden"
-              accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.txt,.zip,.png,.jpg,.jpeg"
+              accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.txt,.zip,.png,.jpg,.jpeg,.webp"
               onChange={handleFileUpload}
             />
             <button
@@ -245,19 +288,36 @@ export const LessonResourcesEditor: React.FC<Props> = ({ lessonId }) => {
               ) : (
                 <Upload className="w-3.5 h-3.5" />
               )}
-              <span>{uploading ? 'Uploading…' : 'Upload File'}</span>
+              <span>{uploading ? `Uploading ${progress}%` : 'Upload File'}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setAddingLink((v) => !v)}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#fbfaf7] border border-[#e8e0d2] hover:bg-white text-slate-800 text-xs font-bold cursor-pointer transition-all"
+              disabled={uploading}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#fbfaf7] border border-[#e8e0d2] hover:bg-white text-slate-800 text-xs font-bold cursor-pointer transition-all disabled:opacity-50"
             >
               <Link2 className="w-3.5 h-3.5" />
               <span>Add Link</span>
             </button>
           </div>
         </div>
+
+        {/* Progress bar */}
+        {uploading && (
+          <div className="px-5 sm:px-6 py-3 bg-[#fbfaf7] border-b border-[#e8e0d2]">
+            <div className="flex justify-between text-[11px] font-bold text-slate-600 mb-1.5">
+              <span>Uploading via secure server…</span>
+              <span>{progress}%</span>
+            </div>
+            <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#ddb049] transition-all duration-200"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Add link form */}
         {addingLink && (
@@ -354,11 +414,6 @@ export const LessonResourcesEditor: React.FC<Props> = ({ lessonId }) => {
                           : r.resource_type === 'pdf'
                             ? 'PDF'
                             : 'File'}
-                        {r.external_url ? (
-                          <span className="normal-case font-medium tracking-normal text-slate-400 ml-2 truncate inline-block max-w-[200px] align-bottom">
-                            {r.external_url}
-                          </span>
-                        ) : null}
                       </div>
                     </div>
 
@@ -406,7 +461,7 @@ export const LessonResourcesEditor: React.FC<Props> = ({ lessonId }) => {
       </div>
 
       <p className="text-[11px] text-slate-400 font-medium mt-3 text-center">
-        Supported: PDF, PPT/PPTX, DOC/DOCX, XLS/XLSX, ZIP, images, or any file · Max 50MB
+        Images are auto-compressed in the browser. PDF/PPT/DOC upload as-is via secure server.
       </p>
     </div>
   );

@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
 
 async function checkAccess(supabase: any, courseId: string) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: 'Unauthorized', status: 401 };
 
   const { data: profile } = await supabase
@@ -15,7 +17,6 @@ async function checkAccess(supabase: any, courseId: string) {
     return { error: 'Forbidden', status: 403 };
   }
 
-  // Instructors can only edit their own
   if (profile.role === 'instructor') {
     const { data: course } = await supabase
       .from('courses')
@@ -48,9 +49,10 @@ export async function PATCH(
   if (body.description !== undefined) updates.description = body.description;
   if (body.category !== undefined) updates.category = body.category;
   if (body.price !== undefined) updates.price = body.price;
-  if (body.thumbnailUrl !== undefined) updates.thumbnail_url = body.thumbnailUrl;
-  if (body.certificateTemplateKey !== undefined)
-    updates.certificate_template_key = body.certificateTemplateKey;
+  if (body.thumbnailUrl !== undefined) updates.thumbnail_url = body.thumbnailUrl || null;
+  if (body.certificateTemplateKey !== undefined) {
+    updates.certificate_template_key = body.certificateTemplateKey || null;
+  }
   if (body.isPublished !== undefined) updates.is_published = body.isPublished;
 
   const { data, error } = await supabase

@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
 
 async function requireAdminOrInstructor(supabase: any) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: 'Unauthorized', status: 401 };
 
   const { data: profile } = await supabase
@@ -28,7 +30,6 @@ export async function GET(request: NextRequest) {
     .select('*, instructor:profiles!courses_instructor_id_fkey ( id, full_name )')
     .order('created_at', { ascending: false });
 
-  // Instructors only see their own courses
   if (auth.profile!.role === 'instructor') {
     query = query.eq('instructor_id', auth.user!.id);
   }
@@ -46,7 +47,15 @@ export async function POST(request: NextRequest) {
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const body = await request.json();
-  const { title, description, category, price, thumbnailUrl, certificateTemplateKey } = body;
+  const {
+    title,
+    description,
+    category,
+    price,
+    thumbnailUrl,
+    certificateTemplateKey,
+    isPublished,
+  } = body;
 
   if (!title?.trim() || price === undefined) {
     return NextResponse.json({ error: 'title and price required' }, { status: 400 });
@@ -57,12 +66,12 @@ export async function POST(request: NextRequest) {
     .insert({
       instructor_id: auth.user!.id,
       title: title.trim(),
-      description,
-      category,
+      description: description ?? null,
+      category: category ?? 'other',
       price,
-      thumbnail_url: thumbnailUrl,
-      certificate_template_key: certificateTemplateKey,
-      is_published: false,
+      thumbnail_url: thumbnailUrl || null,
+      certificate_template_key: certificateTemplateKey || null,
+      is_published: !!isPublished,
     })
     .select()
     .single();

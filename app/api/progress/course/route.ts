@@ -12,11 +12,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'courseId required' }, { status: 400 });
   }
 
-  // Get all lessons in the course
+  // Get all published lessons in the course
   const { data: lessons } = await supabase
     .from('lessons')
     .select('id')
-    .eq('course_id', courseId);
+    .eq('course_id', courseId)
+    .neq('is_published', false);
 
   if (!lessons || lessons.length === 0) {
     return NextResponse.json({
@@ -24,15 +25,16 @@ export async function GET(request: NextRequest) {
       completedLessons: 0,
       percentage: 0,
       isCourseComplete: false,
+      progress: [],
     });
   }
 
   const lessonIds = lessons.map((l) => l.id);
 
-  // Get all progress rows for this user in this course
+  // Get progress rows for published lessons in this course
   const { data: progress } = await supabase
     .from('lesson_progress')
-    .select('lesson_id, is_completed')
+    .select('lesson_id, is_completed, watch_seconds, scroll_percentage')
     .eq('user_id', user.id)
     .in('lesson_id', lessonIds);
 
@@ -45,5 +47,6 @@ export async function GET(request: NextRequest) {
     completedLessons,
     percentage,
     isCourseComplete: completedLessons === totalLessons,
+    progress: progress || [],
   });
 }

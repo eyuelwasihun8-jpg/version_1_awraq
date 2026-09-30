@@ -6,7 +6,10 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, Loader2, ArrowLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase-browser';
 import { BrandLogo } from '@/components/BrandLogo';
+import { TurnstileWidget } from '@/components/TurnstileWidget';
 import { toast } from 'sonner';
+
+const FAIL_THRESHOLD = 3;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,43 +17,91 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileReset, setTurnstileReset] = useState(0);
+
+  const needsChallenge = failedAttempts >= FAIL_THRESHOLD;
+
+  const runGuard = async (action: 'login' | 'login_challenge', token: string) => {
+    const res = await fetch('/api/auth/guard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, turnstileToken: token }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || 'Security check failed');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    const supabase = createClient();
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
+    if (needsChallenge && !turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+      toast.error('Please complete the security check');
       return;
     }
 
+    setLoading(true);
     try {
-      const res = await fetch('/api/onboarding');
-      const data = await res.json();
-      toast.success('Welcome back!');
-      if (!data.profile?.onboarding_completed) {
-        router.push('/onboarding');
-      } else {
+      await runGuard(needsChallenge ? 'login_challenge' : 'login', turnstileToken);
+
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (error) {
+        setFailedAttempts((n) => n + 1);
+        setTurnstileToken('');
+        setTurnstileReset((k) => k + 1);
+        toast.error(error.message);
+        setLoading(false);
+        return;
+      }
+
+      setFailedAttempts(0);
+
+      try {
+        const res = await fetch('/api/onboarding');
+        const data = await res.json();
+        toast.success('Welcome back!');
+        if (!data.profile?.onboarding_completed) {
+          router.push('/onboarding');
+        } else {
+          router.push('/dashboard');
+        }
+      } catch {
         router.push('/dashboard');
       }
-    } catch {
-      router.push('/dashboard');
+    } catch (err: any) {
+      toast.error(err.message || 'Sign in failed');
+      setTurnstileToken('');
+      setTurnstileReset((k) => k + 1);
+      setLoading(false);
     }
   };
 
   const handleGoogle = async () => {
+    // Optional light guard on Google (IP rate limit only unless challenge mode)
     setGoogleLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
-    });
-    if (error) {
-      toast.error(error.message);
+    try {
+      await runGuard(needsChallenge ? 'login_challenge' : 'login', turnstileToken);
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        },
+      });
+      if (error) {
+        toast.error(error.message);
+        setGoogleLoading(false);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Security check failed');
       setGoogleLoading(false);
     }
   };
@@ -101,7 +152,7 @@ export default function LoginPage() {
 
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#e8e0d2]"></div>
+                <div className="w-full border-t border-[#e8e0d2]" />
               </div>
               <div className="relative flex justify-center text-xs">
                 <span className="bg-white px-3 text-slate-500 font-medium">or</span>
@@ -150,6 +201,23 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {needsChallenge && (
+                <div className="space-y-2">
+                  <p className="text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                    Extra security check required after multiple failed attempts.
+                  </p>
+                  <div className="flex justify-center">
+                    <TurnstileWidget
+                      action="login"
+                      resetKey={turnstileReset}
+                      onVerify={(t) => setTurnstileToken(t)}
+                      onExpire={() => setTurnstileToken('')}
+                      onError={() => setTurnstileToken('')}
+                    />
+                  </div>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={loading || googleLoading}
@@ -167,7 +235,7 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 text-center text-sm text-slate-500">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/signup" className="font-bold text-[#ddb049] hover:underline">
                 Sign Up
               </Link>

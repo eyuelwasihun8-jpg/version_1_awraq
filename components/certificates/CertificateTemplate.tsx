@@ -5,11 +5,20 @@ import type { CertificateData } from "./types";
 export const CERTIFICATE_WIDTH_PX = 1000;
 export const CERTIFICATE_HEIGHT_PX = 700;
 
-export function CertificateTemplate({ data }: { data: CertificateData }) {
-  // Dynamically shrink font if the name is very long
+const DEFAULT_TEMPLATE = "/certificates/digital-marketing-template.svg";
+
+interface Props {
+  data: CertificateData;
+  /** Signed R2 URL for the course's own SVG template. Falls back to default. */
+  templateUrl?: string | null;
+}
+
+export function CertificateTemplate({ data, templateUrl }: Props) {
   const nameLength = (data.studentName || "").length;
   const nameFontSize =
     nameLength > 28 ? "28px" : nameLength > 22 ? "34px" : "42px";
+
+  const bgSrc = templateUrl || data.templateUrl || DEFAULT_TEMPLATE;
 
   return (
     <article
@@ -21,18 +30,20 @@ export function CertificateTemplate({ data }: { data: CertificateData }) {
       }}
       aria-label={`Certificate for ${data.studentName}`}
     >
-      {/* Background artwork */}
+      {/* Background artwork (course-specific or default) */}
       <img
         className="absolute top-0 left-0 w-full h-full object-cover z-0 pointer-events-none"
-        src="/certificates/digital-marketing-template.svg"
+        src={bgSrc}
         alt=""
+        crossOrigin="anonymous"
         aria-hidden="true"
         draggable={false}
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = DEFAULT_TEMPLATE;
+        }}
       />
 
-      {/* ═══════════════════════════════════════════
-          STUDENT NAME
-          ═══════════════════════════════════════════ */}
+      {/* STUDENT NAME */}
       <div
         className="absolute z-10 flex items-center justify-center text-center"
         style={{
@@ -54,10 +65,7 @@ export function CertificateTemplate({ data }: { data: CertificateData }) {
         </p>
       </div>
 
-      {/* ═══════════════════════════════════════════
-          ISSUE DATE + CERT ID + VERIFICATION URL
-          Bottom-right corner
-          ═══════════════════════════════════════════ */}
+      {/* DATE + CERT ID + VERIFY URL */}
       <div
         className="absolute z-10 text-right"
         style={{
@@ -86,7 +94,6 @@ export function CertificateTemplate({ data }: { data: CertificateData }) {
           CERTIFICATE ID: {data.certificateId}
         </p>
 
-        {/* Verification URL — printed exactly so people can type & check */}
         <p
           className="text-[#3d3429] font-semibold mt-1.5"
           style={{

@@ -7,7 +7,6 @@ import {
   ChevronRight,
   CheckCircle2,
   XCircle,
-  Clock,
   Search,
   Eye,
 } from 'lucide-react';
@@ -15,6 +14,12 @@ import { toast } from 'sonner';
 import { UserAvatar } from '@/components/UserAvatar';
 
 type StatusFilter = 'pending' | 'approved' | 'rejected' | 'all';
+
+function notifyPaymentsChanged() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('awraq:payments-changed'));
+  }
+}
 
 export const PaymentsClient: React.FC = () => {
   const [payments, setPayments] = useState<any[]>([]);
@@ -31,8 +36,11 @@ export const PaymentsClient: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
-  const [txNumber, setTxNumber] = useState('');
-  const [rejectReason, setRejectReason] = useState('');
+
+  // Per-payment inputs (avoids shared state bugs across rows)
+  const [txById, setTxById] = useState<Record<string, string>>({});
+  const [reasonById, setReasonById] = useState<Record<string, string>>({});
+
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const fetchPayments = async () => {
@@ -59,6 +67,7 @@ export const PaymentsClient: React.FC = () => {
 
   useEffect(() => {
     fetchPayments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, page]);
 
   useEffect(() => {
@@ -67,51 +76,77 @@ export const PaymentsClient: React.FC = () => {
       fetchPayments();
     }, 400);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   const approve = async (id: string) => {
-    if (!txNumber.trim()) {
+    const transactionNumber = (txById[id] || '').trim();
+    if (!transactionNumber) {
       toast.error('Transaction number required');
       return;
     }
+
     setActionId(id);
     try {
       const res = await fetch('/api/admin/payments/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId: id, transactionNumber: txNumber.trim() }),
+        body: JSON.stringify({
+          paymentId: id,
+          transactionNumber,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Approve failed');
+
       toast.success('Payment approved');
-      setTxNumber('');
+      setTxById((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      notifyPaymentsChanged();
       fetchPayments();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || 'Approve failed');
     } finally {
       setActionId(null);
     }
   };
 
   const reject = async (id: string) => {
-    if (!rejectReason.trim()) {
+    const rejectionReason = (reasonById[id] || '').trim();
+    if (!rejectionReason) {
       toast.error('Rejection reason required');
       return;
     }
+
     setActionId(id);
     try {
       const res = await fetch('/api/admin/payments/reject', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId: id, reason: rejectReason.trim() }),
+        body: JSON.stringify({
+          paymentId: id,
+          // Send all common keys so either API version works
+          rejectionReason,
+          rejection_reason: rejectionReason,
+          reason: rejectionReason,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Reject failed');
+
       toast.success('Payment rejected');
-      setRejectReason('');
+      setReasonById((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      notifyPaymentsChanged();
       fetchPayments();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || 'Reject failed');
     } finally {
       setActionId(null);
     }
@@ -160,7 +195,9 @@ export const PaymentsClient: React.FC = () => {
             <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
           </div>
         ) : payments.length === 0 ? (
-          <div className="py-20 text-center text-sm font-medium text-slate-500">No payments found</div>
+          <div className="py-20 text-center text-sm font-medium text-slate-500">
+            No payments found
+          </div>
         ) : (
           <div className="divide-y divide-slate-100">
             {payments.map((p) => (
@@ -169,12 +206,15 @@ export const PaymentsClient: React.FC = () => {
                   <div className="flex items-center gap-3 min-w-0">
                     <UserAvatar avatarKey={p.student_avatar} name={p.student_name} size="md" />
                     <div className="min-w-0">
-                      <div className="text-sm font-black text-slate-900 truncate">{p.student_name}</div>
+                      <div className="text-sm font-black text-slate-900 truncate">
+                        {p.student_name}
+                      </div>
                       <div className="text-xs text-slate-500 font-medium truncate">
                         {p.item_title} · {p.item_type}
                       </div>
                       <div className="text-[10px] text-slate-400 font-medium">
-                        {new Date(p.created_at).toLocaleString()} · {p.payment_method?.toUpperCase()}
+                        {new Date(p.created_at).toLocaleString()} ·{' '}
+                        {p.payment_method?.toUpperCase()}
                       </div>
                     </div>
                   </div>
@@ -187,8 +227,8 @@ export const PaymentsClient: React.FC = () => {
                         p.status === 'approved'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                           : p.status === 'rejected'
-                          ? 'bg-red-50 text-red-700 border-red-100'
-                          : 'bg-amber-50 text-amber-700 border-amber-100'
+                            ? 'bg-red-50 text-red-700 border-red-100'
+                            : 'bg-amber-50 text-amber-700 border-amber-100'
                       }`}
                     >
                       {p.status}
@@ -205,37 +245,61 @@ export const PaymentsClient: React.FC = () => {
                   </button>
                 )}
 
+                {p.status === 'rejected' && p.rejection_reason && (
+                  <div className="text-xs text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2 font-medium">
+                    Reason: {p.rejection_reason}
+                  </div>
+                )}
+
+                {p.status === 'approved' && p.transaction_number && (
+                  <div className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 font-medium font-mono">
+                    TX: {p.transaction_number}
+                  </div>
+                )}
+
                 {p.status === 'pending' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
                     <div className="flex gap-2">
                       <input
-                        value={txNumber}
-                        onChange={(e) => setTxNumber(e.target.value)}
+                        value={txById[p.id] || ''}
+                        onChange={(e) =>
+                          setTxById((prev) => ({ ...prev, [p.id]: e.target.value }))
+                        }
                         placeholder="Transaction number"
                         className="flex-1 px-3 py-2 rounded-lg border border-[#e8e0d2] text-xs font-mono outline-none focus:border-emerald-500"
                       />
                       <button
                         onClick={() => approve(p.id)}
                         disabled={actionId === p.id}
-                        className="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                        className="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold cursor-pointer disabled:opacity-50 flex items-center gap-1 shrink-0"
                       >
-                        {actionId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                        {actionId === p.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="w-3 h-3" />
+                        )}
                         Approve
                       </button>
                     </div>
                     <div className="flex gap-2">
                       <input
-                        value={rejectReason}
-                        onChange={(e) => setRejectReason(e.target.value)}
+                        value={reasonById[p.id] || ''}
+                        onChange={(e) =>
+                          setReasonById((prev) => ({ ...prev, [p.id]: e.target.value }))
+                        }
                         placeholder="Rejection reason"
                         className="flex-1 px-3 py-2 rounded-lg border border-[#e8e0d2] text-xs outline-none focus:border-red-500"
                       />
                       <button
                         onClick={() => reject(p.id)}
                         disabled={actionId === p.id}
-                        className="px-3 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-bold cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                        className="px-3 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-bold cursor-pointer disabled:opacity-50 flex items-center gap-1 shrink-0"
                       >
-                        {actionId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
+                        {actionId === p.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <XCircle className="w-3 h-3" />
+                        )}
                         Reject
                       </button>
                     </div>
@@ -273,7 +337,10 @@ export const PaymentsClient: React.FC = () => {
       </div>
 
       {previewUrl && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setPreviewUrl(null)}>
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+          onClick={() => setPreviewUrl(null)}
+        >
           <img src={previewUrl} alt="Receipt" className="max-h-[85vh] max-w-full rounded-xl" />
         </div>
       )}

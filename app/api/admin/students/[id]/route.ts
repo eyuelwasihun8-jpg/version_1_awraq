@@ -38,7 +38,6 @@ export async function GET(
   const { user, role } = auth as { user: any; role: string };
   const adminDb = createAdminClient();
 
-  // 1. Fetch main profile cleanly (no complex FK syntax)
   const { data: profile, error: profileErr } = await adminDb
     .from('profiles')
     .select('*')
@@ -50,7 +49,6 @@ export async function GET(
     return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   }
 
-  // 2. Fetch assigned sales rep profile if exists
   let assignedSales: { id: string; full_name: string } | null = null;
   if (profile.assigned_to) {
     const { data: salesProfile } = await adminDb
@@ -58,18 +56,14 @@ export async function GET(
       .select('id, full_name')
       .eq('id', profile.assigned_to)
       .maybeSingle();
-    
-    if (salesProfile) {
-      assignedSales = salesProfile;
-    }
+
+    if (salesProfile) assignedSales = salesProfile;
   }
 
-  // SALES SCOPE: sales reps can only view their assigned students
   if (role === 'sales' && profile.assigned_to !== user.id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  // INSTRUCTOR SCOPE
   if (role === 'instructor') {
     const { count } = await adminDb
       .from('enrollments')
@@ -79,10 +73,7 @@ export async function GET(
       .in(
         'course_id',
         (
-          await adminDb
-            .from('courses')
-            .select('id')
-            .eq('instructor_id', user.id)
+          await adminDb.from('courses').select('id').eq('instructor_id', user.id)
         ).data?.map((c: any) => c.id) || []
       );
 
@@ -91,7 +82,6 @@ export async function GET(
     }
   }
 
-  // Fetch email safely from auth
   let email: string | null = null;
   try {
     const { data: authUser } = await adminDb.auth.admin.getUserById(id);
@@ -100,7 +90,6 @@ export async function GET(
     console.error('Auth user fetch error:', e);
   }
 
-  // Fetch course progress summary (fallback gracefully if empty/error)
   let courseProgress: any[] = [];
   try {
     const { data } = await adminDb
@@ -113,7 +102,6 @@ export async function GET(
     console.error('Progress summary fetch error:', e);
   }
 
-  // Fetch digital products
   let products: any[] = [];
   try {
     const { data } = await adminDb
@@ -126,7 +114,6 @@ export async function GET(
     console.error('Purchases fetch error:', e);
   }
 
-  // Fetch payments
   let payments: any[] = [];
   try {
     const { data } = await adminDb
@@ -139,7 +126,6 @@ export async function GET(
     console.error('Payments fetch error:', e);
   }
 
-  // Fetch certificates
   let certificates: any[] = [];
   try {
     const { data } = await adminDb
@@ -152,7 +138,6 @@ export async function GET(
     console.error('Certificates fetch error:', e);
   }
 
-  // Fetch quiz attempts
   let quizAttempts: any[] = [];
   try {
     const { data } = await adminDb
@@ -166,6 +151,19 @@ export async function GET(
     console.error('Quiz attempts fetch error:', e);
   }
 
+  // Course reviews / testimonials by this student
+  let reviews: any[] = [];
+  try {
+    const { data } = await adminDb
+      .from('reviews')
+      .select('*, courses(id, title)')
+      .eq('user_id', id)
+      .order('created_at', { ascending: false });
+    reviews = data || [];
+  } catch (e) {
+    console.error('Reviews fetch error:', e);
+  }
+
   return NextResponse.json({
     student: {
       ...profile,
@@ -177,6 +175,7 @@ export async function GET(
     payments,
     certificates,
     quizAttempts,
+    reviews,
   });
 }
 
@@ -200,7 +199,6 @@ export async function PATCH(
   const body = await request.json();
   const adminDb = createAdminClient();
 
-  // If sales is trying to edit, verify ownership
   if (role === 'sales') {
     const { data: existingProfile } = await adminDb
       .from('profiles')
@@ -209,7 +207,10 @@ export async function PATCH(
       .single();
 
     if (existingProfile?.assigned_to !== user.id) {
-      return NextResponse.json({ error: 'You can only edit your assigned students' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'You can only edit your assigned students' },
+        { status: 403 }
+      );
     }
   }
 
@@ -221,7 +222,6 @@ export async function PATCH(
   if (body.ageGroup !== undefined) updates.age_group = body.ageGroup || null;
   if (body.lifeStatus !== undefined) updates.life_status = body.lifeStatus || null;
 
-  // Only super_admin and admin can change assignments
   if (body.assignedTo !== undefined && ['super_admin', 'admin'].includes(role)) {
     updates.assigned_to = body.assignedTo || null;
   }
@@ -235,7 +235,6 @@ export async function PATCH(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Audit log for assignment change
   if (body.assignedTo !== undefined && ['super_admin', 'admin'].includes(role)) {
     await adminDb.from('audit_logs').insert({
       actor_id: user.id,
@@ -243,9 +242,7 @@ export async function PATCH(
       action: 'reassign_student',
       target_type: 'profile',
       target_id: id,
-      details: {
-        assigned_to: body.assignedTo,
-      },
+      details: { assigned_to: body.assignedTo },
     });
   }
 

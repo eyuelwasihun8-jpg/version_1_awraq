@@ -3,19 +3,32 @@ import { createClient } from '@/lib/supabase-server';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
   if (!profile || !['super_admin', 'admin', 'sales'].includes(profile.role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const body = await request.json();
-  const { paymentId, rejectionReason } = body;
+  const paymentId = body.paymentId || body.payment_id || body.id;
+  const rejectionReason = String(
+    body.rejectionReason || body.rejection_reason || body.reason || ''
+  ).trim();
 
-  // Your database constraint requires this!
+  if (!paymentId) {
+    return NextResponse.json({ error: 'Payment ID is required' }, { status: 400 });
+  }
+
   if (!rejectionReason) {
     return NextResponse.json({ error: 'Rejection reason is required' }, { status: 400 });
   }
@@ -26,7 +39,7 @@ export async function POST(request: NextRequest) {
       status: 'rejected',
       rejection_reason: rejectionReason,
       reviewed_by: user.id,
-      reviewed_at: new Date().toISOString()
+      reviewed_at: new Date().toISOString(),
     })
     .eq('id', paymentId)
     .select()

@@ -1,20 +1,31 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Clock, ArrowUpRight } from 'lucide-react';
+import { Clock, ArrowUpRight, Lock } from 'lucide-react';
 import { CourseThumbnail } from '@/components/admin/CourseThumbnail';
 import { preloadThumbnails } from '@/lib/thumbnailCache';
+import { useModals } from '@/components/RootLayoutClient';
+import { createClient } from '@/lib/supabase-browser';
 
 interface Props {
   courses: any[];
 }
 
 export const CoursesSection: React.FC<Props> = ({ courses }) => {
-  // PRELOAD ALL COURSE THUMBNAILS AT ONCE ON MOUNT
+  const { openSignIn } = useModals();
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
   useEffect(() => {
     preloadThumbnails((courses || []).map((c) => c.thumbnail_url));
   }, [courses]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setIsLoggedIn(!!data.user);
+    });
+  }, []);
 
   if (!courses || courses.length === 0) {
     return (
@@ -61,7 +72,6 @@ export const CoursesSection: React.FC<Props> = ({ courses }) => {
               href={`/courses/${course.id}`}
               className="group bg-white rounded-2xl border border-[#e8e0d2] shadow-sm hover:shadow-xl overflow-hidden transition-all cursor-pointer flex flex-col"
             >
-              {/* Thumbnail */}
               <div className="aspect-video bg-slate-100 relative overflow-hidden">
                 <CourseThumbnail
                   thumbnailKey={course.thumbnail_url}
@@ -70,7 +80,6 @@ export const CoursesSection: React.FC<Props> = ({ courses }) => {
                   fallbackClassName="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-50 to-slate-100"
                 />
 
-                {/* Duration badge */}
                 {course.duration_hours ? (
                   <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm border border-white">
                     <Clock className="w-3 h-3 text-[#ddb049]" />
@@ -80,14 +89,12 @@ export const CoursesSection: React.FC<Props> = ({ courses }) => {
               </div>
 
               <div className="p-5 flex-1 flex flex-col">
-                {/* Category */}
                 <div className="mb-2">
                   <span className="text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded-full bg-amber-50 text-[#ddb049] border border-amber-100">
                     {course.category?.replace('_', ' ') || 'Course'}
                   </span>
                 </div>
 
-                {/* Title */}
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <h3 className="text-lg font-black text-slate-900 leading-tight line-clamp-2 group-hover:text-[#ddb049] transition-colors">
                     {course.title}
@@ -95,7 +102,6 @@ export const CoursesSection: React.FC<Props> = ({ courses }) => {
                   <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#ddb049] shrink-0 mt-1 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                 </div>
 
-                {/* Description */}
                 {course.description && (
                   <p className="text-xs text-slate-500 font-medium line-clamp-2 mb-4 min-h-[32px]">
                     {course.description}
@@ -104,9 +110,25 @@ export const CoursesSection: React.FC<Props> = ({ courses }) => {
 
                 {/* Price */}
                 <div className="mt-auto pt-4 border-t border-[#f0ebe2] flex items-center justify-between">
-                  <span className="text-lg font-black text-[#20B486]">
-                    ETB {Number(course.price || 0).toLocaleString()}
-                  </span>
+                  {isLoggedIn === null ? (
+                    <span className="text-lg font-black text-slate-300">···</span>
+                  ) : isLoggedIn ? (
+                    <span className="text-lg font-black text-[#20B486]">
+                      ETB {Number(course.price || 0).toLocaleString()}
+                    </span>
+                  ) : (
+                    <span
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openSignIn();
+                      }}
+                      className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#ddb049] bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full hover:bg-amber-100 transition-colors"
+                    >
+                      <Lock className="w-3 h-3" />
+                      Sign Up for Price
+                    </span>
+                  )}
                   <span className="text-xs font-bold text-slate-500 group-hover:text-[#ddb049]">
                     View Course →
                   </span>
@@ -116,7 +138,6 @@ export const CoursesSection: React.FC<Props> = ({ courses }) => {
           ))}
         </div>
 
-        {/* Browse all link */}
         <div className="mt-10 text-center">
           <Link
             href="/courses"

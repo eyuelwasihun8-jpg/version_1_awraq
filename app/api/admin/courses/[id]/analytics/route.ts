@@ -49,7 +49,6 @@ export async function GET(
     return NextResponse.json({ error: 'Course not found' }, { status: 404 });
   }
 
-  // Instructors can only view their own courses
   if (role === 'instructor' && course.instructor_id !== user.id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -70,16 +69,19 @@ export async function GET(
   const publishedLessons = (lessons || []).filter((l) => l.is_published !== false);
   const lessonIds = publishedLessons.map((l) => l.id);
 
-  // Active enrollments
+  // Active enrollments (include payment_request_id so we can link them)
   const { data: enrollments, count: totalEnrolled } = await adminDb
     .from('enrollments')
-    .select('user_id, enrolled_at, enrollment_source, is_active', { count: 'exact' })
+    .select(
+      'user_id, enrolled_at, enrollment_source, is_active, payment_request_id',
+      { count: 'exact' }
+    )
     .eq('course_id', courseId)
     .eq('is_active', true);
 
   const studentIds = (enrollments || []).map((e) => e.user_id);
 
-  // Progress for this course's lessons
+  // Progress
   let progressRows: any[] = [];
   if (lessonIds.length > 0 && studentIds.length > 0) {
     const { data } = await adminDb
@@ -90,7 +92,6 @@ export async function GET(
     progressRows = data || [];
   }
 
-  // Per-student completion
   const totalLessons = publishedLessons.length || 1;
   const studentProgressMap = new Map<string, number>();
 
@@ -112,7 +113,6 @@ export async function GET(
   const notStarted = progressValues.filter((p) => p === 0).length;
   const inProgress = progressValues.filter((p) => p > 0 && p < 100).length;
 
-  // Progress distribution buckets
   const distribution = {
     '0%': notStarted,
     '1-25%': progressValues.filter((p) => p >= 1 && p <= 25).length,
@@ -122,7 +122,6 @@ export async function GET(
     '100%': completedStudents,
   };
 
-  // Lesson drop-off: completion rate per lesson
   const lessonStats = publishedLessons.map((lesson) => {
     const completedCount = progressRows.filter(
       (p) => p.lesson_id === lesson.id && p.is_completed
@@ -148,7 +147,6 @@ export async function GET(
     };
   });
 
-  // Most abandoned = lowest completion among lessons that have been started
   const mostAbandoned =
     lessonStats.length > 0
       ? [...lessonStats].sort((a, b) => a.completionRate - b.completionRate)[0]
@@ -159,10 +157,10 @@ export async function GET(
       ? [...lessonStats].sort((a, b) => b.completionRate - a.completionRate)[0]
       : null;
 
-  // Revenue from approved payments for this course
+  // ─── PAYMENTS FOR THIS COURSE ─────────────────────────────
   const { data: payments } = await adminDb
     .from('payment_requests')
-    .select('id, amount, status, created_at, user_id, enrollment_source')
+    .select('id, amount, status, created_at, user_id, payment_method')
     .eq('item_type', 'course')
     .eq('item_id', courseId);
 
@@ -253,13 +251,52 @@ export async function GET(
     }));
   }
 
-  // Enrollment sources breakdown
+  // ─── UNIFIED SOURCE BREAKDOWN ─────────────────────────────
+  // We derive "true" enrollment sources by combining what's stored in
+  // enrollments AND what actually happened in payment_requests.
+  //
+  // If enrollment.enrollment_source is missing/null, but the enrollment
+  // has a payment_request_id whose status is approved, we count it as `purchase`.
+  //
+  // We also flag enrollments that claim `purchase` but have NO matching
+  // approved payment (data integrity issue) so the UI can show a warning.
+
+  const approvedPaymentIds = new Set(approvedPayments.map((p) => p.id));
+
   const sourceBreakdown = {
-    purchase: (enrollments || []).filter((e) => e.enrollment_source === 'purchase').length,
-    manual: (enrollments || []).filter((e) => e.enrollment_source === 'manual').length,
-    gift: (enrollments || []).filter((e) => e.enrollment_source === 'gift').length,
-    promotion: (enrollments || []).filter((e) => e.enrollment_source === 'promotion').length,
+    purchase: 0,
+    manual: 0,
+    gift: 0,
+    promotion: 0,
+    unknown: 0,
   };
+
+  let enrollmentsWithoutPayment = 0; // purchase source but no approved payment linked
+
+  (enrollments || []).forEach((e) => {
+    const src = (e.enrollment_source || '').toLowerCase();
+
+    if (src === 'manual' || src === 'gift' || src === 'promotion') {
+      (sourceBreakdown as any)[src] += 1;
+      return;
+    }
+
+    // Treat 'purchase' OR empty source as an intended purchase
+    const isLinkedToApprovedPayment =
+      e.payment_request_id && approvedPaymentIds.has(e.payment_request_id);
+
+    if (isLinkedToApprovedPayment) {
+      sourceBreakdown.purchase += 1;
+    } else if (src === 'purchase') {
+      // Claims purchase but no approved payment row — count it but flag it
+      sourceBreakdown.purchase += 1;
+      enrollmentsWithoutPayment += 1;
+    } else {
+      // No source at all AND no payment linkage — unknown/legacy
+      sourceBreakdown.unknown += 1;
+      enrollmentsWithoutPayment += 1;
+    }
+  });
 
   // Modules with lesson stats
   const modulesWithStats = (modules || []).map((m) => {
@@ -295,6 +332,7 @@ export async function GET(
       pendingPayments: pendingPayments.length,
       approvedPayments: approvedPayments.length,
       rejectedPayments: rejectedPayments.length,
+      enrollmentsWithoutPayment,
     },
     distribution,
     sourceBreakdown,

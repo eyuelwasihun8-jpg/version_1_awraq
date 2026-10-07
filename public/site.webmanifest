@@ -1,0 +1,21 @@
+{
+  "name": "Awraq Skills",
+  "short_name": "Awraq",
+  "description": "Master digital marketing with practical courses and resources.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbfaf7",
+  "theme_color": "#ddb049",
+  "icons": [
+    {
+      "src": "/awraq-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/awraq-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

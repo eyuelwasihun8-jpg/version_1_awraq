@@ -1,69 +1,66 @@
+'use client';
+
 import React from 'react';
-import { User, BookOpen } from 'lucide-react';
+import { Target, Users, Award, CheckCircle2 } from 'lucide-react';
 
 export const AboutSection: React.FC = () => {
   return (
-    <section id="about" className="py-16 sm:py-20 lg:py-28 relative z-10">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex flex-col md:flex-row gap-10 lg:gap-16 items-center">
-          <div className="w-full md:w-5/12">
-            <div className="relative rounded-[28px] sm:rounded-[32px] overflow-hidden shadow-xl border border-[#e8e0d2]">
-              <img
-                src="https://res.cloudinary.com/dw1ohipim/image/upload/v1788610521/zdd0btz0dhpdrl3qdekg.jpg"
-                alt="Lamlak - Founder of Awraq"
-                loading="lazy"
-                className="w-full h-[400px] sm:h-[500px] object-cover"
-              />
-              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6 sm:p-8">
-                <div className="text-white font-black text-2xl sm:text-3xl mb-1">Lamlak</div>
-                <div className="text-[#ddb049] font-bold text-xs sm:text-sm tracking-wider uppercase">
-                  Founder & Educator
+    <section id="about" className="py-16 sm:py-24 bg-white relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="space-y-6">
+            <div className="text-xs sm:text-sm font-black text-[#ddb049] uppercase tracking-widest">
+              About Awraq Skills
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-tight">
+              Practical Education for Real-World Growth
+            </h2>
+            <p className="text-base text-slate-600 font-medium leading-relaxed">
+              Awraq Skills was founded to bridge the gap between theoretical marketing concepts and real business results. We provide actionable, step-by-step training tailored for freelancers, entrepreneurs, and ambitious professionals.
+            </p>
+
+            <div className="space-y-3 pt-2">
+              {[
+                'Step-by-step video courses with real campaign walkthroughs',
+                'Practical exercises you can execute on your business immediately',
+                'Active community support and mentorship',
+                'Verifiable certificates upon 100% completion',
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="text-sm font-bold text-slate-800">{item}</span>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          <div className="w-full md:w-7/12 space-y-5 sm:space-y-6">
-            <span className="text-[#ddb049] font-bold text-xs sm:text-sm tracking-widest uppercase bg-amber-50 border border-amber-100 px-3 py-1 rounded-full inline-block">
-              About Awraq
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight tracking-tight">
-              Making Digital Marketing Easy to Understand.
-            </h2>
-            <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed">
-              Awraq was created to help people learn digital marketing without confusing jargon.
-              We believe anyone can master these skills with the right guidance and practical
-              examples.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-4 sm:pt-6">
-              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#e8e0d2] shadow-sm">
-                <div className="w-12 h-12 bg-amber-50 border border-amber-100 rounded-full flex items-center justify-center text-[#ddb049] mb-4">
-                  <User className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">
-                  3+ Years Experience
-                </h3>
-                <p className="text-sm text-slate-600 font-medium">
-                  Teaching marketing and helping businesses grow their online presence.
-                </p>
-              </div>
-
-              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#e8e0d2] shadow-sm">
-                <div className="w-12 h-12 bg-pink-50 border border-pink-100 rounded-full flex items-center justify-center text-[#F86BCF] mb-4">
-                  <BookOpen className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">
-                  Areas of Expertise
-                </h3>
-                <p className="text-sm text-slate-600 font-medium">
-                  Copywriting, Social Media Growth, and step-by-step Marketing Strategy.
-                </p>
-              </div>
-            </div>
+          <div className="grid grid-cols-2 gap-4">
+            <StatBox icon={Users} title="1,000+" label="Active Students" color="amber" />
+            <StatBox icon={Target} title="95%" label="Completion Satisfaction" color="emerald" />
+            <StatBox icon={Award} title="100%" label="Verified Certificates" color="purple" />
+            <StatBox icon={Users} title="24/7" label="Community Access" color="blue" />
           </div>
         </div>
       </div>
     </section>
+  );
+};
+
+const StatBox = ({ icon: Icon, title, label, color }: any) => {
+  const colors: Record<string, string> = {
+    amber: 'bg-amber-50 text-[#ddb049] border-amber-100',
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    purple: 'bg-purple-50 text-purple-600 border-purple-100',
+    blue: 'bg-blue-50 text-blue-600 border-blue-100',
+  };
+
+  return (
+    <div className="bg-[#fbfaf7] rounded-3xl border border-[#e8e0d2] p-6 text-center">
+      <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center mx-auto mb-4 ${colors[color]}`}>
+        <Icon className="w-6 h-6" />
+      </div>
+      <div className="text-2xl sm:text-3xl font-black text-slate-900 mb-1">{title}</div>
+      <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">{label}</div>
+    </div>
   );
 };

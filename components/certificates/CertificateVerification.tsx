@@ -1,141 +1,183 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import Link from 'next/link';
-import { ShieldCheck, ShieldX, ArrowLeft, Award } from 'lucide-react';
-import QRCode from 'qrcode';
-import { CertificateTemplate } from './CertificateTemplate';
-import type { CertificateData } from './types';
+import React, { useState, useEffect } from 'react';
+import {
+  ShieldCheck,
+  XCircle,
+  Loader2,
+  Calendar,
+  User,
+  BookOpen,
+  Award,
+  Search,
+} from 'lucide-react';
 
-interface CertificateVerificationProps {
-  certificateId: string;
-  data?: CertificateData;
+export interface CertificateVerificationProps {
+  code: string;
+  initialCert?: any;
 }
 
-export function CertificateVerification({
-  certificateId,
-  data,
-}: CertificateVerificationProps) {
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
-  const previewRef = useRef<HTMLDivElement>(null);
+export const CertificateVerification: React.FC<CertificateVerificationProps> = ({
+  code,
+  initialCert,
+}) => {
+  const [inputCode, setInputCode] = useState(code);
+  const [loading, setLoading] = useState(!initialCert);
+  const [certData, setCertData] = useState<any>(initialCert || null);
+  const [error, setError] = useState<string | null>(null);
+
+  const verifyCode = async (codeToVerify: string) => {
+    if (!codeToVerify.trim()) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/certificate/verify/${codeToVerify.trim()}`);
+      const json = await res.json();
+      if (!res.ok || !json.valid) {
+        setError(json.error || 'Certificate not found or invalid');
+        setCertData(null);
+      } else {
+        setCertData(json.certificate);
+      }
+    } catch {
+      setError('Failed to verify certificate. Please try again.');
+      setCertData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (data?.verificationUrl) {
-      QRCode.toDataURL(data.verificationUrl, { width: 200, margin: 1 })
-        .then((url) => setQrCodeUrl(url))
-        .catch((err) => console.error('Failed to generate QR code', err));
+    if (!initialCert && code) {
+      verifyCode(code);
     }
-  }, [data]);
+  }, [code, initialCert]);
 
-  if (!data) {
-    return (
-      <main className="min-h-screen bg-[#fbfaf7] flex items-center justify-center p-4 sm:p-6">
-        <div className="max-w-md w-full bg-white rounded-3xl p-8 shadow-xl border border-[#e8e0d2] text-center">
-          <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-100">
-            <ShieldX className="w-8 h-8 text-red-500" />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">
-            Verification Failed
-          </span>
-          <h1 className="text-2xl font-black text-slate-900 mt-3 mb-2">Invalid Certificate</h1>
-          <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-            No active certificate matching code{' '}
-            <code className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
-              {certificateId}
-            </code>{' '}
-            was found in our records.
-          </p>
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-[#0a0704] text-white font-bold text-sm hover:bg-slate-800 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Awraq Home
-          </Link>
-        </div>
-      </main>
-    );
-  }
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputCode.trim()) {
+      verifyCode(inputCode.trim());
+    }
+  };
 
   return (
-    <main className="min-h-screen bg-[#fbfaf7] py-8 sm:py-12 px-4 sm:px-6">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors"
+    <div className="max-w-xl w-full mx-auto space-y-6">
+      {/* Search Input */}
+      <form onSubmit={handleSearchSubmit} className="relative">
+        <input
+          type="text"
+          value={inputCode}
+          onChange={(e) => setInputCode(e.target.value)}
+          placeholder="Enter Certificate Code (e.g. CERT-2026-ABC123)..."
+          className="w-full pl-4 pr-12 py-3.5 rounded-2xl border border-[#e8e0d2] focus:border-[#ddb049] outline-none bg-white font-mono text-sm shadow-sm"
+        />
+        <button
+          type="submit"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-[#ddb049] text-[#0a0704] hover:bg-[#c99a3a] cursor-pointer"
+          title="Verify Code"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Awraq
-        </Link>
+          <Search className="w-4 h-4" />
+        </button>
+      </form>
 
-        <section className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e0d2] shadow-xl">
-          <div className="flex items-start gap-4 mb-6 pb-6 border-b border-[#e8e0d2]">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
+      {/* Verification Results */}
+      {loading ? (
+        <div className="bg-white rounded-3xl p-12 border border-[#e8e0d2] shadow-xl text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#ddb049] mx-auto mb-3" />
+          <p className="text-sm font-bold text-slate-700">
+            Verifying certificate authenticity...
+          </p>
+        </div>
+      ) : error ? (
+        <div className="bg-white rounded-3xl p-8 border border-red-200 shadow-xl text-center space-y-4">
+          <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto border border-red-100">
+            <XCircle className="w-7 h-7 text-red-500" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-slate-900 mb-1">
+              Invalid Certificate
+            </h2>
+            <p className="text-sm text-slate-600 font-medium">{error}</p>
+          </div>
+        </div>
+      ) : certData ? (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-emerald-200 shadow-xl space-y-6">
+          <div className="flex items-center gap-3 pb-6 border-b border-[#f0ebe2]">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
               <ShieldCheck className="w-6 h-6 text-emerald-600" />
             </div>
             <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                Official Verification Complete
-              </span>
-              <h1 className="text-2xl font-black text-slate-900 mt-1">Authentic Certificate</h1>
-              <p className="text-xs font-medium text-slate-500">
-                Issued by {data.organizationName}
-              </p>
+              <div className="text-[10px] uppercase font-black tracking-widest text-emerald-700">
+                Official Credential
+              </div>
+              <h2 className="text-xl font-black text-slate-900">
+                Verified Authentic Certificate
+              </h2>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            <div className="md:col-span-2 space-y-3">
-              <Row label="Student Name" value={data.studentName} />
-              <Row label="Course" value={data.courseName} />
-              <Row label="Instructor" value={data.instructorName} />
-              <Row label="Issued On" value={data.issueDate} />
-              <Row label="Certificate Code" value={data.certificateId} mono />
-            </div>
-
-            <div className="flex flex-col items-center justify-center p-4 bg-[#fbfaf7] rounded-2xl border border-[#e8e0d2]">
-              {qrCodeUrl ? (
-                <img src={qrCodeUrl} alt="Verification QR Code" className="w-32 h-32 rounded-lg" />
-              ) : (
-                <div className="w-32 h-32 bg-slate-200 animate-pulse rounded-lg" />
-              )}
-              <span className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-wider">
-                Scan to Verify
-              </span>
-            </div>
+          <div className="space-y-4">
+            <ResultRow
+              icon={User}
+              label="Recipient"
+              value={certData.studentName}
+            />
+            <ResultRow
+              icon={BookOpen}
+              label="Course"
+              value={certData.courseName}
+            />
+            <ResultRow
+              icon={Award}
+              label="Instructor"
+              value={certData.instructorName}
+            />
+            <ResultRow
+              icon={Calendar}
+              label="Issue Date"
+              value={certData.issueDate}
+            />
+            <ResultRow
+              icon={ShieldCheck}
+              label="Certificate ID"
+              value={certData.certificateId}
+              mono
+            />
           </div>
-        </section>
 
-        <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Award className="w-5 h-5 text-[#ddb049]" />
-            <h2 className="text-lg font-black text-slate-900">Certificate Preview</h2>
+          <div className="pt-4 border-t border-[#f0ebe2] text-center">
+            <p className="text-xs text-slate-500 font-medium">
+              Issued by <span className="font-bold text-slate-900">Awraq Skills</span>
+            </p>
           </div>
-
-          <div className="bg-white rounded-3xl p-6 border border-[#e8e0d2] shadow-xl overflow-x-auto flex justify-center">
-            <div ref={previewRef} className="shrink-0 shadow-lg rounded-xl overflow-hidden">
-              <CertificateTemplate data={data} templateUrl={data.templateUrl} />
-            </div>
-          </div>
-        </section>
-      </div>
-    </main>
+        </div>
+      ) : null}
+    </div>
   );
-}
+};
 
-function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div className="flex flex-col sm:flex-row sm:justify-between py-1.5 border-b border-slate-100 last:border-0">
-      <span className="text-xs font-bold text-slate-500">{label}</span>
+const ResultRow = ({
+  icon: Icon,
+  label,
+  value,
+  mono,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+  mono?: boolean;
+}) => (
+  <div className="flex items-center gap-3 p-3 rounded-xl bg-[#fbfaf7] border border-[#f0ebe2]">
+    <Icon className="w-4 h-4 text-slate-400 shrink-0" />
+    <div className="min-w-0 flex-1 flex justify-between items-center gap-2">
+      <span className="text-xs font-medium text-slate-500">{label}:</span>
       <span
-        className={
-          mono
-            ? 'text-sm font-mono font-black text-[#ddb049]'
-            : 'text-sm font-black text-slate-900'
-        }
+        className={`text-sm font-bold text-slate-900 truncate ${
+          mono ? 'font-mono text-[#ddb049]' : ''
+        }`}
       >
         {value}
       </span>
     </div>
-  );
-}
+  </div>
+);

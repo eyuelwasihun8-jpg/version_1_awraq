@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { createAdminClient } from '@/lib/supabase-admin';
 
 async function requireStaff(supabase: any) {
   const {
@@ -39,8 +40,10 @@ export async function GET(request: NextRequest) {
 
   const offset = (page - 1) * limit;
 
-  // Query student profiles
-  let query = supabase
+  const adminDb = createAdminClient();
+
+  // Query student profiles using adminDb
+  let query = adminDb
     .from('profiles')
     .select(
       'id, full_name, phone, gender, age_group, life_status, role, is_active, onboarding_completed, created_at',
@@ -66,6 +69,8 @@ export async function GET(request: NextRequest) {
 
   const total = count || 0;
   const totalPages = Math.ceil(total / limit) || 1;
+  const hasPrev = page > 1;
+  const hasNext = page < totalPages;
 
   return NextResponse.json({
     success: true,
@@ -74,12 +79,13 @@ export async function GET(request: NextRequest) {
     page,
     limit,
     totalPages,
-    // Add pagination object expected by LeadsClient.tsx
     pagination: {
       total,
       page,
       limit,
       totalPages,
+      hasPrev,
+      hasNext,
     },
   });
 }

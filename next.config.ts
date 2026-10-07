@@ -1,7 +1,6 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Allow images from Cloudflare R2 and external providers
   images: {
     remotePatterns: [
       {
@@ -21,6 +20,22 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
+      // Video files: enable byte-range streaming
+      {
+        source: '/videos/:path*',
+        headers: [
+          { key: 'Accept-Ranges', value: 'bytes' },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+          { key: 'Content-Type', value: 'video/mp4' },
+        ],
+      },
+      {
+        source: '/:path*.mp4',
+        headers: [
+          { key: 'Accept-Ranges', value: 'bytes' },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [
@@ -32,12 +47,13 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' https: data: blob: *.cloudflarestorage.com *.r2.cloudflarestorage.com",
-              // 🔑 THIS IS THE CRITICAL LINE THAT ALLOWS R2 VIDEO STREAMING:
               "media-src 'self' https: data: blob: *.cloudflarestorage.com *.r2.cloudflarestorage.com",
               "connect-src 'self' https: wss: *.supabase.co *.cloudflarestorage.com *.r2.cloudflarestorage.com https://challenges.cloudflare.com",
               "frame-src 'self' https://challenges.cloudflare.com",
             ].join('; '),
           },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         ],
       },
     ];

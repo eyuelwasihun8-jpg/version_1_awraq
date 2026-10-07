@@ -1,92 +1,79 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen } from 'lucide-react';
-import { getThumbnailUrl } from '@/lib/thumbnailCache';
+import { getCachedThumbnail, cacheThumbnail } from '@/lib/thumbnailCache';
 
 interface Props {
-  thumbnailKey: string | null | undefined;
+  thumbnailKey?: string | null;
   alt: string;
   className?: string;
   fallbackClassName?: string;
-  priority?: boolean; // Set true for above-the-fold images
+  priority?: boolean;
 }
 
 export const CourseThumbnail: React.FC<Props> = ({
   thumbnailKey,
   alt,
-  className = 'w-14 h-14 rounded-xl object-cover border border-[#e8e0d2] shrink-0',
-  fallbackClassName = 'w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center shrink-0',
-  priority = false,
+  className = 'w-16 h-12 rounded-lg object-cover',
+  fallbackClassName = 'w-16 h-12 rounded-lg bg-slate-100 flex items-center justify-center',
 }) => {
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [errored, setErrored] = useState(false);
+  const [src, setSrc] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-    setErrored(false);
+    setFailed(false);
 
     if (!thumbnailKey) {
-      setSignedUrl(null);
-      setLoading(false);
+      setSrc(null);
       return;
     }
 
-    // Full URL passthrough
-    if (
-      thumbnailKey.startsWith('http://') ||
-      thumbnailKey.startsWith('https://') ||
-      thumbnailKey.startsWith('blob:')
-    ) {
-      setSignedUrl(thumbnailKey);
-      setLoading(false);
+    // Direct HTTP URL
+    if (/^https?:\/\//i.test(thumbnailKey)) {
+      setSrc(thumbnailKey);
       return;
     }
 
-    setLoading(true);
-    getThumbnailUrl(thumbnailKey).then((url) => {
-      if (cancelled) return;
-      setSignedUrl(url);
-      setLoading(false);
-    });
+    // Check in-memory cache
+    const cached = getCachedThumbnail(thumbnailKey);
+    if (cached) {
+      setSrc(cached);
+      return;
+    }
+
+    let isMounted = true;
+    fetch(`/api/thumbnail?key=${encodeURIComponent(thumbnailKey)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data.url) {
+          cacheThumbnail(thumbnailKey, data.url);
+          setSrc(data.url);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setFailed(true);
+      });
 
     return () => {
-      cancelled = true;
+      isMounted = false;
     };
   }, [thumbnailKey]);
 
-  // No thumbnail or errored
-  if (!thumbnailKey || (errored && !loading)) {
+  if (!thumbnailKey || failed || !src) {
     return (
       <div className={fallbackClassName}>
-        <BookOpen className="w-6 h-6 text-slate-400" />
+        <BookOpen className="w-5 h-5 text-slate-400" />
       </div>
     );
   }
 
   return (
-    <>
-      {/* Skeleton while loading (only if no cached URL yet) */}
-      {loading && !signedUrl && (
-        <div className={`${fallbackClassName} animate-pulse bg-slate-200`}>
-          <div className="w-6 h-6 rounded bg-slate-300" />
-        </div>
-      )}
-
-      {signedUrl && (
-        <img
-          src={signedUrl}
-          alt={alt}
-          className={className}
-          loading={priority ? 'eager' : 'lazy'}
-          decoding="async"
-          onError={() => {
-            setErrored(true);
-            setSignedUrl(null);
-          }}
-        />
-      )}
-    </>
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setFailed(true)}
+    />
   );
 };

@@ -1,4 +1,4 @@
-export type LessonType = 'video' | 'text' | 'quiz';
+export type LessonType = 'video' | 'text' | 'quiz' | 'mixed';
 export type CourseCategory = 'digital_marketing' | 'programming' | 'design' | 'business' | 'language' | 'other';
 export type UserRole = 'student' | 'instructor' | 'sales' | 'admin' | 'super_admin';
 export type PaymentStatus = 'pending' | 'approved' | 'rejected';
@@ -26,24 +26,15 @@ export interface Instructor {
 export interface Course {
   id: string;
   title: string;
-  slug: string;
   description: string;
-  short_description?: string;
   category: CourseCategory;
   price: number;
-  original_price?: number;
   thumbnail_url: string;
-  preview_video_url?: string;
-  duration_minutes: number;
-  level: 'beginner' | 'intermediate' | 'advanced' | 'all_levels';
+  certificate_template_key?: string | null;
   is_published: boolean;
-  is_popular?: boolean;
   instructor_id: string;
   instructor?: Instructor;
-  total_lessons?: number;
-  average_rating?: number;
-  total_reviews?: number;
-  highlights?: string[];
+  duration_hours?: number;
   created_at: string;
 }
 
@@ -52,10 +43,12 @@ export interface Lesson {
   course_id: string;
   module_id?: string;
   title: string;
-  description?: string;
   lesson_type: LessonType;
   video_key?: string;
-  content?: string;
+  video_title?: string;
+  video_description?: string;
+  text_content?: string;
+  quiz_data?: any;
   duration_seconds?: number;
   order_index: number;
   is_published: boolean;
@@ -73,17 +66,15 @@ export interface Module {
 export interface DigitalProduct {
   id: string;
   title: string;
-  slug: string;
   description: string;
   short_description?: string;
-  category: string;
+  file_type?: string;
   price: number;
   thumbnail_url: string;
   file_key: string;
   file_size_bytes?: number;
   is_published: boolean;
   includes?: string[];
-  who_is_it_for?: string[];
   created_at: string;
 }
 
@@ -95,8 +86,6 @@ export interface Note {
   content: string;
   created_at: string;
   updated_at: string;
-  lessons?: { title: string };
-  courses?: { title: string };
 }
 
 export interface Review {
@@ -105,6 +94,7 @@ export interface Review {
   course_id: string;
   rating: number;
   review_text: string;
+  is_published: boolean;
   created_at: string;
   profiles?: { full_name: string | null; avatar_url: string | null };
 }
@@ -121,40 +111,4 @@ export interface PaymentRequest {
   rejection_reason?: string;
   transaction_number?: string;
   created_at: string;
-}
-
-export interface Resource {
-  id: string;
-  lesson_id: string;
-  title: string;
-  resource_type: 'pdf' | 'link' | 'file';
-  file_key?: string;
-  external_url?: string;
-  download_url?: string;
-}
-
-export interface Certificate {
-  id: string;
-  user_id: string;
-  course_id: string;
-  student_name: string;
-  certificate_code: string;
-  issued_at: string;
-  file_key: string;
-}
-
-export interface FAQItem {
-  question: string;
-  answer: string;
-  category?: string;
-}
-
-export interface TestimonialItem {
-  id: string;
-  quote: string;
-  author: string;
-  role: string;
-  company?: string;
-  avatar: string;
-  highlightTag?: string;
 }

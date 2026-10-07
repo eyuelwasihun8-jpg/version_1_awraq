@@ -3,7 +3,6 @@
 import React from 'react';
 import { HeroSection } from './HeroSection';
 import { SimpleWaySection } from './SimpleWaySection';
-import { WhatYouLearnSection } from './WhatYouLearnSection';
 import { SkillsYouUseSection } from './SkillsYouUseSection';
 import { CoursesSection } from './CoursesSection';
 import { ResourcesSection } from './ResourcesSection';
@@ -47,7 +46,6 @@ export const HomePageClient: React.FC<HomePageClientProps> = ({
       <TrustedBySection />
 
       <SimpleWaySection />
-      <WhatYouLearnSection />
       <SkillsYouUseSection />
       <CoursesSection courses={courses} />
       <ResourcesSection products={products} />

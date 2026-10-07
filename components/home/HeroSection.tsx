@@ -2,7 +2,16 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { CommunityBadge } from './CommunityBadge';
-import { TrendingUp, Users, Award, Play, VolumeX, Send } from 'lucide-react';
+import {
+  TrendingUp,
+  Users,
+  Award,
+  Send,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+} from 'lucide-react';
 
 interface HeroSectionProps {
   onOpenConsultation?: () => void;
@@ -12,18 +21,23 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
-  onOpenConsultation,
   onOpenSignIn,
   videoUrl = '/videos/hero-demo.mp4',
-  posterUrl = '/images/hero-poster.jpg',
+  posterUrl = '/hero-poster.jpg',
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+
   const [videoError, setVideoError] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const [currentPoster, setCurrentPoster] = useState(posterUrl);
   const [posterFailed, setPosterFailed] = useState(false);
 
-  // Try to autoplay muted on load
+  // Autoplay muted on mount
   useEffect(() => {
     const video = videoRef.current;
     if (!video || videoError) return;
@@ -32,42 +46,122 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     video.defaultMuted = true;
     video.playsInline = true;
 
-    const tryPlay = async () => {
-      try {
-        await video.play();
-        setIsPlaying(true);
-      } catch {
-        setIsPlaying(false);
-      }
+    const playVideo = () => {
+      video
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     };
 
-    const t = setTimeout(tryPlay, 150);
-    return () => clearTimeout(t);
+    if (video.readyState >= 2) playVideo();
+    else {
+      video.addEventListener('loadeddata', playVideo, { once: true });
+      video.addEventListener('canplay', playVideo, { once: true });
+    }
+
+    return () => {
+      video.removeEventListener('loadeddata', playVideo);
+      video.removeEventListener('canplay', playVideo);
+    };
   }, [videoUrl, videoError]);
 
-  const handlePosterError = () => {
-    if (currentPoster === '/images/hero-poster.jpg') {
-      setCurrentPoster('/hero-poster.jpg');
-    } else if (currentPoster === '/hero-poster.jpg') {
-      setCurrentPoster('/hero-poster.png');
-    } else if (currentPoster === '/images/hero-poster.png') {
-      setCurrentPoster('/videos/hero-poster.jpg');
+  // Track time & duration
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const onTime = () => {
+      if (!isDragging) setCurrentTime(video.currentTime || 0);
+    };
+    const onMeta = () => setDuration(video.duration || 0);
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+
+    video.addEventListener('timeupdate', onTime);
+    video.addEventListener('loadedmetadata', onMeta);
+    video.addEventListener('durationchange', onMeta);
+    video.addEventListener('play', onPlay);
+    video.addEventListener('pause', onPause);
+
+    return () => {
+      video.removeEventListener('timeupdate', onTime);
+      video.removeEventListener('loadedmetadata', onMeta);
+      video.removeEventListener('durationchange', onMeta);
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('pause', onPause);
+    };
+  }, [isDragging, videoError]);
+
+  const togglePlay = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     } else {
-      setPosterFailed(true);
+      video.pause();
+      setIsPlaying(false);
     }
   };
 
-  const handleManualPlay = async () => {
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
     const video = videoRef.current;
     if (!video) return;
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+
+  const formatTime = (sec: number) => {
+    if (!isFinite(sec) || sec < 0) return '0:00';
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, '0')}`;
+  };
+
+  const seekFromClientX = (clientX: number) => {
+    const video = videoRef.current;
+    const bar = barRef.current;
+    if (!video || !bar || !duration) return;
+
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    const t = ratio * duration;
+    video.currentTime = t;
+    setCurrentTime(t);
+  };
+
+  const onBarPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    seekFromClientX(e.clientX);
+  };
+
+  const onBarPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    seekFromClientX(e.clientX);
+  };
+
+  const onBarPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    setIsDragging(false);
     try {
-      video.muted = true;
-      await video.play();
-      setIsPlaying(true);
-      setVideoError(false);
-    } catch {
-      setIsPlaying(false);
-    }
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  const handlePosterError = () => {
+    if (currentPoster === '/hero-poster.jpg') setCurrentPoster('/images/hero-poster.jpg');
+    else if (currentPoster === '/images/hero-poster.jpg') setCurrentPoster('/hero-poster.png');
+    else setPosterFailed(true);
   };
 
   return (
@@ -77,7 +171,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <div className="pointer-events-none absolute top-40 -right-20 w-96 h-96 rounded-full bg-[#ddb049]/10 blur-3xl" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Headline */}
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-[#0a0704] tracking-tight leading-[1.05] mb-4">
             Master Digital Marketing
@@ -94,70 +187,128 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <FloatingCard icon={Users} title="1,000+ Learners" subtitle="Growing every month" />
           </div>
           <div className="hidden lg:block absolute -right-5 top-20 z-20 animate-floatY-delayed">
-            <FloatingCard
-              icon={TrendingUp}
-              title="Real Campaign Skills"
-              subtitle="Ads • Content • SEO"
-            />
+            <FloatingCard icon={TrendingUp} title="Real Campaign Skills" subtitle="Ads • Content • SEO" />
           </div>
           <div className="hidden lg:block absolute -left-3 bottom-28 z-20 animate-floatY">
             <FloatingCard icon={Award} title="Certificate Ready" subtitle="Verified completion" />
           </div>
 
-          {/* Floating dots */}
           <div className="absolute -top-2 left-10 w-3 h-3 rounded-full bg-[#ddb049] animate-pulse-soft" />
           <div className="absolute top-1/3 -right-1 w-2.5 h-2.5 rounded-full bg-[#ddb049]/80 animate-pulse-soft" />
 
-          {/* 16:9 Frame */}
+          {/* Video Frame */}
           <div className="relative rounded-[28px] p-[1px] bg-gradient-to-br from-[#ddb049]/60 via-[#0a0704]/20 to-[#ddb049]/40 shadow-[0_30px_80px_rgba(10,7,4,0.18)]">
-            <div className="relative rounded-[27px] overflow-hidden bg-[#0a0704] border border-white/10">
+            <div className="relative rounded-[27px] overflow-hidden bg-[#0a0704] border border-white/10 group">
               <div className="relative w-full aspect-video bg-[#0a0704] overflow-hidden">
                 {!videoError ? (
                   <>
                     <video
                       ref={videoRef}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      src={videoUrl}
-                      poster={currentPoster}
+                      className="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                      poster={!posterFailed ? currentPoster : undefined}
                       autoPlay
                       muted
                       loop
                       playsInline
                       preload="auto"
-                      controls={isPlaying}
-                      style={{ objectFit: 'cover' }}
-                      onPlay={() => setIsPlaying(true)}
-                      onPause={() => setIsPlaying(false)}
-                      onError={() => {
-                        setVideoError(true);
-                        setIsPlaying(false);
-                      }}
-                    />
+                      onClick={togglePlay}
+                      onError={() => setVideoError(true)}
+                    >
+                      <source src={videoUrl} type="video/mp4" />
+                    </video>
 
-                    {/* Muted badge */}
-                    {isPlaying && (
-                      <div className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-md border border-white/15 text-[10px] font-bold text-white pointer-events-none">
-                        <VolumeX className="w-3 h-3" />
-                        Muted
-                      </div>
-                    )}
+                    {/* ALWAYS VISIBLE UNMUTE / MUTE BUTTON (Top-Right) */}
+                    <button
+                      type="button"
+                      onClick={toggleMute}
+                      className="absolute top-3 right-3 z-30 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/65 hover:bg-black/85 backdrop-blur-md border border-white/20 text-xs font-bold text-white transition-all cursor-pointer shadow-xl hover:scale-105"
+                      aria-label={isMuted ? 'Unmute video' : 'Mute video'}
+                    >
+                      {isMuted ? (
+                        <>
+                          <VolumeX className="w-4 h-4 text-amber-400" />
+                          <span>Unmute</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-4 h-4 text-emerald-400" />
+                          <span>Mute</span>
+                        </>
+                      )}
+                    </button>
 
-                    {/* Tap to play overlay if autoplay blocked */}
+                    {/* PAUSED OVERLAY (Center Play Button) */}
                     {!isPlaying && (
                       <button
                         type="button"
-                        onClick={handleManualPlay}
-                        className="absolute inset-0 z-10 flex items-center justify-center bg-black/15 hover:bg-black/25 transition-colors cursor-pointer"
+                        onClick={togglePlay}
+                        className="absolute inset-0 m-auto z-20 w-16 h-16 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/30 text-white flex items-center justify-center transition-all cursor-pointer shadow-2xl hover:scale-110"
                         aria-label="Play video"
                       >
-                        <div className="w-16 h-16 rounded-full bg-white/25 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-xl hover:scale-110 transition-transform">
-                          <Play className="w-7 h-7 text-white fill-white ml-1" />
-                        </div>
+                        <Play className="w-7 h-7 fill-current ml-1 text-[#ddb049]" />
                       </button>
                     )}
+
+                    {/* Timeline & Controls Bar (Bottom) */}
+                    <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-3 sm:px-4 pt-10 pb-3">
+                      {/* Timeline Bar */}
+                      <div
+                        ref={barRef}
+                        className="relative h-2 sm:h-2.5 rounded-full bg-white/25 cursor-pointer touch-none mb-2"
+                        onPointerDown={onBarPointerDown}
+                        onPointerMove={onBarPointerMove}
+                        onPointerUp={onBarPointerUp}
+                        onPointerCancel={onBarPointerUp}
+                        role="slider"
+                        aria-label="Video timeline"
+                        aria-valuemin={0}
+                        aria-valuemax={Math.floor(duration) || 0}
+                        aria-valuenow={Math.floor(currentTime) || 0}
+                      >
+                        <div
+                          className="absolute left-0 top-0 h-full rounded-full bg-[#ddb049]"
+                          style={{ width: `${progressPct}%` }}
+                        />
+                        <div
+                          className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-[#ddb049] shadow"
+                          style={{ left: `calc(${progressPct}% - 7px)` }}
+                        />
+                      </div>
+
+                      {/* Controls Row */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          {/* Play / Pause Toggle Button */}
+                          <button
+                            type="button"
+                            onClick={togglePlay}
+                            className="p-1 rounded-lg text-white hover:text-[#ddb049] transition-colors cursor-pointer"
+                            aria-label={isPlaying ? 'Pause video' : 'Play video'}
+                          >
+                            {isPlaying ? (
+                              <Pause className="w-4 h-4 fill-current" />
+                            ) : (
+                              <Play className="w-4 h-4 fill-current" />
+                            )}
+                          </button>
+
+                          {/* Time Counter */}
+                          <div className="text-[11px] sm:text-xs font-mono font-bold text-white/90 tabular-nums">
+                            {formatTime(currentTime)}
+                            <span className="text-white/50"> / </span>
+                            {formatTime(duration)}
+                          </div>
+                        </div>
+
+                        {!isPlaying && duration > 0 && (
+                          <span className="text-[10px] uppercase tracking-wider text-amber-400 font-sans font-bold">
+                            Paused
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </>
                 ) : (
-                  /* Fallback Poster */
                   <div className="absolute inset-0">
                     {!posterFailed ? (
                       <img
@@ -167,21 +318,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         onError={handlePosterError}
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-[#1a1510] to-[#0a0704] flex flex-col items-center justify-center p-6 text-center">
-                        <div className="w-16 h-16 rounded-full bg-[#ddb049]/20 border border-[#ddb049]/40 flex items-center justify-center mb-3">
-                          <Play className="w-7 h-7 text-[#ddb049] ml-1" />
-                        </div>
-                        <span className="text-sm font-black text-white">
-                          Awraq Digital Marketing
-                        </span>
-                      </div>
-                    )}
-
-                    {!posterFailed && (
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
-                        <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-xl">
-                          <Play className="w-7 h-7 text-white fill-white ml-1" />
-                        </div>
+                      <div className="w-full h-full bg-gradient-to-br from-[#1a1510] to-[#0a0704] flex items-center justify-center">
+                        <span className="text-sm font-black text-white">Awraq Digital Marketing</span>
                       </div>
                     )}
                   </div>
@@ -210,7 +348,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </a>
           </div>
 
-          {/* Community Badge */}
           <div className="mt-5 sm:mt-6 flex justify-center">
             <CommunityBadge />
           </div>
@@ -228,18 +365,16 @@ const FloatingCard = ({
   icon: any;
   title: string;
   subtitle: string;
-}) => {
-  return (
-    <div className="rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-[0_10px_40px_rgba(10,7,4,0.12)] px-3.5 py-3 min-w-[170px]">
-      <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl bg-[#ddb049]/20 text-[#0a0704] border border-[#ddb049]/30 flex items-center justify-center">
-          <Icon className="w-4 h-4 text-[#b8862f]" />
-        </div>
-        <div>
-          <div className="text-xs font-black text-[#0a0704] leading-tight">{title}</div>
-          <div className="text-[10px] font-bold text-[#0a0704]/60 leading-tight">{subtitle}</div>
-        </div>
+}) => (
+  <div className="rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-[0_10px_40px_rgba(10,7,4,0.12)] px-3.5 py-3 min-w-[170px]">
+    <div className="flex items-center gap-2.5">
+      <div className="w-9 h-9 rounded-xl bg-[#ddb049]/20 text-[#0a0704] border border-[#ddb049]/30 flex items-center justify-center">
+        <Icon className="w-4 h-4 text-[#b8862f]" />
+      </div>
+      <div>
+        <div className="text-xs font-black text-[#0a0704] leading-tight">{title}</div>
+        <div className="text-[10px] font-bold text-[#0a0704]/60 leading-tight">{subtitle}</div>
       </div>
     </div>
-  );
-};
+  </div>
+);

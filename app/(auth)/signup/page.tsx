@@ -7,7 +7,12 @@ import { createClient } from '@/lib/supabase-browser';
 import { BrandLogo } from '@/components/BrandLogo';
 import { TurnstileWidget } from '@/components/TurnstileWidget';
 import { toast } from 'sonner';
+import type { Metadata } from 'next';
 
+export const metadata: Metadata = {
+  title: 'Create Account',
+  description: 'Join Awraq Skills and start mastering digital marketing today.',
+};
 export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

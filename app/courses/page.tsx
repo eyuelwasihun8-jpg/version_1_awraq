@@ -1,8 +1,90 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
 import { CoursesListClient } from '@/components/courses/CoursesListClient';
 
 export const dynamic = 'force-dynamic';
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://awraqskills.com';
+
+export const metadata: Metadata = {
+  title: 'All Courses & Digital Products',
+  description:
+    'Browse all Awraq Skills courses and digital products: Facebook & Google Ads, social media marketing, content, design, and agency building. Learn step by step and build real skills.',
+  alternates: { canonical: '/courses' },
+  openGraph: {
+    title: 'All Courses & Digital Products | Awraq Skills',
+    description:
+      'Browse all Awraq Skills courses and digital products — Facebook & Google Ads, social media, content, design, and agency building.',
+    url: `${APP_URL}/courses`,
+    type: 'website',
+    images: [
+      {
+        url: '/hero-poster.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Awraq Skills — Courses & Products',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'All Courses & Digital Products | Awraq Skills',
+    description:
+      'Browse all Awraq Skills courses and digital products — Facebook & Google Ads, social media, content, design, and agency building.',
+    images: ['/hero-poster.jpg'],
+  },
+};
+
+function BreadcrumbJsonLd() {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: APP_URL,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Courses',
+        item: `${APP_URL}/courses`,
+      },
+    ],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
+function ItemListJsonLd({ courses }: { courses: any[] }) {
+  if (!courses || courses.length === 0) return null;
+
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: courses.slice(0, 20).map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `${APP_URL}/courses/${c.id}`,
+      name: c.title,
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
 
 export default async function CoursesPage() {
   const supabase = await createClient();
@@ -61,13 +143,17 @@ export default async function CoursesPage() {
   }
 
   return (
-    <CoursesListClient
-      initialCourses={courses || []}
-      initialProducts={products || []}
-      enrolledCourseIds={enrolledCourseIds}
-      completedCourseIds={completedCourseIds}
-      purchasedProductIds={purchasedProductIds}
-      isLoggedIn={!!user}
-    />
+    <>
+      <BreadcrumbJsonLd />
+      <ItemListJsonLd courses={courses || []} />
+      <CoursesListClient
+        initialCourses={courses || []}
+        initialProducts={products || []}
+        enrolledCourseIds={enrolledCourseIds}
+        completedCourseIds={completedCourseIds}
+        purchasedProductIds={purchasedProductIds}
+        isLoggedIn={!!user}
+      />
+    </>
   );
 }

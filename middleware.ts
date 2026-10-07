@@ -162,6 +162,13 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    /*
+     * Match all request paths except for:
+     * - _next/static (Next.js static files)
+     * - _next/image (Next.js image optimization)
+     * - favicon.ico
+     * - Static media (svg, png, jpg, jpeg, gif, webp, mp4, webm, mov, ogg, mp3, wav, m4a, pdf)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4|webm|mov|ogg|mp3|wav|m4a|pdf)$).*)',
   ],
 };

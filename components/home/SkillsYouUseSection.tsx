@@ -1,44 +1,48 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Target, Zap, LineChart, Rocket, ChevronRight } from 'lucide-react';
+import { Target, Share2, Briefcase, Palette, ChevronRight } from 'lucide-react';
 
-const SKILLS = [
+const LEARN_TOPICS = [
   {
-    id: 'basics',
+    id: 'ads',
     number: '01',
-    title: 'Learn the Basics',
-    desc: 'Understand the most important ideas before moving to advanced topics. We build your foundation the right way — no confusing jargon, no random hacks.',
+    title: 'Facebook & Google Ads',
+    tag: 'Paid Advertising',
+    desc: 'Master performance marketing, audience targeting, ad creative strategy, and campaign scaling on Meta & Google Ads to generate high-ROI leads and sales.',
     icon: Target,
     gradient: 'from-[#ddb049] to-[#3080E0]',
     visualIcon: '🎯',
   },
   {
-    id: 'practice',
+    id: 'content',
     number: '02',
-    title: 'Practice What You Learn',
-    desc: 'Use what you learn immediately instead of just reading or watching. Every lesson comes with real exercises you can apply to your own business today.',
-    icon: Zap,
+    title: 'Content & Social Media Marketing',
+    tag: 'Organic Growth',
+    desc: 'Build engaging content strategies, master storytelling, drive organic audience growth, and build active social media communities across TikTok, Instagram, and Telegram.',
+    icon: Share2,
     gradient: 'from-[#9230F0] to-[#7C11FB]',
-    visualIcon: '⚡',
+    visualIcon: '📱',
   },
   {
-    id: 'examples',
+    id: 'agency',
     number: '03',
-    title: 'Learn From Real Examples',
-    desc: 'See exactly how digital marketing ideas are used by successful businesses. No theory-only lessons — everything is backed by real-world case studies.',
-    icon: LineChart,
+    title: 'Strategy & Agency Business Model',
+    tag: 'Business & Monetization',
+    desc: 'Learn how to package your services, pitch and acquire high-paying clients, price your offers, and scale a profitable digital marketing agency or freelance business.',
+    icon: Briefcase,
     gradient: 'from-[#F86BCF] to-[#7C11FB]',
-    visualIcon: '📊',
+    visualIcon: '💼',
   },
   {
-    id: 'improve',
+    id: 'design',
     number: '04',
-    title: 'Keep Improving',
-    desc: 'Build your skills over time and learn how to read your own results. Get comfortable measuring what works so you can double down on winning strategies.',
-    icon: Rocket,
+    title: 'Graphic Design & Video Editing',
+    tag: 'Creative Production',
+    desc: 'Create high-converting ad visuals, social media posters, promotional videos, and short-form Reels/Shorts using practical tools and design workflows.',
+    icon: Palette,
     gradient: 'from-[#FFCD00] to-[#F86BCF]',
-    visualIcon: '🚀',
+    visualIcon: '🎨',
   },
 ];
 
@@ -47,40 +51,40 @@ export const SkillsYouUseSection: React.FC = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % SKILLS.length);
+      setActiveIndex((prev) => (prev + 1) % LEARN_TOPICS.length);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  const activeSkill = SKILLS[activeIndex];
-  const ActiveIcon = activeSkill.icon;
+  const activeTopic = LEARN_TOPICS[activeIndex];
+  const ActiveIcon = activeTopic.icon;
 
   return (
-    <section className="py-16 sm:py-20 lg:py-28 relative z-10 overflow-hidden bg-[#fbfaf7]">
+    <section id="what-you-learn" className="py-16 sm:py-20 lg:py-28 relative z-10 overflow-hidden bg-[#fbfaf7]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-12 sm:mb-16">
           <span className="inline-block text-[#ddb049] font-black text-xs sm:text-sm tracking-widest uppercase bg-[#ddb049]/10 border border-[#ddb049]/30 px-4 py-1.5 rounded-full">
-            Our Approach
+            Core Curriculum
           </span>
           <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight tracking-tight">
-            Learn Skills You Can{' '}
+            What You Can{' '}
             <span className="bg-gradient-to-r from-[#ddb049] to-[#F86BCF] bg-clip-text text-transparent">
-              Actually Use
+              Learn
             </span>
           </h2>
           <p className="text-slate-600 text-base sm:text-lg font-medium max-w-2xl mx-auto">
-            We focus on practical skills you can apply right away — no fluff, no filler.
+            Practical, high-demand skills designed to help you start freelancing, grow your business, or build an agency.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-12 items-center">
-          {/* LEFT — Steps List */}
+          {/* LEFT — 4 Topic Cards List */}
           <div className="lg:col-span-2 space-y-3">
-            {SKILLS.map((skill, idx) => {
+            {LEARN_TOPICS.map((topic, idx) => {
               const isActive = idx === activeIndex;
               return (
                 <button
-                  key={skill.id}
+                  key={topic.id}
                   onClick={() => setActiveIndex(idx)}
                   className={`w-full text-left cursor-pointer transition-all duration-500 ${
                     isActive ? 'scale-100' : 'scale-95 opacity-70 hover:opacity-100 hover:scale-100'
@@ -97,7 +101,7 @@ export const SkillsYouUseSection: React.FC = () => {
                       <div
                         className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-500 ${
                           isActive
-                            ? `bg-gradient-to-br ${skill.gradient} shadow-lg`
+                            ? `bg-gradient-to-br ${topic.gradient} shadow-lg`
                             : 'bg-slate-100'
                         }`}
                       >
@@ -106,17 +110,20 @@ export const SkillsYouUseSection: React.FC = () => {
                             isActive ? 'text-white' : 'text-slate-500'
                           }`}
                         >
-                          {skill.number}
+                          {topic.number}
                         </span>
                       </div>
 
                       <div className="flex-1 min-w-0">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#ddb049] mb-0.5">
+                          {topic.tag}
+                        </div>
                         <h3
                           className={`text-base sm:text-lg font-black leading-tight transition-colors ${
-                            isActive ? 'text-slate-900' : 'text-slate-500'
+                            isActive ? 'text-slate-900' : 'text-slate-600'
                           }`}
                         >
-                          {skill.title}
+                          {topic.title}
                         </h3>
                       </div>
 
@@ -132,9 +139,9 @@ export const SkillsYouUseSection: React.FC = () => {
                     {isActive && (
                       <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-100 rounded-b-2xl overflow-hidden">
                         <div
-                          className={`h-full bg-gradient-to-r ${skill.gradient}`}
+                          className={`h-full bg-gradient-to-r ${topic.gradient}`}
                           style={{ animation: 'progressBar 5s linear' }}
-                        ></div>
+                        />
                       </div>
                     )}
                   </div>
@@ -143,51 +150,51 @@ export const SkillsYouUseSection: React.FC = () => {
             })}
           </div>
 
-          {/* RIGHT — Active Visual */}
+          {/* RIGHT — Active Visual Details Box */}
           <div className="lg:col-span-3 relative">
             <div
-              key={activeSkill.id}
+              key={activeTopic.id}
               className="relative bg-white rounded-[28px] sm:rounded-[32px] border border-[#e8e0d2] p-6 sm:p-10 lg:p-12 min-h-[350px] sm:min-h-[420px] shadow-xl overflow-hidden animate-fadeIn"
             >
               <div
-                className={`absolute -top-20 -right-20 w-72 h-72 sm:w-80 sm:h-80 bg-gradient-to-br ${activeSkill.gradient} rounded-full blur-[100px] opacity-25`}
-              ></div>
+                className={`absolute -top-20 -right-20 w-72 h-72 sm:w-80 sm:h-80 bg-gradient-to-br ${activeTopic.gradient} rounded-full blur-[100px] opacity-25`}
+              />
 
               <div className="relative z-10 mb-6 sm:mb-8">
                 <div className="inline-block text-7xl sm:text-8xl lg:text-9xl animate-floatY drop-shadow-xl">
-                  {activeSkill.visualIcon}
+                  {activeTopic.visualIcon}
                 </div>
               </div>
 
               <div className="relative z-10 space-y-3 sm:space-y-4">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br ${activeSkill.gradient} flex items-center justify-center shadow-lg`}
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br ${activeTopic.gradient} flex items-center justify-center shadow-lg`}
                   >
                     <ActiveIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <span className="text-slate-400 font-black text-xs sm:text-sm tracking-widest uppercase">
-                    Step {activeSkill.number}
+                    Module {activeTopic.number}
                   </span>
                 </div>
 
                 <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 leading-tight">
-                  {activeSkill.title}
+                  {activeTopic.title}
                 </h3>
 
                 <p className="text-slate-600 text-sm sm:text-base lg:text-lg font-medium leading-relaxed">
-                  {activeSkill.desc}
+                  {activeTopic.desc}
                 </p>
               </div>
 
               <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 flex gap-1.5">
-                {SKILLS.map((_, idx) => (
+                {LEARN_TOPICS.map((_, idx) => (
                   <div
                     key={idx}
                     className={`h-2 rounded-full transition-all duration-500 ${
                       idx === activeIndex ? 'bg-[#ddb049] w-8' : 'bg-slate-300 w-2'
                     }`}
-                  ></div>
+                  />
                 ))}
               </div>
             </div>

@@ -1,42 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { downloadQuerySchema } from '@/lib/validators';
 import { getDownloadUrl, BUCKETS } from '@/lib/r2';
+import { createHandler, withAuth } from '@/lib/api-handler';
 
-export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+export const GET = createHandler(
+  null,
+  downloadQuerySchema,
+  withAuth(async (request) => {
+    const { validatedQuery } = request;
 
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-  const productId = request.nextUrl.searchParams.get('productId');
-  if (!productId) {
-    return NextResponse.json({ error: 'productId required' }, { status: 400 });
-  }
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Must be an active purchase (revoked purchases blocked)
-  const { data: purchase } = await supabase
-    .from('purchases')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('product_id', productId)
-    .eq('is_active', true)
-    .maybeSingle();
+    const { productId } = validatedQuery;
 
-  if (!purchase) {
-    return NextResponse.json({ error: 'Not purchased' }, { status: 403 });
-  }
+    // Must be an active purchase (revoked purchases blocked)
+    const { data: purchase } = await supabase
+      .from('purchases')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('product_id', productId)
+      .eq('is_active', true)
+      .maybeSingle();
 
-  const { data: product } = await supabase
-    .from('digital_products')
-    .select('file_key, title')
-    .eq('id', productId)
-    .single();
+    if (!purchase) {
+      return NextResponse.json({ error: 'Not purchased' }, { status: 403 });
+    }
 
-  if (!product || !product.file_key) {
-    return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-  }
+    const { data: product } = await supabase
+      .from('digital_products')
+      .select('file_key, title')
+      .eq('id', productId)
+      .single();
 
-  const url = await getDownloadUrl(BUCKETS.content, product.file_key, 600);
+    if (!product || !product.file_key) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
 
-  return NextResponse.json({ url, title: product.title });
-}
+    const url = await getDownloadUrl(BUCKETS.content, product.file_key, 600);
+
+    return NextResponse.json({ url, title: product.title });
+  }, 'user')
+);

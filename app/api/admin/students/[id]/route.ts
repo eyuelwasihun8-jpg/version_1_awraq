@@ -1,250 +1,167 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { updateStudentSchema } from '@/lib/validators';
+import { createGetHandler, createHandler, withAuth } from '@/lib/api-handler';
 
-async function requireStaff(supabase: any) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: 'Unauthorized', status: 401 as const };
+// GET handler using centralized handler
+export const GET = createGetHandler(
+  null,
+  withAuth(async (request, context) => {
+    const params = await context.params;
+    const { id } = params;
+    const adminDb = createAdminClient();
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (
-    !profile ||
-    !['super_admin', 'admin', 'sales', 'instructor'].includes(profile.role)
-  ) {
-    return { error: 'Forbidden', status: 403 as const };
-  }
-
-  return { user, role: profile.role as string };
-}
-
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-  const supabase = await createClient();
-  const auth = await requireStaff(supabase);
-  if ('error' in auth && auth.error) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-
-  const { user, role } = auth as { user: any; role: string };
-  const adminDb = createAdminClient();
-
-  const { data: profile, error: profileErr } = await adminDb
-    .from('profiles')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (profileErr || !profile) {
-    console.error('Student fetch error:', profileErr);
-    return NextResponse.json({ error: 'Student not found' }, { status: 404 });
-  }
-
-  let assignedSales: { id: string; full_name: string } | null = null;
-  if (profile.assigned_to) {
-    const { data: salesProfile } = await adminDb
+    const { data: profile, error: profileErr } = await adminDb
       .from('profiles')
-      .select('id, full_name')
-      .eq('id', profile.assigned_to)
-      .maybeSingle();
-
-    if (salesProfile) assignedSales = salesProfile;
-  }
-
-  if (role === 'sales' && profile.assigned_to !== user.id) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  if (role === 'instructor') {
-    const { count } = await adminDb
-      .from('enrollments')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', id)
-      .eq('is_active', true)
-      .in(
-        'course_id',
-        (
-          await adminDb.from('courses').select('id').eq('instructor_id', user.id)
-        ).data?.map((c: any) => c.id) || []
-      );
-
-    if (!count) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-  }
-
-  let email: string | null = null;
-  try {
-    const { data: authUser } = await adminDb.auth.admin.getUserById(id);
-    email = authUser?.user?.email || null;
-  } catch (e) {
-    console.error('Auth user fetch error:', e);
-  }
-
-  let courseProgress: any[] = [];
-  try {
-    const { data } = await adminDb
-      .from('student_progress_summary')
       .select('*')
-      .eq('user_id', id)
-      .order('enrolled_at', { ascending: false });
-    courseProgress = data || [];
-  } catch (e) {
-    console.error('Progress summary fetch error:', e);
-  }
-
-  let products: any[] = [];
-  try {
-    const { data } = await adminDb
-      .from('purchases')
-      .select('*, digital_products(id, title, price, file_type, thumbnail_url)')
-      .eq('user_id', id)
-      .order('purchased_at', { ascending: false });
-    products = data || [];
-  } catch (e) {
-    console.error('Purchases fetch error:', e);
-  }
-
-  let payments: any[] = [];
-  try {
-    const { data } = await adminDb
-      .from('payment_requests')
-      .select('*')
-      .eq('user_id', id)
-      .order('created_at', { ascending: false });
-    payments = data || [];
-  } catch (e) {
-    console.error('Payments fetch error:', e);
-  }
-
-  let certificates: any[] = [];
-  try {
-    const { data } = await adminDb
-      .from('certificates')
-      .select('*, courses(title)')
-      .eq('user_id', id)
-      .order('issued_at', { ascending: false });
-    certificates = data || [];
-  } catch (e) {
-    console.error('Certificates fetch error:', e);
-  }
-
-  let quizAttempts: any[] = [];
-  try {
-    const { data } = await adminDb
-      .from('lesson_quiz_attempts')
-      .select('*, lessons(title, course_id)')
-      .eq('user_id', id)
-      .order('attempted_at', { ascending: false })
-      .limit(50);
-    quizAttempts = data || [];
-  } catch (e) {
-    console.error('Quiz attempts fetch error:', e);
-  }
-
-  // Course reviews / testimonials by this student
-  let reviews: any[] = [];
-  try {
-    const { data } = await adminDb
-      .from('reviews')
-      .select('*, courses(id, title)')
-      .eq('user_id', id)
-      .order('created_at', { ascending: false });
-    reviews = data || [];
-  } catch (e) {
-    console.error('Reviews fetch error:', e);
-  }
-
-  return NextResponse.json({
-    student: {
-      ...profile,
-      email,
-      assigned_sales: assignedSales,
-    },
-    courses: courseProgress,
-    products,
-    payments,
-    certificates,
-    quizAttempts,
-    reviews,
-  });
-}
-
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-  const supabase = await createClient();
-  const auth = await requireStaff(supabase);
-  if ('error' in auth && auth.error) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-
-  const { user, role } = auth as { user: any; role: string };
-
-  if (!['super_admin', 'admin', 'sales'].includes(role)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  const body = await request.json();
-  const adminDb = createAdminClient();
-
-  if (role === 'sales') {
-    const { data: existingProfile } = await adminDb
-      .from('profiles')
-      .select('assigned_to')
       .eq('id', id)
       .single();
 
-    if (existingProfile?.assigned_to !== user.id) {
-      return NextResponse.json(
-        { error: 'You can only edit your assigned students' },
-        { status: 403 }
-      );
+    if (profileErr || !profile) {
+      console.error('Student fetch error:', profileErr);
+      return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
-  }
 
-  const updates: Record<string, any> = { updated_at: new Date().toISOString() };
-  if (body.fullName !== undefined) updates.full_name = body.fullName?.trim() || null;
-  if (body.phone !== undefined) updates.phone = body.phone?.trim() || null;
-  if (body.isActive !== undefined) updates.is_active = !!body.isActive;
-  if (body.gender !== undefined) updates.gender = body.gender || null;
-  if (body.ageGroup !== undefined) updates.age_group = body.ageGroup || null;
-  if (body.lifeStatus !== undefined) updates.life_status = body.lifeStatus || null;
+    // Check authorization - sales can only view assigned students
+    const { user, profile: authProfile } = (request as any).auth;
+    if (authProfile.role === 'sales' && profile.assigned_to !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
-  if (body.assignedTo !== undefined && ['super_admin', 'admin'].includes(role)) {
-    updates.assigned_to = body.assignedTo || null;
-  }
+    // Instructor can only view students enrolled in their courses
+    if (authProfile.role === 'instructor') {
+      const { count } = await adminDb
+        .from('enrollments')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', id)
+        .eq('is_active', true)
+        .in(
+          'course_id',
+          (
+            await adminDb.from('courses').select('id').eq('instructor_id', user.id)
+          ).data?.map((c: any) => c.id) || []
+        );
 
-  const { data, error } = await adminDb
-    .from('profiles')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
+      if (!count) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    let email: string | null = null;
+    try {
+      const { data: authUser } = await adminDb.auth.admin.getUserById(id);
+      email = authUser?.user?.email || null;
+    } catch (e) {
+      console.error('Auth user fetch error:', e);
+    }
 
-  if (body.assignedTo !== undefined && ['super_admin', 'admin'].includes(role)) {
-    await adminDb.from('audit_logs').insert({
-      actor_id: user.id,
-      actor_role: role,
-      action: 'reassign_student',
-      target_type: 'profile',
-      target_id: id,
-      details: { assigned_to: body.assignedTo },
+    // Fetch all related data in parallel
+    const [
+      { data: courseProgress },
+      { data: products },
+      { data: payments },
+      { data: certificates },
+      { data: quizAttempts },
+      { data: reviews },
+    ] = await Promise.all([
+      adminDb.from('student_progress_summary').select('*').eq('user_id', id).order('enrolled_at', { ascending: false }),
+      adminDb.from('purchases').select('*, digital_products(id, title, price, file_type, thumbnail_url)').eq('user_id', id).order('purchased_at', { ascending: false }),
+      adminDb.from('payment_requests').select('*').eq('user_id', id).order('created_at', { ascending: false }),
+      adminDb.from('certificates').select('*, courses(title)').eq('user_id', id).order('issued_at', { ascending: false }),
+      adminDb.from('lesson_quiz_attempts').select('*, lessons(title, course_id)').eq('user_id', id).order('attempted_at', { ascending: false }).limit(50),
+      adminDb.from('reviews').select('*, courses(id, title)').eq('user_id', id).order('created_at', { ascending: false }),
+    ]);
+
+    let assignedSales: { id: string; full_name: string } | null = null;
+    if (profile.assigned_to) {
+      const { data: salesProfile } = await adminDb
+        .from('profiles')
+        .select('id, full_name')
+        .eq('id', profile.assigned_to)
+        .maybeSingle();
+      if (salesProfile) assignedSales = salesProfile;
+    }
+
+    return NextResponse.json({
+      student: {
+        ...profile,
+        email,
+        assigned_sales: assignedSales,
+      },
+      courses: courseProgress || [],
+      products: products || [],
+      payments: payments || [],
+      certificates: certificates || [],
+      quizAttempts: quizAttempts || [],
+      reviews: reviews || [],
     });
-  }
+  }, 'staff')
+);
 
-  return NextResponse.json({ success: true, student: data });
-}
+// PATCH handler using centralized handler with validation
+export const PATCH = createHandler(
+  updateStudentSchema,
+  null,
+  withAuth(async (request) => {
+    const params = await (request as any).context?.params;
+    const { id } = params;
+    const { validatedData: body } = request;
+    const { user, profile: authProfile } = (request as any).auth;
+    const adminDb = createAdminClient();
+
+    // Check authorization - sales can only edit assigned students
+    if (authProfile.role === 'sales') {
+      const { data: existingProfile } = await adminDb
+        .from('profiles')
+        .select('assigned_to')
+        .eq('id', id)
+        .single();
+
+      if (existingProfile?.assigned_to !== user.id) {
+        return NextResponse.json(
+          { error: 'You can only edit your assigned students' },
+          { status: 403 }
+        );
+      }
+    }
+
+    if (!['super_admin', 'admin', 'sales'].includes(authProfile.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const updates: Record<string, any> = { updated_at: new Date().toISOString() };
+    if (body.fullName !== undefined) updates.full_name = body.fullName?.trim() || null;
+    if (body.phone !== undefined) updates.phone = body.phone?.trim() || null;
+    if (body.isActive !== undefined) updates.is_active = !!body.isActive;
+    if (body.gender !== undefined) updates.gender = body.gender || null;
+    if (body.ageGroup !== undefined) updates.age_group = body.ageGroup || null;
+    if (body.lifeStatus !== undefined) updates.life_status = body.lifeStatus || null;
+
+    if (body.assignedTo !== undefined && ['super_admin', 'admin'].includes(authProfile.role)) {
+      updates.assigned_to = body.assignedTo || null;
+    }
+
+    const { data, error } = await adminDb
+      .from('profiles')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    if (body.assignedTo !== undefined && ['super_admin', 'admin'].includes(authProfile.role)) {
+      await adminDb.from('audit_logs').insert({
+        actor_id: user.id,
+        actor_role: authProfile.role,
+        action: 'reassign_student',
+        target_type: 'profile',
+        target_id: id,
+        details: { assigned_to: body.assignedTo },
+      });
+    }
+
+    return NextResponse.json({ success: true, student: data });
+  }, 'staff')
+);

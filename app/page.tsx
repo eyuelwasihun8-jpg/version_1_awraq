@@ -4,7 +4,9 @@ import { HomePageClient } from '@/components/home/HomePageClient';
 import type { Course, DigitalProduct } from '@/lib/types';
 import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
+// Use ISR with 60 second revalidation for fast initial loads
+// Authenticated users will still be redirected via middleware
+export const revalidate = 60;
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://awraqskills.com';
 
@@ -61,22 +63,23 @@ async function getHomeData() {
     }
   }
 
-  const { data: coursesRaw, error: courseErr } = await supabase
-    .from('courses')
-    .select('*, instructor:profiles(full_name, avatar_url)')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false })
-    .limit(12);
+  // Fetch courses and products in parallel for better performance
+  const [{ data: coursesRaw, error: courseErr }, { data: productsRaw, error: prodErr }] = await Promise.all([
+    supabase
+      .from('courses')
+      .select('*, instructor:profiles(full_name, avatar_url)')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .limit(12),
+    supabase
+      .from('digital_products')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .limit(8),
+  ]);
 
   if (courseErr) console.error('Homepage courses fetch error:', courseErr);
-
-  const { data: productsRaw, error: prodErr } = await supabase
-    .from('digital_products')
-    .select('*')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false })
-    .limit(8);
-
   if (prodErr) console.error('Homepage products fetch error:', prodErr);
 
   return {

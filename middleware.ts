@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { validateCsrfMiddleware } from '@/lib/csrf';
 
 const PORTAL_SLUG = process.env.NEXT_PUBLIC_ADMIN_SLUG || 'staff-portal-x7k9m';
 const LOGIN_SLUG = process.env.NEXT_PUBLIC_ADMIN_LOGIN_SLUG || 'staff-login-x7k9m';
@@ -15,7 +16,7 @@ async function getUserWithRetry(supabase: any, retries = 2): Promise<any> {
   for (let i = 0; i <= retries; i++) {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
-      
+
       if (error) {
         // "AuthSessionMissingError" is normal when a visitor is unauthenticated.
         // Return null immediately without retrying or logging error spam.
@@ -68,6 +69,12 @@ async function getUserProfile(supabase: any, userId: string): Promise<{ role: st
 }
 
 export async function middleware(request: NextRequest) {
+  // CSRF Protection for mutating requests
+  const csrfError = await validateCsrfMiddleware(request);
+  if (csrfError) {
+    return csrfError;
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

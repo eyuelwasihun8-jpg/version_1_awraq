@@ -7,12 +7,7 @@ import { createClient } from '@/lib/supabase-browser';
 import { BrandLogo } from '@/components/BrandLogo';
 import { TurnstileWidget } from '@/components/TurnstileWidget';
 import { toast } from 'sonner';
-import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'Create Account',
-  description: 'Join Awraq Skills and start mastering digital marketing today.',
-};
 export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -209,8 +204,8 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
-                    placeholder="At least 6 characters"
+                    minLength={8}
+                    placeholder="At least 8 characters"
                     autoComplete="new-password"
                     className="w-full pl-10 pr-4 py-3 text-base rounded-xl border border-[#e8e0d2] focus:border-[#ddb049] focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-[#fbfaf7]/50"
                   />

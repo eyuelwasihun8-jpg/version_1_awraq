@@ -142,8 +142,8 @@ async function getDashboardData() {
       .filter((p) => p.item_type === 'digital_product')
       .map((p) => p.item_id);
 
-    let coursesMap = new Map();
-    let productsMap = new Map();
+    const coursesMap = new Map();
+    const productsMap = new Map();
 
     if (payCourseIds.length > 0) {
       const { data: c } = await supabase

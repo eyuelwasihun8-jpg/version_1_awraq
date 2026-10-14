@@ -1,99 +1,244 @@
 /**
- * Sliding window rate limiter with in-memory store.
- * Periodic cleanup prevents memory leaks.
- * For production with multiple instances, replace with Redis.
+ * Rate Limiter with pluggable storage backends.
+ * Supports in-memory (dev) and Redis (production) stores.
  */
 
-interface RateLimitEntry {
+import { createClient } from 'redis';
+
+// ============================================
+// Types
+// ============================================
+
+export interface RateLimitEntry {
   count: number;
   resetTime: number;
 }
 
-const store = new Map<string, RateLimitEntry>();
+export interface RateLimitResult {
+  allowed: boolean;
+  remaining: number;
+  resetTime: number;
+  retryAfter?: number;
+}
 
-// Cleanup interval: every 5 minutes
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
-const MAX_STORE_SIZE = 10000; // Safety cap
+export interface RateLimiterStore {
+  get(key: string): Promise<RateLimitEntry | null>;
+  set(key: string, entry: RateLimitEntry): Promise<void>;
+  delete(key: string): Promise<void>;
+  cleanup(): Promise<number>;
+  getStats(): Promise<{ size: number; maxSize: number }>;
+}
 
-let cleanupTimer: NodeJS.Timeout | null = null;
+// ============================================
+// In-Memory Store (Development / Single Instance)
+// ============================================
 
-function startCleanup() {
-  if (cleanupTimer) return;
-  cleanupTimer = setInterval(() => {
+class MemoryStore implements RateLimiterStore {
+  private store = new Map<string, RateLimitEntry>();
+  private cleanupTimer: NodeJS.Timeout | null = null;
+  private readonly cleanupIntervalMs = 5 * 60 * 1000;
+  private readonly maxStoreSize = 10000;
+
+  private startCleanup() {
+    if (this.cleanupTimer) return;
+    this.cleanupTimer = setInterval(() => this.cleanup(), this.cleanupIntervalMs);
+    this.cleanupTimer.unref?.();
+  }
+
+  getSync(key: string): RateLimitEntry | null {
+    this.startCleanup();
+    const entry = this.store.get(key);
+    if (!entry || entry.resetTime < Date.now()) {
+      if (entry) this.store.delete(key);
+      return null;
+    }
+    return entry;
+  }
+
+  setSync(key: string, entry: RateLimitEntry): void {
+    this.startCleanup();
+    if (this.store.size >= this.maxStoreSize) {
+      const entries = Array.from(this.store.entries())
+        .sort((a, b) => a[1].resetTime - b[1].resetTime);
+      const toDelete = entries.slice(0, this.store.size - this.maxStoreSize + 100);
+      toDelete.forEach(([k]) => this.store.delete(k));
+    }
+    this.store.set(key, entry);
+  }
+
+  async get(key: string): Promise<RateLimitEntry | null> {
+    return this.getSync(key);
+  }
+
+  async set(key: string, entry: RateLimitEntry): Promise<void> {
+    this.setSync(key, entry);
+  }
+
+  async delete(key: string): Promise<void> {
+    this.store.delete(key);
+  }
+
+  async cleanup(): Promise<number> {
     const now = Date.now();
     let cleaned = 0;
-    for (const [key, entry] of store.entries()) {
+    for (const [key, entry] of this.store.entries()) {
       if (entry.resetTime < now) {
-        store.delete(key);
+        this.store.delete(key);
         cleaned++;
       }
     }
-    // If still too large, evict oldest entries
-    if (store.size > MAX_STORE_SIZE) {
-      const entries = Array.from(store.entries()).sort((a, b) => a[1].resetTime - b[1].resetTime);
-      const toDelete = entries.slice(0, store.size - MAX_STORE_SIZE);
-      toDelete.forEach(([key]) => store.delete(key));
-    }
-  }, CLEANUP_INTERVAL_MS);
-  // Don't prevent process exit
-  cleanupTimer.unref?.();
-}
+    return cleaned;
+  }
 
-function stopCleanup() {
-  if (cleanupTimer) {
-    clearInterval(cleanupTimer);
-    cleanupTimer = null;
+  async getStats(): Promise<{ size: number; maxSize: number }> {
+    return { size: this.store.size, maxSize: this.maxStoreSize };
   }
 }
 
-/**
- * Check and increment rate limit for a key.
- * @param key Unique identifier (e.g., IP address, user ID)
- * @param max Maximum requests allowed in the window
- * @param windowMs Time window in milliseconds
- * @returns { allowed: boolean, remaining: number, resetTime: number, retryAfter?: number }
- */
-export function rateLimit(
+// ============================================
+// Redis Store (Production / Multi-Instance)
+// ============================================
+
+class RedisStore implements RateLimiterStore {
+  private client: ReturnType<typeof createClient> | null = null;
+  private connected = false;
+  private readonly keyPrefix = 'ratelimit:';
+
+  constructor(private readonly redisUrl?: string) {}
+
+  private async ensureConnected() {
+    if (this.connected && this.client) return;
+
+    const url = this.redisUrl || process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL;
+    if (!url) {
+      throw new Error('Redis URL not configured. Set REDIS_URL or UPSTASH_REDIS_URL environment variable.');
+    }
+
+    this.client = createClient({ url });
+    this.client.on('error', (err) => console.error('[RateLimit Redis] Client error:', err));
+    await this.client.connect();
+    this.connected = true;
+  }
+
+  private getKey(key: string): string {
+    return `${this.keyPrefix}${key}`;
+  }
+
+  async get(key: string): Promise<RateLimitEntry | null> {
+    await this.ensureConnected();
+    const data = await this.client!.get(this.getKey(key));
+    if (!data) return null;
+    const entry = JSON.parse(data) as RateLimitEntry;
+    if (entry.resetTime < Date.now()) {
+      await this.delete(key);
+      return null;
+    }
+    return entry;
+  }
+
+  async set(key: string, entry: RateLimitEntry): Promise<void> {
+    await this.ensureConnected();
+    const ttl = Math.ceil((entry.resetTime - Date.now()) / 1000);
+    if (ttl > 0) {
+      await this.client!.setEx(this.getKey(key), ttl, JSON.stringify(entry));
+    }
+  }
+
+  async delete(key: string): Promise<void> {
+    if (this.client) {
+      await this.client.del(this.getKey(key));
+    }
+  }
+
+  async cleanup(): Promise<number> {
+    return 0;
+  }
+
+  async getStats(): Promise<{ size: number; maxSize: number }> {
+    if (!this.client) return { size: 0, maxSize: 0 };
+    try {
+      const keys = await this.client.keys(`${this.keyPrefix}*`);
+      return { size: keys.length, maxSize: -1 };
+    } catch {
+      return { size: 0, maxSize: -1 };
+    }
+  }
+
+  async disconnect() {
+    if (this.client) {
+      await this.client.quit();
+      this.client = null;
+      this.connected = false;
+    }
+  }
+}
+
+// ============================================
+// Store Factory
+// ============================================
+
+let storeInstance: RateLimiterStore | null = null;
+
+function getStore(): RateLimiterStore {
+  if (storeInstance) return storeInstance;
+
+  const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL;
+  if (redisUrl && process.env.NODE_ENV === 'production') {
+    storeInstance = new RedisStore(redisUrl);
+  } else {
+    storeInstance = new MemoryStore();
+  }
+
+  return storeInstance;
+}
+
+export function setRateLimitStore(store: RateLimiterStore) {
+  storeInstance = store;
+}
+
+export function getRateLimitStore(): RateLimiterStore {
+  return getStore();
+}
+
+// ============================================
+// Main Rate Limit Function (Async)
+// ============================================
+
+export async function rateLimit(
   key: string,
   max: number,
   windowMs: number
-): { allowed: boolean; remaining: number; resetTime: number; retryAfter?: number } {
-  startCleanup();
-
+): Promise<RateLimitResult> {
+  const store = getStore();
   const now = Date.now();
-  const windowStart = now - windowMs;
   const resetTime = now + windowMs;
 
-  const entry = store.get(key);
+  const entry = await store.get(key);
 
   if (!entry || entry.resetTime < now) {
-    // First request or window expired
-    store.set(key, { count: 1, resetTime });
+    const newEntry: RateLimitEntry = { count: 1, resetTime };
+    await store.set(key, newEntry);
     return { allowed: true, remaining: max - 1, resetTime };
   }
 
   if (entry.count >= max) {
-    // Rate limited
     const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
     return { allowed: false, remaining: 0, resetTime: entry.resetTime, retryAfter };
   }
 
-  // Increment and allow
   entry.count++;
-  store.set(key, entry);
+  await store.set(key, entry);
   return { allowed: true, remaining: max - entry.count, resetTime: entry.resetTime };
 }
 
-/**
- * Get current rate limit status without incrementing.
- */
-export function getRateLimitStatus(
+export async function getRateLimitStatus(
   key: string,
   max: number,
   windowMs: number
-): { remaining: number; resetTime: number } {
+): Promise<{ remaining: number; resetTime: number }> {
+  const store = getStore();
   const now = Date.now();
-  const entry = store.get(key);
+  const entry = await store.get(key);
 
   if (!entry || entry.resetTime < now) {
     return { remaining: max, resetTime: now + windowMs };
@@ -102,23 +247,42 @@ export function getRateLimitStatus(
   return { remaining: Math.max(0, max - entry.count), resetTime: entry.resetTime };
 }
 
-/**
- * Reset rate limit for a key (e.g., on successful auth).
- */
-export function resetRateLimit(key: string): void {
-  store.delete(key);
+export async function resetRateLimit(key: string): Promise<void> {
+  const store = getStore();
+  await store.delete(key);
 }
 
-/**
- * Get store stats for monitoring.
- */
-export function getRateLimitStats(): { size: number; maxSize: number } {
-  return { size: store.size, maxSize: MAX_STORE_SIZE };
+export async function getRateLimitStats(): Promise<{ size: number; maxSize: number }> {
+  const store = getStore();
+  return store.getStats();
 }
 
-// Graceful shutdown
-if (typeof process !== 'undefined') {
-  process.on('exit', stopCleanup);
-  process.on('SIGINT', stopCleanup);
-  process.on('SIGTERM', stopCleanup);
+// ============================================
+// Backward Compatibility (Synchronous Memory Store)
+// ============================================
+
+const syncStore = new MemoryStore();
+
+export function rateLimitSync(
+  key: string,
+  max: number,
+  windowMs: number
+): RateLimitResult {
+  const now = Date.now();
+  const resetTime = now + windowMs;
+  const entry = syncStore.getSync(key);
+
+  if (!entry || entry.resetTime < now) {
+    syncStore.setSync(key, { count: 1, resetTime });
+    return { allowed: true, remaining: max - 1, resetTime };
+  }
+
+  if (entry.count >= max) {
+    const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
+    return { allowed: false, remaining: 0, resetTime: entry.resetTime, retryAfter };
+  }
+
+  entry.count++;
+  syncStore.setSync(key, { count: entry.count, resetTime: entry.resetTime });
+  return { allowed: true, remaining: max - entry.count, resetTime: entry.resetTime };
 }

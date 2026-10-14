@@ -1,75 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
-import { rateLimit } from '@/lib/rate-limit';
+import { onboardingSchema } from '@/lib/validators';
+import { createHandler, withAuth, withRateLimit } from '@/lib/api-handler';
 
-const RATE_LIMIT = { max: 5, windowMs: 60 * 60 * 1000 };
+const RATE_LIMIT = { max: 5, windowMs: 60 * 60 * 1000, keyPrefix: 'onboarding' };
 
-export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+export const POST = createHandler(
+  onboardingSchema,
+  null,
+  withRateLimit(
+    withAuth(async (request) => {
+      const { validatedData: body } = request;
 
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
 
-  const rl = rateLimit(`onboarding:${user.id}`, RATE_LIMIT.max, RATE_LIMIT.windowMs);
-  if (!rl.allowed) {
-    return NextResponse.json(
-      { error: 'Too many attempts. Please wait a moment.' },
-      { status: 429, headers: { 'Retry-After': String(rl.retryAfter || 3600) } }
-    );
-  }
+      if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const body = await request.json();
-  const { fullName, phone, gender, ageGroup, lifeStatus } = body;
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: body.fullName.trim(),
+          phone: body.phone.trim(),
+          gender: body.gender,
+          age_group: body.ageGroup,
+          life_status: body.lifeStatus,
+          onboarding_completed: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id)
+        .select()
+        .single();
 
-  if (!fullName?.trim() || !phone?.trim() || !gender || !ageGroup || !lifeStatus) {
-    return NextResponse.json({ error: 'All fields required' }, { status: 400 });
-  }
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const validGenders = ['male', 'female', 'other'];
-  const validAgeGroups = ['13-17', '18-24', '25-34', '35-44', '45+'];
-  const validLifeStatus = ['student', 'worker', 'business_owner', 'freelancer', 'other'];
+      return NextResponse.json({ success: true, profile: data });
+    }, 'user'),
+    RATE_LIMIT
+  )
+);
 
-  if (!validGenders.includes(gender)) {
-    return NextResponse.json({ error: 'Invalid gender' }, { status: 400 });
-  }
-  if (!validAgeGroups.includes(ageGroup)) {
-    return NextResponse.json({ error: 'Invalid age group' }, { status: 400 });
-  }
-  if (!validLifeStatus.includes(lifeStatus)) {
-    return NextResponse.json({ error: 'Invalid life status' }, { status: 400 });
-  }
+export const GET = createHandler(
+  null,
+  null,
+  withAuth(async () => {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .update({
-      full_name: fullName.trim(),
-      phone: phone.trim(),
-      gender,
-      age_group: ageGroup,
-      life_status: lifeStatus,
-      onboarding_completed: true,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', user.id)
-    .select()
-    .single();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const { data } = await supabase
+      .from('profiles')
+      .select('onboarding_completed, full_name, phone, gender, age_group, life_status')
+      .eq('id', user.id)
+      .single();
 
-  return NextResponse.json({ success: true, profile: data });
-}
-
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data } = await supabase
-    .from('profiles')
-    .select('onboarding_completed, full_name, phone, gender, age_group, life_status')
-    .eq('id', user.id)
-    .single();
-
-  return NextResponse.json({ profile: data });
-}
+    return NextResponse.json({ profile: data });
+  }, 'user')
+);

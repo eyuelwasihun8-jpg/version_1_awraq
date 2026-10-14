@@ -112,3 +112,19 @@ export interface PaymentRequest {
   transaction_number?: string;
   created_at: string;
 }
+
+export interface FAQItem {
+  question: string;
+  answer: string;
+  category?: string;
+}
+
+export interface TestimonialItem {
+  id: string;
+  quote: string;
+  author: string;
+  role: string;
+  company?: string;
+  avatar: string;
+  highlightTag?: string;
+}

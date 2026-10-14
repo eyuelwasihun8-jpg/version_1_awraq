@@ -1,54 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimit } from '@/lib/rate-limit';
-import { verifyTurnstile, getClientIp, isTurnstileConfigured } from '@/lib/turnstile';
+import { z } from 'zod';
+import { createHandler, withRateLimit } from '@/lib/api-handler';
+import { verifyTurnstile, getClientIp } from '@/lib/turnstile';
 
-/**
- * POST /api/auth/guard
- * Body: { action: 'signup' | 'login' | 'login_challenge', turnstileToken?: string }
- *
- * - signup: always requires Turnstile (if configured) + stricter rate limit
- * - login: light rate limit; Turnstile optional unless action=login_challenge
- * - login_challenge: requires Turnstile after failed attempts
- */
-export async function POST(request: NextRequest) {
-  try {
-    const ip = getClientIp(request) || 'unknown';
-    const body = await request.json().catch(() => ({}));
-    const action = String(body.action || 'login');
-    const token = typeof body.turnstileToken === 'string' ? body.turnstileToken : '';
+const authGuardSchema = z.object({
+  action: z.enum(['signup', 'login', 'login_challenge', 'register']).default('login'),
+  turnstileToken: z.string().optional(),
+});
 
-    // IP rate limits
-    const minute = rateLimit(`auth-guard:${ip}:min`, 20, 60 * 1000);
-    if (!minute.allowed) {
+const RATE_LIMIT_MINUTE = { max: 20, windowMs: 60 * 1000, keyPrefix: 'auth-guard' };
+const RATE_LIMIT_HOUR_SIGNUP = { max: 10, windowMs: 60 * 60 * 1000, keyPrefix: 'auth-guard' };
+const RATE_LIMIT_HOUR_LOGIN = { max: 40, windowMs: 60 * 60 * 1000, keyPrefix: 'auth-guard' };
+
+export const POST = createHandler(
+  authGuardSchema,
+  null,
+  async (request) => {
+    const { validatedData: body, clientIp } = request;
+    const action = body.action;
+
+    // Check minute rate limit
+    const minuteLimit = await import('@/lib/rate-limit').then(m =>
+      m.rateLimit(`auth-guard:${clientIp}:min`, RATE_LIMIT_MINUTE.max, RATE_LIMIT_MINUTE.windowMs)
+    );
+    if (!minuteLimit.allowed) {
       return NextResponse.json(
         { ok: false, error: 'Too many attempts. Please wait a minute.' },
-        { status: 429, headers: { 'Retry-After': String(minute.retryAfter || 60) } }
+        { status: 429, headers: { 'Retry-After': String(minuteLimit.retryAfter || 60) } }
       );
     }
 
-    const hourMax = action === 'signup' ? 10 : 40;
-    const hour = rateLimit(`auth-guard:${ip}:hour:${action}`, hourMax, 60 * 60 * 1000);
-    if (!hour.allowed) {
+    // Check hour rate limit
+    const hourMax = action === 'signup' || action === 'register' ? 10 : 40;
+    const hourLimit = await import('@/lib/rate-limit').then(m =>
+      m.rateLimit(`auth-guard:${clientIp}:hour:${action}`, hourMax, 60 * 60 * 1000)
+    );
+    if (!hourLimit.allowed) {
       return NextResponse.json(
         { ok: false, error: 'Too many attempts. Please try again later.' },
-        { status: 429, headers: { 'Retry-After': String(hour.retryAfter || 3600) } }
+        { status: 429, headers: { 'Retry-After': String(hourLimit.retryAfter || 3600) } }
       );
     }
 
-    const needsTurnstile =
-      action === 'signup' ||
-      action === 'login_challenge' ||
-      action === 'register';
+    const needsTurnstile = action === 'signup' || action === 'login_challenge' || action === 'register';
 
     if (needsTurnstile) {
+      const { isTurnstileConfigured } = await import('@/lib/turnstile');
       if (isTurnstileConfigured()) {
-        if (!token) {
+        if (!body.turnstileToken) {
           return NextResponse.json(
             { ok: false, error: 'Please complete the security check.' },
             { status: 400 }
           );
         }
-        const result = await verifyTurnstile(token, ip);
+        const result = await verifyTurnstile(body.turnstileToken, clientIp);
         if (!result.success) {
           console.warn('[auth/guard] Turnstile failed', result['error-codes']);
           return NextResponse.json(
@@ -57,12 +62,8 @@ export async function POST(request: NextRequest) {
           );
         }
       }
-      // If Turnstile not configured, allow (dev) — same as leads route
     }
 
     return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error('[auth/guard]', err);
-    return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }
-}
+);

@@ -3,7 +3,8 @@ import { createClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
 import { CoursesListClient } from '@/components/courses/CoursesListClient';
 
-export const dynamic = 'force-dynamic';
+// Use ISR with 60 second revalidation for fast initial loads
+export const revalidate = 60;
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://awraqskills.com';
 
@@ -94,6 +95,7 @@ export default async function CoursesPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Fetch courses and products in parallel
   const [{ data: courses }, { data: products }] = await Promise.all([
     adminDb
       .from('courses')

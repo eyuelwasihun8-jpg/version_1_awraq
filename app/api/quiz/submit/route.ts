@@ -7,8 +7,7 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Rate limit: 30 quiz submissions per hour per user
-  const rl = rateLimit(`quiz-submit:${user.id}`, 30, 60 * 60 * 1000);
+  const rl = await rateLimit(`quiz-submit:${user.id}`, 30, 60 * 60 * 1000);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: 'Too many quiz attempts. Please slow down.' },
@@ -31,12 +30,10 @@ export async function POST(request: NextRequest) {
 
   if (!lesson) return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
 
-  // Accept any lesson that has quiz_data (supports mixed lessons)
   if (!lesson.quiz_data || !lesson.quiz_data.questions?.length) {
     return NextResponse.json({ error: 'This lesson has no quiz' }, { status: 400 });
   }
 
-  // Must be actively enrolled (revoked enrollments blocked)
   const { data: enrollment } = await supabase
     .from('enrollments')
     .select('id')
@@ -108,7 +105,6 @@ export async function POST(request: NextRequest) {
   });
 }
 
-// GET past attempts
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

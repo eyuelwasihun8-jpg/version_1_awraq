@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase-admin';
 import { studentQuerySchema } from '@/lib/validators';
 import { createGetHandler, withAuth } from '@/lib/api-handler';
 
 export const GET = createGetHandler(
   studentQuerySchema,
-  withAuth(async (request, context) => {
+  withAuth(async (request) => {
     const { validatedQuery } = request;
     const { user, profile: authProfile } = (request as any).auth;
 
@@ -22,9 +22,7 @@ export const GET = createGetHandler(
 
     const offset = (page - 1) * limit;
 
-    // Instructors only see students in their courses
     const instructorId = authProfile.role === 'instructor' ? user.id : null;
-    // Sales only see their assigned students
     const salesId = authProfile.role === 'sales' ? user.id : null;
 
     const { data, error } = await adminDb.rpc('get_students_page', {

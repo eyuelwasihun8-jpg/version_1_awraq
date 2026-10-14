@@ -1,10 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase-admin';
 import { updateStudentSchema } from '@/lib/validators';
 import { createGetHandler, createHandler, withAuth } from '@/lib/api-handler';
 
-// GET handler using centralized handler
 export const GET = createGetHandler(
   null,
   withAuth(async (request, context) => {
@@ -23,13 +21,11 @@ export const GET = createGetHandler(
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
 
-    // Check authorization - sales can only view assigned students
     const { user, profile: authProfile } = (request as any).auth;
     if (authProfile.role === 'sales' && profile.assigned_to !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Instructor can only view students enrolled in their courses
     if (authProfile.role === 'instructor') {
       const { count } = await adminDb
         .from('enrollments')
@@ -56,7 +52,6 @@ export const GET = createGetHandler(
       console.error('Auth user fetch error:', e);
     }
 
-    // Fetch all related data in parallel
     const [
       { data: courseProgress },
       { data: products },
@@ -99,18 +94,16 @@ export const GET = createGetHandler(
   }, 'staff')
 );
 
-// PATCH handler using centralized handler with validation
 export const PATCH = createHandler(
   updateStudentSchema,
   null,
-  withAuth(async (request) => {
-    const params = await (request as any).context?.params;
+  withAuth(async (request, context) => {
+    const params = await context?.params;
     const { id } = params;
     const { validatedData: body } = request;
     const { user, profile: authProfile } = (request as any).auth;
     const adminDb = createAdminClient();
 
-    // Check authorization - sales can only edit assigned students
     if (authProfile.role === 'sales') {
       const { data: existingProfile } = await adminDb
         .from('profiles')

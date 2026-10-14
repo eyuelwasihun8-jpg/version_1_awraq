@@ -4,13 +4,6 @@ import { rateLimit } from '@/lib/rate-limit';
 
 const MIN_REVIEW_LENGTH = 30;
 
-/**
- * GET /api/reviews?courseId=...
- *   - Public list: published reviews only (max 6) + averageRating + totalReviews
- *
- * GET /api/reviews?courseId=...&mine=1
- *   - Authenticated: current user's own review (for certificate gate)
- */
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const courseId = request.nextUrl.searchParams.get('courseId');
@@ -20,7 +13,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'courseId required' }, { status: 400 });
   }
 
-  // ── Own review (certificate page gate) ───────────────────
   if (mine) {
     const {
       data: { user },
@@ -44,7 +36,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ review });
   }
 
-  // ── Public list: published only, max 6 ───────────────────
   let reviews: any[] | null = null;
 
   const { data: embedded, error: embedError } = await supabase
@@ -107,7 +98,6 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Average + total from ALL published
   const { data: allPublished } = await supabase
     .from('reviews')
     .select('rating')
@@ -129,11 +119,6 @@ export async function GET(request: NextRequest) {
   });
 }
 
-/**
- * POST /api/reviews
- * Body: { courseId, rating, reviewText }
- * Rate limit: 3 per hour per user
- */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const {
@@ -144,8 +129,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Rate limit: 3 review submissions per hour per user
-  const rl = rateLimit(`reviews-post:${user.id}`, 3, 60 * 60 * 1000);
+  const rl = await rateLimit(`reviews-post:${user.id}`, 3, 60 * 60 * 1000);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: 'Too many review submissions. Please try again later.' },
@@ -175,7 +159,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Must be actively enrolled
   const { data: enrollment } = await supabase
     .from('enrollments')
     .select('id')
@@ -188,7 +171,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Not enrolled' }, { status: 403 });
   }
 
-  // Must have completed all published lessons
   const { data: lessons } = await supabase
     .from('lessons')
     .select('id')
@@ -216,7 +198,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Existing review?
   const { data: existing } = await supabase
     .from('reviews')
     .select('id, is_published')
@@ -231,7 +212,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Update existing unpublished review
   if (existing) {
     const { data, error } = await supabase
       .from('reviews')
@@ -250,7 +230,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, review: data, updated: true });
   }
 
-  // Insert new review (starts unpublished — admin must publish)
   const { data, error } = await supabase
     .from('reviews')
     .insert({

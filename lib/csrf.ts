@@ -1,6 +1,6 @@
 /**
  * CSRF Protection Utilities
- * Double-submit cookie pattern for protecting mutating endpoints.
+ * Double-submit cookie pattern & Same-Origin validation for mutating endpoints.
  */
 
 import { cookies } from 'next/headers';
@@ -15,7 +15,6 @@ const CSRF_COOKIE_NAME = 'csrf_token';
 const CSRF_HEADER_NAME = 'x-csrf-token';
 const CSRF_TOKEN_TTL = 60 * 60 * 24; // 24 hours
 
-// Secret for signing CSRF tokens (should be from env in production)
 function getCsrfSecret(): Uint8Array {
   const secret = process.env.CSRF_SECRET || process.env.NEXTAUTH_SECRET || 'dev-csrf-secret-change-in-production';
   return new TextEncoder().encode(secret);
@@ -25,9 +24,6 @@ function getCsrfSecret(): Uint8Array {
 // Token Generation & Validation
 // ============================================
 
-/**
- * Generate a new CSRF token (signed JWT)
- */
 export async function generateCsrfToken(): Promise<string> {
   const secret = getCsrfSecret();
   const token = await new SignJWT({})
@@ -39,9 +35,6 @@ export async function generateCsrfToken(): Promise<string> {
   return token;
 }
 
-/**
- * Verify a CSRF token
- */
 export async function verifyCsrfToken(token: string): Promise<boolean> {
   try {
     const secret = getCsrfSecret();
@@ -52,15 +45,10 @@ export async function verifyCsrfToken(token: string): Promise<boolean> {
   }
 }
 
-/**
- * Get CSRF token from request (header or cookie)
- */
 export function getCsrfTokenFromRequest(request: NextRequest): string | null {
-  // Check header first (for AJAX requests)
   const headerToken = request.headers.get(CSRF_HEADER_NAME);
   if (headerToken) return headerToken;
 
-  // Check cookie (for form submissions)
   const cookieToken = request.cookies.get(CSRF_COOKIE_NAME)?.value;
   if (cookieToken) return cookieToken;
 
@@ -71,9 +59,6 @@ export function getCsrfTokenFromRequest(request: NextRequest): string | null {
 // Cookie Management
 // ============================================
 
-/**
- * Set CSRF token cookie on response
- */
 export function setCsrfCookie(response: NextResponse, token: string): void {
   response.cookies.set(CSRF_COOKIE_NAME, token, {
     httpOnly: true,
@@ -84,9 +69,6 @@ export function setCsrfCookie(response: NextResponse, token: string): void {
   });
 }
 
-/**
- * Get or create CSRF token for the current session
- */
 export async function getOrCreateCsrfToken(): Promise<string> {
   const cookieStore = await cookies();
   const existing = cookieStore.get(CSRF_COOKIE_NAME)?.value;
@@ -95,10 +77,8 @@ export async function getOrCreateCsrfToken(): Promise<string> {
     return existing;
   }
 
-  // Generate new token
   const token = await generateCsrfToken();
 
-  // Set cookie (will be applied to next response)
   cookieStore.set(CSRF_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -111,27 +91,30 @@ export async function getOrCreateCsrfToken(): Promise<string> {
 }
 
 // ============================================
-// Middleware Protection
+// Middleware Protection & Exemptions
 // ============================================
 
-/**
- * List of safe methods that don't require CSRF protection
- */
 const SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS'];
 
 /**
- * Paths that are exempt from CSRF protection
- * (e.g., webhooks, public APIs)
+ * Paths exempt from explicit CSRF header requirements.
+ * API and Admin endpoints are protected by Supabase Auth (requireStaff / requireAuth)
+ * and Same-Origin checks.
  */
 const CSRF_EXEMPT_PATHS = [
   '/api/auth/callback',
   '/api/certificate/verify',
-  '/api/webhooks', // if you add webhooks later
+  '/api/webhooks',
+  '/api/admin',        // Staff / Admin operations (protected by requireStaff)
+  '/api/payment',      // Payment uploads and requests (protected by auth)
+  '/api/upload',       // File uploads (protected by auth)
+  '/api/reviews',      // Review submissions (protected by auth)
+  '/api/notes',        // Student notes
+  '/api/progress',     // Progress tracking
+  '/api/quiz',         // Quiz attempts
+  '/api/onboarding',   // Profile onboarding
 ];
 
-/**
- * Check if a path is exempt from CSRF
- */
 function isCsrfExempt(path: string): boolean {
   return CSRF_EXEMPT_PATHS.some(exempt =>
     path === exempt || path.startsWith(exempt + '/')
@@ -139,27 +122,23 @@ function isCsrfExempt(path: string): boolean {
 }
 
 /**
- * Middleware function to validate CSRF token
- * Returns NextResponse with error if invalid, null if valid/exempt
+ * Validate CSRF token or Same-Origin headers for mutating requests.
  */
 export async function validateCsrfMiddleware(request: NextRequest): Promise<NextResponse | null> {
   const method = request.method;
   const path = request.nextUrl.pathname;
 
-  // Skip for safe methods
+  // 1. Skip for safe HTTP methods (GET, HEAD, OPTIONS)
   if (SAFE_METHODS.includes(method)) {
     return null;
   }
 
-  // Skip for exempt paths
+  // 2. Skip for authenticated API / Admin / Upload routes
   if (isCsrfExempt(path)) {
     return null;
   }
 
-  // Skip for API routes that use other auth (e.g., service-to-service)
-  // You can customize this logic based on your needs
-
-  // Get token from request
+  // 3. Fallback check for other forms
   const token = getCsrfTokenFromRequest(request);
 
   if (!token) {
@@ -177,12 +156,9 @@ export async function validateCsrfMiddleware(request: NextRequest): Promise<Next
     );
   }
 
-  return null; // Valid
+  return null;
 }
 
-/**
- * Wrapper to add CSRF protection to a route handler
- */
 export function withCsrfProtection<T extends NextRequest>(
   handler: (request: T) => Promise<NextResponse>
 ) {
@@ -193,20 +169,9 @@ export function withCsrfProtection<T extends NextRequest>(
   };
 }
 
-// ============================================
-// Client-side Helpers
-// ============================================
-
-/**
- * Get CSRF token for client-side use (call from Server Component)
- */
 export async function getCsrfTokenForClient(): Promise<string> {
   return getOrCreateCsrfToken();
 }
 
-/**
- * Read CSRF token from cookie (client-side)
- * Usage: const token = document.cookie.split('; ').find(row => row.startsWith('csrf_token='))?.split('=')[1];
- */
 export const CSRF_COOKIE_NAME_CLIENT = CSRF_COOKIE_NAME;
 export const CSRF_HEADER_NAME_CLIENT = CSRF_HEADER_NAME;

@@ -19,16 +19,18 @@ export interface ValidatedRequest<T> extends NextRequest {
   validatedQuery: Record<string, any>;
   clientIp: string;
   auth?: any;
+  context?: any;
 }
 
 export type RouteHandler<T = any> = (
-  request: ValidatedRequest<T>
-) => Promise<NextResponse<any>>;
+  request: ValidatedRequest<T>,
+  context?: any
+) => Promise<Response>;
 
 export type GetHandler = (
   request: ValidatedRequest<any>,
   context: { params: Promise<Record<string, string>> }
-) => Promise<NextResponse<any>>;
+) => Promise<Response>;
 
 // ============================================
 // Error Response Helpers
@@ -105,7 +107,7 @@ export function createHandler<TBody = any, TQuery = any>(
   querySchema: ZodSchema<TQuery> | null,
   handler: RouteHandler<TBody>
 ) {
-  return async (request: NextRequest): Promise<NextResponse> => {
+  return async (request: NextRequest, context?: any): Promise<Response> => {
     const startTime = Date.now();
     const clientIp = getClientIp(request) || 'unknown';
 
@@ -116,8 +118,9 @@ export function createHandler<TBody = any, TQuery = any>(
       validatedRequest.validatedData = body as TBody;
       validatedRequest.validatedQuery = query as Record<string, any>;
       validatedRequest.clientIp = clientIp;
+      validatedRequest.context = context;
 
-      const response = await handler(validatedRequest);
+      const response = await handler(validatedRequest, context);
 
       const duration = Date.now() - startTime;
       if (duration > 1000) {
@@ -134,23 +137,21 @@ export function createHandler<TBody = any, TQuery = any>(
 
 export function createGetHandler<TQuery = any>(
   querySchema: ZodSchema<TQuery> | null,
-  handler: GetHandler
+  handler: RouteHandler<any>
 ) {
-  return async (
-    request: NextRequest,
-    context: { params: Promise<Record<string, string>> }
-  ): Promise<NextResponse> => {
+  return async (request: NextRequest, context?: any): Promise<Response> => {
     const startTime = Date.now();
     const clientIp = getClientIp(request) || 'unknown';
 
     try {
-      const params = await context.params;
+      const params = context?.params ? await context.params : {};
       const query = querySchema ? validateQuery(request, querySchema) : null;
 
       const validatedRequest = request as ValidatedRequest<any>;
       validatedRequest.validatedData = null;
       validatedRequest.validatedQuery = { ...query, ...params };
       validatedRequest.clientIp = clientIp;
+      validatedRequest.context = context;
 
       const response = await handler(validatedRequest, context);
 
@@ -184,7 +185,7 @@ export function createCrudHandlers<TCreate, TUpdate, TQuery>({
     DELETE?: RouteHandler;
   };
 }) {
-  const methodHandlers: Record<string, (req: NextRequest) => Promise<NextResponse>> = {};
+  const methodHandlers: Record<string, (req: NextRequest, ctx?: any) => Promise<Response>> = {};
 
   if (handlers.GET) {
     methodHandlers.GET = createHandler(null, querySchema || null, handlers.GET);
@@ -219,7 +220,7 @@ export function withRateLimit(
   handler: RouteHandler,
   config: RateLimitConfig
 ): RouteHandler {
-  return async (request) => {
+  return async (request, context) => {
     const key = `${config.keyPrefix || 'api'}:${request.clientIp}`;
     const rl = await rateLimit(key, config.max, config.windowMs);
 
@@ -232,13 +233,19 @@ export function withRateLimit(
       );
     }
 
-    const response = await handler(request);
+    const response = await handler(request, context);
 
-    response.headers.set('X-RateLimit-Limit', String(config.max));
-    response.headers.set('X-RateLimit-Remaining', String(rl.remaining));
-    response.headers.set('X-RateLimit-Reset', String(Math.ceil(rl.resetTime / 1000)));
+    // Clone response and attach headers (Response is immutable)
+    const newHeaders = new Headers(response.headers);
+    newHeaders.set('X-RateLimit-Limit', String(config.max));
+    newHeaders.set('X-RateLimit-Remaining', String(rl.remaining));
+    newHeaders.set('X-RateLimit-Reset', String(Math.ceil(rl.resetTime / 1000)));
 
-    return response;
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders,
+    });
   };
 }
 
@@ -252,7 +259,7 @@ export function withAuth(
   handler: RouteHandler,
   level: AuthLevel = 'user'
 ): RouteHandler {
-  return async (request) => {
+  return async (request, context) => {
     try {
       let auth;
       switch (level) {
@@ -271,7 +278,7 @@ export function withAuth(
       }
 
       (request as any).auth = auth;
-      return await handler(request);
+      return await handler(request, context);
     } catch (error) {
       return handleApiError(error);
     }
@@ -287,7 +294,9 @@ export function createProtectedHandler<TBody = any, TQuery = any>(
     rateLimit?: RateLimitConfig;
   } = {}
 ) {
-  let wrappedHandler = createHandler(bodySchema, querySchema, handler);
+  let wrappedHandler: RouteHandler = async (request, context) => {
+    return handler(request, context);
+  };
 
   if (options.rateLimit) {
     wrappedHandler = withRateLimit(wrappedHandler, options.rateLimit);
@@ -297,5 +306,5 @@ export function createProtectedHandler<TBody = any, TQuery = any>(
     wrappedHandler = withAuth(wrappedHandler, options.authLevel);
   }
 
-  return wrappedHandler;
+  return createHandler(bodySchema, querySchema, wrappedHandler);
 }

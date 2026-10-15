@@ -10,7 +10,6 @@ export const CommunityBadge: React.FC = () => {
     '/avatars/2.jpg',
     '/avatars/3.jpg',
     '/avatars/4.jpg',
-    '/avatars/5.jpg',
   ];
 
   return (

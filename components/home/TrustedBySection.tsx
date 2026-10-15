@@ -1,57 +1,39 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-export function TrustedBySection() {
-  const [logos, setLogos] = useState<string[]>([]);
+export const TrustedBySection: React.FC = () => {
+  const [failedLogos, setFailedLogos] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
-    fetch('/api/logos')
-      .then((res) => res.json())
-      .then((data) => setLogos(data.logos || []))
-      .catch(() => setLogos([]));
-  }, []);
-
-  if (logos.length === 0) return null;
-
-  // Duplicate list so the marquee loops seamlessly
-  const loopLogos = [...logos, ...logos];
+  const logos = [
+    { src: '/logos/coca-cola.png', name: 'Coca Cola' },
+    { src: '/logos/coop.png', name: 'Coop Bank' },
+    { src: '/logos/ethio-telecom.png', name: 'Ethio Telecom' },
+    { src: '/logos/safaricom.png', name: 'Safaricom' },
+    { src: '/logos/usaid.png', name: 'USAID' },
+    { src: '/logos/yango.png', name: 'Yango' },
+  ];
 
   return (
-    <section className="bg-[#0a0704] text-white py-8 sm:py-9 border-y border-[#ddb049]/30 overflow-hidden select-none">
-      <div className="max-w-7xl mx-auto px-4 text-center mb-5">
-        <p className="text-[10px] sm:text-xs font-bold tracking-[0.22em] text-slate-400 uppercase">
-          Our Instructors are trusted by
+    <section className="py-8 bg-white border-y border-[#f0ebe2] overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <p className="text-center text-[11px] font-black uppercase tracking-widest text-slate-400 mb-6">
+          Trusted by growing Ethiopian brands &amp; businesses
         </p>
-      </div>
-
-      {/* Scrolling marquee track */}
-      <div className="relative w-full overflow-hidden">
-        {/* soft edge fades */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-20 z-10 bg-gradient-to-r from-[#0a0704] to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 sm:w-20 z-10 bg-gradient-to-l from-[#0a0704] to-transparent" />
-
-        <div className="flex w-max animate-marquee-trusted items-center gap-10 sm:gap-14 hover:[animation-play-state:paused]">
-          {loopLogos.map((logoPath, index) => {
-            const fileName = logoPath.split('/').pop()?.split('.')[0] || 'Partner';
-            const cleanName = fileName.replace(/[-_]/g, ' ');
-
-            return (
-              <div
-                key={`${logoPath}-${index}`}
-                className="h-12 sm:h-14 flex items-center justify-center shrink-0"
-                title={cleanName}
-              >
-                <img
-                  src={logoPath}
-                  alt={cleanName}
-                  className="h-10 sm:h-12 w-auto max-w-[140px] object-contain opacity-90 hover:opacity-100 transition-opacity"
-                />
-              </div>
-            );
-          })}
+        <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 opacity-70 grayscale hover:grayscale-0 transition-all">
+          {logos.map((logo, idx) =>
+            failedLogos[idx] ? null : (
+              <img
+                key={idx}
+                src={logo.src}
+                alt={logo.name}
+                className="h-7 sm:h-9 w-auto object-contain transition-transform hover:scale-105"
+                onError={() => setFailedLogos((prev) => ({ ...prev, [idx]: true }))}
+              />
+            )
+          )}
         </div>
       </div>
     </section>
   );
-}
+};

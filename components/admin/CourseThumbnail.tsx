@@ -12,13 +12,41 @@ interface Props {
   priority?: boolean;
 }
 
+const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '';
+
+/**
+ * Synchronously constructs the full R2 public URL on initial render.
+ * Eliminates client-side API fetch delays!
+ */
+function resolveThumbnailUrl(key?: string | null): string | null {
+  if (!key || !key.trim()) return null;
+
+  const cleanKey = key.trim();
+
+  // 1. Direct HTTP URL
+  if (/^https?:\/\//i.test(cleanKey)) {
+    return cleanKey;
+  }
+
+  // 2. Fast synchronous resolution if public R2 domain exists
+  if (R2_PUBLIC_URL) {
+    return `${R2_PUBLIC_URL.replace(/\/$/, '')}/${cleanKey.replace(/^\//, '')}`;
+  }
+
+  // 3. In-memory cache check
+  return getCachedThumbnail(cleanKey);
+}
+
 export const CourseThumbnail: React.FC<Props> = ({
   thumbnailKey,
   alt,
   className = 'w-16 h-12 rounded-lg object-cover',
   fallbackClassName = 'w-16 h-12 rounded-lg bg-slate-100 flex items-center justify-center',
+  priority = false,
 }) => {
-  const [src, setSrc] = useState<string | null>(null);
+  // Initialize state synchronously so <img> renders immediately in HTML
+  const initialUrl = resolveThumbnailUrl(thumbnailKey);
+  const [src, setSrc] = useState<string | null>(initialUrl);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -29,19 +57,13 @@ export const CourseThumbnail: React.FC<Props> = ({
       return;
     }
 
-    // Direct HTTP URL
-    if (/^https?:\/\//i.test(thumbnailKey)) {
-      setSrc(thumbnailKey);
+    const resolved = resolveThumbnailUrl(thumbnailKey);
+    if (resolved) {
+      setSrc(resolved);
       return;
     }
 
-    // Check in-memory cache
-    const cached = getCachedThumbnail(thumbnailKey);
-    if (cached) {
-      setSrc(cached);
-      return;
-    }
-
+    // Fallback API call ONLY if public R2 domain is missing in environment
     let isMounted = true;
     fetch(`/api/thumbnail?key=${encodeURIComponent(thumbnailKey)}`)
       .then((res) => res.json())
@@ -73,6 +95,8 @@ export const CourseThumbnail: React.FC<Props> = ({
       src={src}
       alt={alt}
       className={className}
+      loading={priority ? 'eager' : 'lazy'}
+      decoding="async"
       onError={() => setFailed(true)}
     />
   );

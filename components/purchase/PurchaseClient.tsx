@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CourseThumbnail } from '@/components/admin/CourseThumbnail';
+import { uploadToR2 } from '@/lib/uploadToR2';
 
 const PAYMENT_ACCOUNTS = {
   cbe: {
@@ -67,22 +68,14 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
     setUploading(true);
 
     try {
-      // 1. Upload receipt image directly via POST to /api/payment/upload-url
-      const formData = new FormData();
-      formData.append('file', rawFile);
-
-      const uploadRes = await fetch('/api/payment/upload-url', {
-        method: 'POST',
-        body: formData,
+      const { fileKey } = await uploadToR2(rawFile, {
+        folder: 'receipts',
+        endpoint: '/api/payment/upload-url',
+        compress: true,
+        maxImageWidth: 1600,
+        imageQuality: 0.8,
       });
 
-      const uploadResult = await uploadRes.json();
-
-      if (!uploadRes.ok || !uploadResult.fileKey) {
-        throw new Error(uploadResult.error || 'Failed to upload receipt image');
-      }
-
-      // 2. Submit payment request record to database
       const submitRes = await fetch('/api/payment/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -91,7 +84,7 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           itemId: item.id,
           amount: item.price,
           paymentMethod: method,
-          receiptImageKey: uploadResult.fileKey,
+          receiptImageKey: fileKey,
         }),
       });
 
@@ -121,7 +114,6 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           <span>Back</span>
         </Link>
 
-        {/* Item Header */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-4 sm:p-5 mb-6 flex items-center gap-4">
           <div className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden shrink-0">
             <CourseThumbnail
@@ -142,7 +134,6 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           </div>
         </div>
 
-        {/* Step 1: Payment Method */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 mb-4">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center">
@@ -187,7 +178,6 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           </div>
         </div>
 
-        {/* Step 2: Instructions */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 mb-4">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center">
@@ -241,7 +231,6 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
           </div>
         </div>
 
-        {/* Step 3: Upload */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 mb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">

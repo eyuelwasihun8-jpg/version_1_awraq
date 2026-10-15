@@ -5,12 +5,25 @@ import { createAdminClient } from '@/lib/supabase-admin';
 export async function GET() {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+
+    // Race auth check against a 4-second timeout to prevent 20s+ hangs
+    let user = null;
+    try {
+      const authPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Auth timeout')), 4000)
+      );
+
+      const result = await Promise.race([authPromise, timeoutPromise]) as any;
+      user = result?.data?.user || null;
+    } catch {
+      // Auth timed out or failed — return 0 gracefully instead of 401
+      return NextResponse.json({ count: 0 });
+    }
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      // Return 0 gracefully instead of 401 error during transient network lag
+      return NextResponse.json({ count: 0 });
     }
 
     const adminDb = createAdminClient();
@@ -33,14 +46,12 @@ export async function GET() {
       .eq('status', 'pending');
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ count: 0 });
     }
 
     return NextResponse.json({ count: count || 0 });
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message || 'Server error' },
-      { status: 500 }
-    );
+  } catch {
+    // Any uncaught error — return 0 gracefully so sidebar badge doesn't break
+    return NextResponse.json({ count: 0 });
   }
 }

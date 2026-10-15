@@ -38,32 +38,27 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const [pending, setPending] = useState(pendingPayments);
   const canSeePayments = ['super_admin', 'admin', 'sales'].includes(role);
 
+  // Sync from server-rendered prop
   useEffect(() => {
     setPending(pendingPayments);
   }, [pendingPayments]);
 
+  // Listen ONLY for manual events (no duplicate polling timer)
+  // AdminSidebar already handles the 30-second auto-refresh
   useEffect(() => {
     if (!canSeePayments) return;
 
-    const refresh = async () => {
-      try {
-        const res = await fetch('/api/admin/payments/pending-count', {
-          cache: 'no-store',
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (typeof data.count === 'number') setPending(data.count);
-      } catch {}
+    const onChanged = () => {
+      fetch('/api/admin/payments/pending-count')
+        .then((r) => r.json())
+        .then((data) => {
+          if (typeof data.count === 'number') setPending(data.count);
+        })
+        .catch(() => {});
     };
 
-    const interval = setInterval(refresh, 30_000);
-    const onChanged = () => refresh();
     window.addEventListener('awraq:payments-changed', onChanged);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('awraq:payments-changed', onChanged);
-    };
+    return () => window.removeEventListener('awraq:payments-changed', onChanged);
   }, [canSeePayments]);
 
   const handleLogout = async () => {
@@ -83,7 +78,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Quick Payments alarm pin (desktop) */}
         {canSeePayments && pending > 0 && (
           <Link
             href={`/${SLUG}/payments?status=pending`}

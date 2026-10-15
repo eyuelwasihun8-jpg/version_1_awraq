@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Upload, Save, Trash2, X, FileImage } from 'lucide-react';
 import { toast } from 'sonner';
+import { uploadToR2 } from '@/lib/uploadToR2';
 
 const PORTAL_SLUG = process.env.NEXT_PUBLIC_ADMIN_SLUG || 'staff-portal-x7k9m';
 
@@ -36,32 +37,26 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
   const [uploadingThumb, setUploadingThumb] = useState(false);
   const [uploadingCert, setUploadingCert] = useState(false);
 
-  // Server-side upload (FormData → /api/admin/upload)
   const uploadFile = async (
     file: File,
     folder: string,
-    setBusy: (v: boolean) => void
+    setBusy: (v: boolean) => void,
+    forceNoCompress = false
   ): Promise<string | null> => {
     setBusy(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folder', folder);
+      const isSvg =
+        file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg');
 
-      const res = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: formData,
+      const result = await uploadToR2(file, {
+        folder,
+        endpoint: '/api/admin/upload-url',
+        compress: !forceNoCompress && file.type.startsWith('image/') && !isSvg,
       });
-
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || 'Upload failed');
-        return null;
-      }
-
-      return data.fileKey as string;
-    } catch {
-      toast.error('Upload failed');
+      return result.fileKey;
+    } catch (err: any) {
+      console.error('Upload failed:', err);
+      toast.error(err.message || 'Upload failed');
       return null;
     } finally {
       setBusy(false);
@@ -91,21 +86,19 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
     if (!file) return;
 
     const isSvg =
-      file.type === 'image/svg+xml' ||
-      file.name.toLowerCase().endsWith('.svg');
+      file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg');
 
     if (!isSvg) {
       toast.error('Only SVG files are allowed for certificate templates');
       return;
     }
 
-    // Soft size guard (2MB)
     if (file.size > 2 * 1024 * 1024) {
       toast.error('SVG must be under 2MB');
       return;
     }
 
-    const key = await uploadFile(file, 'certificates/templates', setUploadingCert);
+    const key = await uploadFile(file, 'certificates/templates', setUploadingCert, true);
     if (key) {
       setCertKey(key);
       toast.success('Certificate SVG template uploaded!');
@@ -260,7 +253,6 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
           </Field>
         </div>
 
-        {/* Thumbnail */}
         <Field label="Thumbnail Image">
           <div className="flex items-center gap-3 flex-wrap">
             {thumbnailUrl ? (
@@ -287,7 +279,6 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
           </div>
         </Field>
 
-        {/* Certificate SVG template — per course */}
         <Field label="Certificate Design (SVG only)">
           <p className="text-[11px] text-slate-500 font-medium mb-2 -mt-1">
             Upload a unique certificate background for graduates of this course. Leave empty to use

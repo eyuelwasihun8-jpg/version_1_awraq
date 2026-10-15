@@ -3,8 +3,9 @@ import { createClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
 import { updateCourseSchema } from '@/lib/validators';
 import { createHandler, withAuth } from '@/lib/api-handler';
+import { deleteR2File, deleteR2Files } from '@/lib/r2-delete';
+import { BUCKETS } from '@/lib/r2';
 
-// GET single course - use createHandler with null body/query schema
 export const GET = createHandler(
   null,
   null,
@@ -14,7 +15,6 @@ export const GET = createHandler(
     const supabase = await createClient();
     const { user, profile: authProfile } = (request as any).auth;
 
-    // Check access
     if (authProfile.role === 'instructor') {
       const { data: course } = await supabase
         .from('courses')
@@ -40,7 +40,6 @@ export const GET = createHandler(
   }, 'staff')
 );
 
-// UPDATE course
 export const PATCH = createHandler(
   updateCourseSchema,
   null,
@@ -51,7 +50,6 @@ export const PATCH = createHandler(
     const supabase = await createClient();
     const { user, profile: authProfile } = (request as any).auth;
 
-    // Check access
     if (authProfile.role === 'instructor') {
       const { data: course } = await supabase
         .from('courses')
@@ -85,7 +83,6 @@ export const PATCH = createHandler(
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    // Audit log
     const adminDb = createAdminClient();
     await adminDb.from('audit_logs').insert({
       actor_id: user.id,
@@ -100,32 +97,80 @@ export const PATCH = createHandler(
   }, 'staff')
 );
 
-// DELETE course - only admin/super_admin
 export const DELETE = createHandler(
   null,
   null,
   withAuth(async (request) => {
     const params = await (request as any).context?.params;
     const { id } = params;
-    const supabase = await createClient();
     const { user, profile: authProfile } = (request as any).auth;
 
-    // Check access - only admin/super_admin can delete
     if (!['super_admin', 'admin'].includes(authProfile.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    const adminDb = createAdminClient();
+
+    // 1. Collect all R2 file keys before deleting DB rows
+    const { data: course } = await adminDb
+      .from('courses')
+      .select('thumbnail_url, certificate_template_key')
+      .eq('id', id)
+      .single();
+
+    const { data: lessons } = await adminDb
+      .from('lessons')
+      .select('id, video_key')
+      .eq('course_id', id);
+
+    const lessonIds = (lessons || []).map((l) => l.id);
+
+    let resourceKeys: string[] = [];
+    if (lessonIds.length > 0) {
+      const { data: resources } = await adminDb
+        .from('lesson_resources')
+        .select('file_key')
+        .in('lesson_id', lessonIds);
+      resourceKeys = (resources || [])
+        .map((r) => r.file_key)
+        .filter((k): k is string => !!k);
+    }
+
+    const { data: certificates } = await adminDb
+      .from('certificates')
+      .select('certificate_url')
+      .eq('course_id', id);
+
+    // 2. Delete DB row (cascades to modules, lessons, enrollments, progress, etc.)
+    const supabase = await createClient();
     const { error } = await supabase.from('courses').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    // Audit log
-    const adminDb = createAdminClient();
+    // 3. Clean up R2 files
+    const contentFilesToDelete = [
+      course?.thumbnail_url,
+      course?.certificate_template_key,
+      ...(lessons || []).map((l) => l.video_key),
+      ...resourceKeys,
+    ];
+
+    await deleteR2Files(BUCKETS.content, contentFilesToDelete);
+
+    const certFilesToDelete = (certificates || [])
+      .map((c) => c.certificate_url)
+      .filter((k): k is string => !!k);
+    await deleteR2Files(BUCKETS.certificates, certFilesToDelete);
+
+    // 4. Audit log
     await adminDb.from('audit_logs').insert({
       actor_id: user.id,
       actor_role: authProfile.role,
       action: 'delete_course',
       target_type: 'course',
       target_id: id,
+      details: {
+        files_deleted: contentFilesToDelete.filter(Boolean).length + certFilesToDelete.length,
+      },
     });
 
     return NextResponse.json({ success: true });

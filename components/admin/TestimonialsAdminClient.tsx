@@ -16,6 +16,7 @@ import {
   Quote,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { uploadToR2 } from '@/lib/uploadToR2';
 
 type Item = {
   id: string;
@@ -49,6 +50,7 @@ export function TestimonialsAdminClient() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -76,38 +78,24 @@ export function TestimonialsAdminClient() {
     mode === 'edit' && editingId && items.some((item) => item.id === editingId)
   );
 
-  /**
-   * Dedicated Testimonial Binary Upload
-   * Calls /api/admin/testimonials/upload directly with raw file bytes
-   */
-  const uploadFile = async (file: File, folder: string) => {
+  const uploadFile = async (file: File, folder: string): Promise<string> => {
     setUploading(true);
+    setProgress(0);
     try {
-      const url = `/api/admin/testimonials/upload?folder=${encodeURIComponent(
-        folder
-      )}&filename=${encodeURIComponent(file.name)}`;
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': file.type || 'application/octet-stream',
-        },
-        body: file, // Raw binary
+      const result = await uploadToR2(file, {
+        folder,
+        endpoint: '/api/admin/upload-url',
+        compress: file.type.startsWith('image/'),
+        onProgress: (p) => setProgress(p),
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Upload failed');
-      }
-
-      return data.fileKey as string;
+      return result.fileKey;
     } catch (err: any) {
       console.error('Upload error:', err);
       toast.error(err.message || 'Failed to upload file');
       throw err;
     } finally {
       setUploading(false);
+      setProgress(0);
     }
   };
 
@@ -218,7 +206,6 @@ export function TestimonialsAdminClient() {
         </button>
       </div>
 
-      {/* Form */}
       {showForm && (
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between">
@@ -364,7 +351,7 @@ export function TestimonialsAdminClient() {
                   ) : (
                     <Upload className="w-3.5 h-3.5" />
                   )}
-                  Upload File
+                  {uploading ? `Uploading ${progress}%` : 'Upload File'}
                   <input
                     type="file"
                     className="hidden"
@@ -385,9 +372,7 @@ export function TestimonialsAdminClient() {
                         );
                         setForm((f) => ({ ...f, mediaKey: key }));
                         toast.success('Media uploaded!');
-                      } catch {
-                        // Toast handled in uploadFile
-                      }
+                      } catch {}
                     }}
                   />
                 </label>
@@ -408,7 +393,7 @@ export function TestimonialsAdminClient() {
                     ) : (
                       <Upload className="w-3.5 h-3.5" />
                     )}
-                    Upload Poster
+                    {uploading ? 'Uploading...' : 'Upload Poster'}
                     <input
                       type="file"
                       className="hidden"
@@ -422,9 +407,7 @@ export function TestimonialsAdminClient() {
                           const key = await uploadFile(file, 'testimonials/posters');
                           setForm((f) => ({ ...f, posterKey: key }));
                           toast.success('Poster uploaded!');
-                        } catch {
-                          // Toast handled
-                        }
+                        } catch {}
                       }}
                     />
                   </label>
@@ -461,7 +444,6 @@ export function TestimonialsAdminClient() {
         </div>
       )}
 
-      {/* List */}
       <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm overflow-hidden">
         {loading ? (
           <div className="p-16 text-center">

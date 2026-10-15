@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Upload, Save, Trash2, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { uploadToR2 } from '@/lib/uploadToR2';
 
 const PORTAL_SLUG = process.env.NEXT_PUBLIC_ADMIN_SLUG || 'staff-portal-x7k9m';
 
@@ -35,68 +36,35 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
   const [uploadingThumb, setUploadingThumb] = useState(false);
   const [fileProgress, setFileProgress] = useState(0);
 
-  /**
-   * Long-term fix: ALWAYS upload through Next.js server → R2
-   * Never browser → R2 (no CORS needed)
-   */
-  const uploadToServer = async (
-    file: File,
-    folder: string,
-    onProgress?: (pct: number) => void
-  ): Promise<string | null> => {
-    try {
-      onProgress?.(10);
-
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folder', folder);
-
-      onProgress?.(30);
-
-      const res = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: formData, // do NOT set Content-Type — browser sets multipart boundary
-      });
-
-      onProgress?.(80);
-
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || 'Upload failed');
-        return null;
-      }
-
-      onProgress?.(100);
-      return data.fileKey as string;
-    } catch (err) {
-      console.error('Server upload error:', err);
-      toast.error('Upload failed. Please try again.');
-      return null;
-    }
-  };
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
 
-    // Keep under practical server limits (local can be higher; Vercel ~4.5MB on hobby)
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error('File too large (max 50MB). Compress the PDF/ZIP first.');
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('File too large (max 100MB). Compress the PDF/ZIP first.');
       return;
     }
 
     setUploadingFile(true);
     setFileProgress(0);
 
-    const key = await uploadToServer(file, 'products/files', setFileProgress);
-    if (key) {
-      setFileKey(key);
+    try {
+      const result = await uploadToR2(file, {
+        folder: 'products/files',
+        endpoint: '/api/admin/upload-url',
+        compress: false,
+        onProgress: (pct) => setFileProgress(pct),
+      });
+      setFileKey(result.fileKey);
       toast.success('File uploaded!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Upload failed');
+    } finally {
+      setUploadingFile(false);
+      setFileProgress(0);
     }
-
-    setUploadingFile(false);
-    setFileProgress(0);
   };
 
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,12 +78,20 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
     }
 
     setUploadingThumb(true);
-    const key = await uploadToServer(file, 'products/thumbnails');
-    if (key) {
-      setThumbnailUrl(key);
+    try {
+      const result = await uploadToR2(file, {
+        folder: 'products/thumbnails',
+        endpoint: '/api/admin/upload-url',
+        compress: true,
+      });
+      setThumbnailUrl(result.fileKey);
       toast.success('Thumbnail uploaded!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Upload failed');
+    } finally {
+      setUploadingThumb(false);
     }
-    setUploadingThumb(false);
   };
 
   const handleSave = async () => {
@@ -260,7 +236,6 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
           </Field>
         </div>
 
-        {/* Product file — server upload only */}
         <Field label="Product File * (PDF, ZIP, etc.)">
           <div className="space-y-3">
             <div className="flex items-center gap-3 flex-wrap">
@@ -277,7 +252,7 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
                   <Upload className="w-3.5 h-3.5" />
                 )}
                 <span>
-                  {uploadingFile ? 'Uploading...' : fileKey ? 'Replace File' : 'Upload File'}
+                  {uploadingFile ? `Uploading ${fileProgress}%` : fileKey ? 'Replace File' : 'Upload File'}
                 </span>
                 <input
                   type="file"
@@ -292,7 +267,7 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
             {uploadingFile && (
               <div className="bg-[#fbfaf7] p-3 rounded-xl border border-[#e8e0d2]">
                 <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                  <span>Uploading via secure server…</span>
+                  <span>Uploading directly to cloud…</span>
                   <span>{fileProgress}%</span>
                 </div>
                 <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -303,15 +278,9 @@ export const ProductFormClient: React.FC<Props> = ({ product }) => {
                 </div>
               </div>
             )}
-
-            <p className="text-[11px] text-slate-500 font-medium">
-              Uploads go through Awraq servers (no browser → R2 / no CORS). Max ~50MB locally;
-              keep PDFs compressed for production.
-            </p>
           </div>
         </Field>
 
-        {/* Thumbnail — server upload only */}
         <Field label="Thumbnail Image (optional)">
           <div className="flex items-center gap-3 flex-wrap">
             {thumbnailUrl && (

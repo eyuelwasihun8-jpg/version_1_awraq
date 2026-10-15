@@ -5,21 +5,28 @@ import { validateCsrfMiddleware } from '@/lib/csrf';
 const PORTAL_SLUG = process.env.NEXT_PUBLIC_ADMIN_SLUG || 'staff-portal-x7k9m';
 const LOGIN_SLUG = process.env.NEXT_PUBLIC_ADMIN_LOGIN_SLUG || 'staff-login-x7k9m';
 
-// Staff roles that can access the staff portal
 const STAFF_ROLES = ['super_admin', 'admin', 'sales', 'instructor'] as const;
 
 /**
- * Get user safely — returns null silently if visitor is not logged in.
- * Retries only for genuine transient network errors.
+ * Get user safely with strict 4-second timeout.
+ * Returns null silently if visitor is not logged in or network is slow.
+ * Never hangs for 20+ seconds.
  */
-async function getUserWithRetry(supabase: any, retries = 2): Promise<any> {
+async function getUserWithRetry(supabase: any, retries = 1): Promise<any> {
   for (let i = 0; i <= retries; i++) {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      // Race getUser() against a 4-second timeout
+      const userPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Auth timeout')), 4000)
+      );
+
+      const { data: { user }, error } = await Promise.race([
+        userPromise,
+        timeoutPromise,
+      ]) as any;
 
       if (error) {
-        // "AuthSessionMissingError" is normal when a visitor is unauthenticated.
-        // Return null immediately without retrying or logging error spam.
         if (
           error.name === 'AuthSessionMissingError' ||
           error.message?.includes('Auth session missing') ||
@@ -40,21 +47,19 @@ async function getUserWithRetry(supabase: any, retries = 2): Promise<any> {
       }
 
       if (i === retries) {
-        console.warn('[Middleware] Transient getUser error after retries:', err);
+        // Silently return null instead of logging noisy errors
         return null;
       }
-      // Wait before retry for real network errors: 100ms, 200ms
-      await new Promise(resolve => setTimeout(resolve, 100 * (i + 1)));
+      await new Promise((resolve) => setTimeout(resolve, 150));
     }
   }
   return null;
 }
 
-/**
- * Get user profile with role and is_active status.
- * Returns null if profile not found or on query error.
- */
-async function getUserProfile(supabase: any, userId: string): Promise<{ role: string; is_active: boolean } | null> {
+async function getUserProfile(
+  supabase: any,
+  userId: string
+): Promise<{ role: string; is_active: boolean } | null> {
   try {
     const { data: profile, error } = await supabase
       .from('profiles')
@@ -98,7 +103,6 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Safely check auth session
   const user = await getUserWithRetry(supabase);
   const path = request.nextUrl.pathname;
 
@@ -110,7 +114,7 @@ export async function middleware(request: NextRequest) {
   // 2. Redirect logged-in users away from auth pages to /dashboard
   if (user) {
     const authPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
-    if (authPaths.some(p => path === p || path.startsWith(p + '/'))) {
+    if (authPaths.some((p) => path === p || path.startsWith(p + '/'))) {
       const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
@@ -169,13 +173,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for:
-     * - _next/static (Next.js static files)
-     * - _next/image (Next.js image optimization)
-     * - favicon.ico
-     * - Static media (svg, png, jpg, jpeg, gif, webp, mp4, webm, mov, ogg, mp3, wav, m4a, pdf)
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4|webm|mov|ogg|mp3|wav|m4a|pdf)$).*)',
   ],
 };

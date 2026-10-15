@@ -7,13 +7,11 @@ import {
   User,
   Phone,
   Mail,
-  Calendar,
-  Briefcase,
+  Lock,
   Loader2,
   Save,
   Upload,
   Camera,
-  Lock,
   CheckCircle2,
   ArrowLeft,
   LogOut,
@@ -21,6 +19,7 @@ import {
 import { toast } from 'sonner';
 import { UserAvatar } from '@/components/UserAvatar';
 import { createClient } from '@/lib/supabase-browser';
+import { uploadToR2 } from '@/lib/uploadToR2';
 
 const GENDERS = [
   { value: 'male', label: 'Male' },
@@ -75,13 +74,13 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image');
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image must be under 5MB');
       return;
@@ -89,22 +88,18 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
 
     setUploadingAvatar(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/profile/avatar-upload', {
-        method: 'POST',
-        body: formData,
+      const { fileKey } = await uploadToR2(file, {
+        folder: 'avatars',
+        endpoint: '/api/profile/avatar-upload',
+        compress: true,
+        maxImageWidth: 800,
+        imageQuality: 0.85,
       });
-
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || 'Upload failed');
-        return;
-      }
-
-      setAvatarKey(data.fileKey);
+      setAvatarKey(fileKey);
       toast.success('Photo uploaded! Click Save to apply.');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Upload failed');
     } finally {
       setUploadingAvatar(false);
     }
@@ -181,7 +176,6 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
   return (
     <div className="min-h-screen bg-[#fbfaf7] pb-24 sm:pb-16 pt-24 sm:pt-28">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back link */}
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 mb-4 cursor-pointer"
@@ -197,7 +191,6 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
           </p>
         </div>
 
-        {/* Profile Photo Section */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8 mb-4">
           <h2 className="text-base font-black text-slate-900 mb-5">Profile Photo</h2>
 
@@ -245,12 +238,10 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
           </div>
         </div>
 
-        {/* Personal Info Section */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8 mb-4">
           <h2 className="text-base font-black text-slate-900 mb-5">Personal Information</h2>
 
           <div className="space-y-4">
-            {/* Full Name */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Name *</label>
               <div className="relative">
@@ -265,7 +256,6 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
               </div>
             </div>
 
-            {/* Email (read-only) */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Email
@@ -282,7 +272,6 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
               </div>
             </div>
 
-            {/* Phone */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone</label>
               <div className="flex">
@@ -302,7 +291,6 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
               </div>
             </div>
 
-            {/* Gender */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">Gender</label>
               <div className="grid grid-cols-3 gap-2">
@@ -322,7 +310,6 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
               </div>
             </div>
 
-            {/* Age Group */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">Age Group</label>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
@@ -342,7 +329,6 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
               </div>
             </div>
 
-            {/* Life Status */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">Life Status</label>
               <div className="grid grid-cols-2 gap-2">
@@ -364,7 +350,6 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
             </div>
           </div>
 
-          {/* Save button */}
           <div className="flex items-center gap-3 pt-6 mt-6 border-t border-[#f0ebe2]">
             <button
               onClick={handleSave}
@@ -384,7 +369,6 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
           </div>
         </div>
 
-        {/* Security Section */}
         <div className="bg-white rounded-2xl border border-[#e8e0d2] shadow-sm p-6 sm:p-8 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-black text-slate-900">Security</h2>
@@ -452,7 +436,6 @@ export const ProfileClient: React.FC<Props> = ({ initialProfile, email }) => {
           )}
         </div>
 
-        {/* Logout Section */}
         <div className="bg-white rounded-2xl border border-red-200 shadow-sm p-6 sm:p-8">
           <h2 className="text-base font-black text-slate-900 mb-1">Sign Out</h2>
           <p className="text-xs text-slate-500 font-medium mb-4">

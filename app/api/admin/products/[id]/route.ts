@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { createAdminClient } from '@/lib/supabase-admin';
+import { deleteR2File } from '@/lib/r2-delete';
+import { BUCKETS } from '@/lib/r2';
 
 async function requireStaff(supabase: any) {
   const { data: { user } } = await supabase.auth.getUser();
@@ -27,6 +30,25 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (body.thumbnailUrl !== undefined) updates.thumbnail_url = body.thumbnailUrl;
   if (body.isPublished !== undefined) updates.is_published = body.isPublished;
 
+  // Delete old files from R2 when replacing
+  if (body.fileKey !== undefined || body.thumbnailUrl !== undefined) {
+    const adminDb = createAdminClient();
+    const { data: current } = await adminDb
+      .from('digital_products')
+      .select('file_key, thumbnail_url')
+      .eq('id', id)
+      .single();
+
+    if (current) {
+      if (body.fileKey !== undefined && current.file_key && body.fileKey !== current.file_key) {
+        await deleteR2File(BUCKETS.content, current.file_key);
+      }
+      if (body.thumbnailUrl !== undefined && current.thumbnail_url && body.thumbnailUrl !== current.thumbnail_url) {
+        await deleteR2File(BUCKETS.content, current.thumbnail_url);
+      }
+    }
+  }
+
   const { data, error } = await supabase
     .from('digital_products')
     .update(updates)
@@ -44,7 +66,24 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   const auth = await requireStaff(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
+  const adminDb = createAdminClient();
+
+  // 1. Get file keys before deleting
+  const { data: product } = await adminDb
+    .from('digital_products')
+    .select('file_key, thumbnail_url')
+    .eq('id', id)
+    .single();
+
+  // 2. Delete DB row
   const { error } = await supabase.from('digital_products').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // 3. Clean up R2 files
+  if (product) {
+    await deleteR2File(BUCKETS.content, product.file_key);
+    await deleteR2File(BUCKETS.content, product.thumbnail_url);
+  }
+
   return NextResponse.json({ success: true });
 }

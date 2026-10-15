@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Video, Upload, Loader2, Save, CheckCircle2, Trash2, Play, Clock, FileText, Type } from 'lucide-react';
 import { toast } from 'sonner';
+import { uploadToR2 } from '@/lib/uploadToR2';
 
 interface Props {
   lesson: any;
@@ -29,6 +30,7 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
     if (!file.type.startsWith('video/')) {
       toast.error('Please select a valid video file');
@@ -39,38 +41,14 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
     setUploadProgress(0);
 
     try {
-      const res = await fetch('/api/admin/upload-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contentType: file.type || 'video/mp4',
-          folder: `courses/${courseId}/lessons`,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || 'Failed to get upload URL');
-        return;
-      }
-
-      const { uploadUrl, fileKey } = data;
-
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('PUT', uploadUrl, true);
-        xhr.setRequestHeader('Content-Type', file.type || 'video/mp4');
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            setUploadProgress(Math.round((event.loaded / event.total) * 100));
-          }
-        };
-        xhr.onload = () =>
-          xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('Failed'));
-        xhr.onerror = () => reject(new Error('Network error'));
-        xhr.send(file);
+      const result = await uploadToR2(file, {
+        folder: `courses/${courseId}/lessons`,
+        endpoint: '/api/admin/upload-url',
+        compress: false,
+        onProgress: (pct) => setUploadProgress(pct),
       });
 
-      setVideoKey(fileKey);
+      setVideoKey(result.fileKey);
 
       const videoEl = document.createElement('video');
       videoEl.preload = 'metadata';
@@ -82,8 +60,9 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
       };
       videoEl.src = localUrl;
       setVideoPreviewUrl(localUrl);
-    } catch {
-      toast.error('Upload failed. Check R2 CORS.');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Upload failed');
     } finally {
       setUploading(false);
     }
@@ -225,7 +204,6 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
           )}
         </div>
 
-        {/* Video Title */}
         <div className="mb-4">
           <label className="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
             <Type className="w-3.5 h-3.5 text-[#ddb049]" />
@@ -244,7 +222,6 @@ export const LessonVideoEditor: React.FC<Props> = ({ lesson, courseId, onSaved }
           </div>
         </div>
 
-        {/* Video Description */}
         <div className="mb-6">
           <label className="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-[#ddb049]" />

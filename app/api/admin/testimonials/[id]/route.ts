@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { deleteR2File } from '@/lib/r2-delete';
+import { BUCKETS } from '@/lib/r2';
 
 async function requireStaff(supabase: any) {
   const {
@@ -48,6 +50,24 @@ export async function PATCH(
 
   const adminDb = createAdminClient();
 
+  // Clean up old R2 files when replacing media
+  if (body.mediaKey !== undefined || body.posterKey !== undefined) {
+    const { data: current } = await adminDb
+      .from('testimonials')
+      .select('media_key, poster_key')
+      .eq('id', id)
+      .single();
+
+    if (current) {
+      if (body.mediaKey !== undefined && current.media_key && body.mediaKey !== current.media_key) {
+        await deleteR2File(BUCKETS.content, current.media_key);
+      }
+      if (body.posterKey !== undefined && current.poster_key && body.posterKey !== current.poster_key) {
+        await deleteR2File(BUCKETS.content, current.poster_key);
+      }
+    }
+  }
+
   const { data, error } = await adminDb
     .from('testimonials')
     .update(updates)
@@ -78,8 +98,22 @@ export async function DELETE(
 
   const adminDb = createAdminClient();
 
+  // 1. Get file keys before deleting
+  const { data: testimonial } = await adminDb
+    .from('testimonials')
+    .select('media_key, poster_key')
+    .eq('id', id)
+    .single();
+
+  // 2. Delete DB row
   const { error } = await adminDb.from('testimonials').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // 3. Clean up R2 files
+  if (testimonial) {
+    await deleteR2File(BUCKETS.content, testimonial.media_key);
+    await deleteR2File(BUCKETS.content, testimonial.poster_key);
+  }
 
   return NextResponse.json({ success: true });
 }

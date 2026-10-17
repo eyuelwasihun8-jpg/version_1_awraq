@@ -46,6 +46,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       const data = await res.json();
       if (typeof data.count === 'number') {
         setPendingPayments(data.count);
+        window.dispatchEvent(
+          new CustomEvent('awraq:pending-payments-count', { detail: data.count })
+        );
       }
     } catch {
       // silent — badge just stays at last known value
@@ -59,8 +62,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
   useEffect(() => {
     if (!canSeePayments) return;
-
-    fetchPendingCount();
 
     const interval = setInterval(fetchPendingCount, 30_000);
 
@@ -80,13 +81,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       window.removeEventListener('awraq:payments-changed', onPaymentsChanged);
     };
   }, [canSeePayments, fetchPendingCount]);
-
-  // Also refresh when navigating onto / away from payments
-  useEffect(() => {
-    if (pathname.includes('/payments')) {
-      fetchPendingCount();
-    }
-  }, [pathname, fetchPendingCount]);
 
   const allLinks = [
     {

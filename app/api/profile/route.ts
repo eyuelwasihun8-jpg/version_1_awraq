@@ -9,11 +9,9 @@ const RATE_LIMIT = { max: 20, windowMs: 60 * 60 * 1000, keyPrefix: 'profile' };
 export const GET = createHandler(
   null,
   null,
-  withAuth(async () => {
+  withAuth(async (request) => {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user } = request.auth!;
 
     const { data, error } = await supabase
       .from('profiles')
@@ -37,11 +35,8 @@ export const PATCH = createHandler(
   withRateLimit(
     withAuth(async (request) => {
       const { validatedData: body } = request;
-
       const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const { user } = request.auth!;
 
       const updates: Record<string, any> = { updated_at: new Date().toISOString() };
       if (body.fullName !== undefined) updates.full_name = body.fullName?.trim() || null;

@@ -12,51 +12,46 @@ async function getDashboardData() {
 
   if (!user) redirect('/login');
 
-  // 1. Get profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  // 2. Get enrolled courses via enrollments table
-  const { data: enrollments } = await supabase
-    .from('enrollments')
-    .select('course_id, enrolled_at')
-    .eq('user_id', user.id);
+  const [
+    { data: profile },
+    { data: enrollments },
+    { data: purchases },
+    { data: certificates },
+    { data: notes },
+    { data: rawPayments },
+  ] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('enrollments').select('course_id, enrolled_at').eq('user_id', user.id),
+    supabase.from('purchases').select('product_id, purchased_at').eq('user_id', user.id),
+    supabase
+      .from('certificates')
+      .select('*, courses(title, thumbnail_url)')
+      .eq('user_id', user.id)
+      .order('issued_at', { ascending: false }),
+    supabase
+      .from('lesson_notes')
+      .select(`
+        id,
+        content,
+        created_at,
+        updated_at,
+        lesson_id,
+        course_id,
+        lessons(title),
+        courses(title)
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('payment_requests')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+  ]);
 
   const courseIds = enrollments?.map((e) => e.course_id) || [];
-
-  // 3. Get purchased digital products via purchases table
-  const { data: purchases } = await supabase
-    .from('purchases')
-    .select('product_id, purchased_at')
-    .eq('user_id', user.id);
-
   const productIds = purchases?.map((p) => p.product_id) || [];
 
-  // 4. Fetch enrolled course details
-  let enrolledCourses: any[] = [];
-  if (courseIds.length > 0) {
-    const { data } = await supabase
-      .from('courses')
-      .select('*, instructor:profiles(full_name)')
-      .in('id', courseIds);
-    enrolledCourses = data || [];
-  }
-
-  // 5. Fetch purchased product details
-  let enrolledProducts: any[] = [];
-  if (productIds.length > 0) {
-    const { data } = await supabase
-      .from('digital_products')
-      .select('*')
-      .in('id', productIds);
-    enrolledProducts = data || [];
-  }
-
-  // 6. Recommended courses (published + not enrolled)
-  let recommendedCourses: any[] = [];
   const recQuery = supabase
     .from('courses')
     .select('*, instructor:profiles(full_name)')
@@ -64,74 +59,56 @@ async function getDashboardData() {
     .order('created_at', { ascending: false })
     .limit(6);
 
-  const { data: recData } = courseIds.length
-    ? await recQuery.not('id', 'in', `(${courseIds.map((id) => `"${id}"`).join(',')})`)
-    : await recQuery;
+  const [{ data: courseData }, { data: productData }, { data: recData }, { data: courseLessons }] =
+    await Promise.all([
+      courseIds.length
+        ? supabase
+            .from('courses')
+            .select('*, instructor:profiles(full_name)')
+            .in('id', courseIds)
+        : Promise.resolve({ data: [] }),
+      productIds.length
+        ? supabase.from('digital_products').select('*').in('id', productIds)
+        : Promise.resolve({ data: [] }),
+      courseIds.length
+        ? recQuery.not('id', 'in', `(${courseIds.map((id) => `"${id}"`).join(',')})`)
+        : recQuery,
+      courseIds.length
+        ? supabase.from('lessons').select('id, course_id').in('course_id', courseIds)
+        : Promise.resolve({ data: [] }),
+    ]);
 
-  recommendedCourses = recData || [];
+  const enrolledCourses = courseData || [];
+  const enrolledProducts = productData || [];
+  const recommendedCourses = recData || [];
 
-  // 7. Fetch progress per course (FIXED: use lessons + lesson_progress correctly)
   const progressMap: Record<string, { completed: number; total: number }> = {};
+  const lessonIdsByCourse = new Map<string, string[]>();
 
-  for (const course of enrolledCourses) {
-    // Get all lesson IDs for this course
-    const { data: courseLessons } = await supabase
-      .from('lessons')
-      .select('id')
-      .eq('course_id', course.id);
-
-    const lessonIds = (courseLessons || []).map((l) => l.id);
-
-    if (lessonIds.length === 0) {
-      progressMap[course.id] = { total: 0, completed: 0 };
-      continue;
-    }
-
-    // Count completed lessons
-    const { count: completedCount } = await supabase
-      .from('lesson_progress')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('is_completed', true)
-      .in('lesson_id', lessonIds);
-
-    progressMap[course.id] = {
-      total: lessonIds.length,
-      completed: completedCount || 0,
-    };
+  for (const lesson of courseLessons || []) {
+    const ids = lessonIdsByCourse.get(lesson.course_id) || [];
+    ids.push(lesson.id);
+    lessonIdsByCourse.set(lesson.course_id, ids);
   }
 
-  // 8. Fetch certificates with course titles
-  const { data: certificates } = await supabase
-    .from('certificates')
-    .select('*, courses(title, thumbnail_url)')
-    .eq('user_id', user.id)
-    .order('issued_at', { ascending: false });
+  const allLessonIds = Array.from(lessonIdsByCourse.values()).flat();
+  const { data: completedProgress } = allLessonIds.length
+    ? await supabase
+        .from('lesson_progress')
+        .select('lesson_id')
+        .eq('user_id', user.id)
+        .eq('is_completed', true)
+        .in('lesson_id', allLessonIds)
+    : { data: [] };
 
-  // 9. Fetch all notes with course + lesson titles
-  const { data: notes } = await supabase
-    .from('lesson_notes')
-    .select(
-      `
-      id,
-      content,
-      created_at,
-      updated_at,
-      lesson_id,
-      course_id,
-      lessons(title),
-      courses(title)
-    `
-    )
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-
-  // 10. Fetch all payments and enrich with item titles
-  const { data: rawPayments } = await supabase
-    .from('payment_requests')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+  const completedByLesson = new Set((completedProgress || []).map((p) => p.lesson_id));
+  for (const course of enrolledCourses) {
+    const courseLessonIds = lessonIdsByCourse.get(course.id) || [];
+    progressMap[course.id] = {
+      total: courseLessonIds.length,
+      completed: courseLessonIds.filter((id) => completedByLesson.has(id)).length,
+    };
+  }
 
   let allPayments: any[] = [];
   if (rawPayments && rawPayments.length > 0) {
@@ -145,20 +122,17 @@ async function getDashboardData() {
     const coursesMap = new Map();
     const productsMap = new Map();
 
-    if (payCourseIds.length > 0) {
-      const { data: c } = await supabase
-        .from('courses')
-        .select('id, title')
-        .in('id', payCourseIds);
-      (c || []).forEach((x) => coursesMap.set(x.id, x));
-    }
-    if (payProductIds.length > 0) {
-      const { data: p } = await supabase
-        .from('digital_products')
-        .select('id, title')
-        .in('id', payProductIds);
-      (p || []).forEach((x) => productsMap.set(x.id, x));
-    }
+    const [{ data: paymentCourses }, { data: paymentProducts }] = await Promise.all([
+      payCourseIds.length
+        ? supabase.from('courses').select('id, title').in('id', payCourseIds)
+        : Promise.resolve({ data: [] }),
+      payProductIds.length
+        ? supabase.from('digital_products').select('id, title').in('id', payProductIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    (paymentCourses || []).forEach((x) => coursesMap.set(x.id, x));
+    (paymentProducts || []).forEach((x) => productsMap.set(x.id, x));
 
     allPayments = rawPayments.map((p) => ({
       ...p,

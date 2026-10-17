@@ -43,22 +43,17 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     setPending(pendingPayments);
   }, [pendingPayments]);
 
-  // Listen ONLY for manual events (no duplicate polling timer)
-  // AdminSidebar already handles the 30-second auto-refresh
+  // The sidebar owns polling and publishes updates for the shared header badge.
   useEffect(() => {
     if (!canSeePayments) return;
 
-    const onChanged = () => {
-      fetch('/api/admin/payments/pending-count')
-        .then((r) => r.json())
-        .then((data) => {
-          if (typeof data.count === 'number') setPending(data.count);
-        })
-        .catch(() => {});
+    const onCountChanged = (event: Event) => {
+      const count = (event as CustomEvent<unknown>).detail;
+      if (typeof count === 'number') setPending(count);
     };
 
-    window.addEventListener('awraq:payments-changed', onChanged);
-    return () => window.removeEventListener('awraq:payments-changed', onChanged);
+    window.addEventListener('awraq:pending-payments-count', onCountChanged);
+    return () => window.removeEventListener('awraq:pending-payments-count', onCountChanged);
   }, [canSeePayments]);
 
   const handleLogout = async () => {

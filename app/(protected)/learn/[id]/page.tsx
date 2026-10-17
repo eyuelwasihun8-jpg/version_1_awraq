@@ -27,27 +27,21 @@ export default async function LearnCoursePage({
 
   if (!enrollment) redirect(`/courses/${courseId}`);
 
-  const { data: course } = await supabase
-    .from('courses')
-    .select('*')
-    .eq('id', courseId)
-    .single();
+  const [{ data: course }, { data: modules }, { data: lessons }] = await Promise.all([
+    supabase.from('courses').select('*').eq('id', courseId).single(),
+    supabase
+      .from('course_modules')
+      .select('*')
+      .eq('course_id', courseId)
+      .order('order_index', { ascending: true }),
+    supabase
+      .from('lessons')
+      .select('id, title, lesson_type, duration_seconds, order_index, module_id, is_published')
+      .eq('course_id', courseId)
+      .order('order_index', { ascending: true }),
+  ]);
 
   if (!course) notFound();
-
-  // Fetch modules
-  const { data: modules } = await supabase
-    .from('course_modules')
-    .select('*')
-    .eq('course_id', courseId)
-    .order('order_index', { ascending: true });
-
-  // Fetch all published lessons in this course
-  const { data: lessons } = await supabase
-    .from('lessons')
-    .select('id, title, lesson_type, duration_seconds, order_index, module_id, is_published')
-    .eq('course_id', courseId)
-    .order('order_index', { ascending: true });
 
   const publishedLessons = (lessons || []).filter((l) => l.is_published !== false);
 

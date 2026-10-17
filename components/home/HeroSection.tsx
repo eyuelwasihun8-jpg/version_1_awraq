@@ -208,7 +208,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       poster={!posterFailed ? currentPoster : undefined}
                       autoPlay
                       muted
-                      loop
                       playsInline
                       preload="auto"
                       onClick={togglePlay}

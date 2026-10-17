@@ -30,31 +30,30 @@ export default async function LessonPage({
 
   const adminDb = createAdminClient();
 
-  // Course info
-  const { data: course } = await adminDb
-    .from('courses')
-    .select('id, title, thumbnail_url')
-    .eq('id', courseId)
-    .single();
-
-  // Modules
-  const { data: modules } = await adminDb
-    .from('course_modules')
-    .select('*')
-    .eq('course_id', courseId)
-    .order('order_index', { ascending: true });
-
-  // Published lessons
-  const { data: allLessonsRaw } = await adminDb
-    .from('lessons')
-    .select('id, title, order_index, lesson_type, duration_seconds, module_id, is_published')
-    .eq('course_id', courseId)
-    .order('order_index', { ascending: true });
+  const [
+    { data: course },
+    { data: modules },
+    { data: allLessonsRaw },
+    { data: lessonFull },
+  ] = await Promise.all([
+    adminDb.from('courses').select('id, title, thumbnail_url').eq('id', courseId).single(),
+    adminDb
+      .from('course_modules')
+      .select('*')
+      .eq('course_id', courseId)
+      .order('order_index', { ascending: true }),
+    adminDb
+      .from('lessons')
+      .select('id, title, order_index, lesson_type, duration_seconds, module_id, is_published')
+      .eq('course_id', courseId)
+      .order('order_index', { ascending: true }),
+    adminDb.from('lessons').select('*').eq('id', lessonId).single(),
+  ]);
 
   const publishedLessons = (allLessonsRaw || []).filter((l) => l.is_published !== false);
 
   const currentLesson = publishedLessons.find((l) => l.id === lessonId);
-  if (!course || !currentLesson) notFound();
+  if (!course || !currentLesson || !lessonFull) notFound();
 
   const modulesWithLessons = (modules || []).map((m) => ({
     ...m,
@@ -65,13 +64,6 @@ export default async function LessonPage({
   const prevLesson = currentIdx > 0 ? publishedLessons[currentIdx - 1] : null;
   const nextLesson =
     currentIdx < publishedLessons.length - 1 ? publishedLessons[currentIdx + 1] : null;
-
-  // Full data for current lesson
-  const { data: lessonFull } = await adminDb
-    .from('lessons')
-    .select('*')
-    .eq('id', lessonId)
-    .single();
 
   // Progress via adminDb to bypass stale session cookies in RSC
   const { data: allProgress } = await adminDb

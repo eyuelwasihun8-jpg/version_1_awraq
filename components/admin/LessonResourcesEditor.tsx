@@ -95,8 +95,11 @@ export const LessonResourcesEditor: React.FC<Props> = ({ lessonId }) => {
     try {
       const result = await uploadToR2(file, {
         folder: `resources/${lessonId}`,
-        endpoint: '/api/admin/upload-url',
         compress: file.type.startsWith('image/'),
+        ...(file.size <= 4 * 1024 * 1024
+          ? { endpoint: '/api/admin/upload-file' as const, serverUpload: true }
+          : { endpoint: '/api/admin/upload-url' as const }
+        ),
         onProgress: (pct) => setProgress(pct),
       });
 

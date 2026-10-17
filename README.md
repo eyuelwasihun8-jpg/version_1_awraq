@@ -598,6 +598,33 @@ Video key + duration saved to lessons.video_key
 - **Faster for large files**
 - **Progress tracking works**
 
+Direct browser uploads require a CORS policy on the Cloudflare R2 bucket. In
+R2 → `course-content` → Settings → CORS Policy, allow `PUT`, `GET`, and `HEAD`
+from every site origin used by the app (production/custom domains and local
+development). For example, replace the origins below with the exact origins
+you use:
+
+```json
+[
+  {
+    "AllowedOrigins": [
+      "https://your-production-domain.example",
+      "https://your-project.vercel.app",
+      "http://localhost:3000"
+    ],
+    "AllowedMethods": ["GET", "PUT", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+Origins must not include a trailing slash. Course thumbnails and certificate
+templates, plus lesson resource files up to 4MB, use the authenticated app
+server upload route to avoid browser CORS. Larger resources and lesson videos
+continue uploading directly to R2, so they require this bucket CORS policy.
+
 ### Recommended Video Format (Before Upload)
 Use **HandBrake** with:
 - Codec: H.264

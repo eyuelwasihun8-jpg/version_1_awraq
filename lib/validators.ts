@@ -88,12 +88,25 @@ export const courseCategorySchema = z.enum([
   'other',
 ]);
 
+const thumbnailReferenceSchema = z
+  .union([
+    z.string().url(),
+    z
+      .string()
+      .max(2048)
+      .regex(/^[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9._-]+)+$/)
+      .refine((key) => !key.split('/').some((segment) => segment === '.' || segment === '..')),
+    z.literal(''),
+  ])
+  .transform((value) => value || null)
+  .optional();
+
 export const createCourseSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters').max(200),
   description: z.string().max(5000).optional().nullable(),
   category: courseCategorySchema.default('other'),
   price: z.number().nonnegative('Price cannot be negative'),
-  thumbnailUrl: z.string().url().optional().nullable(),
+  thumbnailUrl: thumbnailReferenceSchema,
   certificateTemplateKey: z.string().optional().nullable(),
   isPublished: z.boolean().default(false),
   instructorId: uuidSchema.optional(),
@@ -157,7 +170,7 @@ export const createProductSchema = z.object({
   shortDescription: z.string().max(500).optional().nullable(),
   fileType: fileTypeSchema.default('other'),
   price: z.number().nonnegative(),
-  thumbnailUrl: z.string().url().optional().nullable(),
+  thumbnailUrl: thumbnailReferenceSchema,
   fileKey: z.string().min(1, 'File is required'),
   fileSizeBytes: z.number().int().nonnegative().optional(),
   isPublished: z.boolean().default(false),

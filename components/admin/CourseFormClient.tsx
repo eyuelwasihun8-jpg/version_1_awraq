@@ -50,7 +50,8 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
 
       const result = await uploadToR2(file, {
         folder,
-        endpoint: '/api/admin/upload-url',
+        endpoint: '/api/admin/upload-file',
+        serverUpload: true,
         compress: !forceNoCompress && file.type.startsWith('image/') && !isSvg,
       });
       return result.fileKey;
@@ -132,7 +133,14 @@ export const CourseFormClient: React.FC<Props> = ({ course }) => {
 
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error || 'Failed to save course');
+        const validationMessages = Object.values(
+          data.details?.validation || {}
+        ).flat().filter((message): message is string => typeof message === 'string');
+        toast.error(
+          validationMessages.length
+            ? `Validation failed: ${validationMessages[0]}`
+            : data.error || 'Failed to save course'
+        );
         return;
       }
 

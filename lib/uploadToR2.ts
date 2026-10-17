@@ -11,7 +11,13 @@ import { compressImage } from './compressImage';
 export interface UploadOptions {
   folder: string;
   onProgress?: (percent: number) => void;
-  endpoint?: '/api/admin/upload-url' | '/api/upload-url' | '/api/payment/upload-url' | '/api/payment/upload' | '/api/profile/avatar-upload';
+  endpoint?:
+    | '/api/admin/upload-url'
+    | '/api/admin/upload-file'
+    | '/api/upload-url'
+    | '/api/payment/upload-url'
+    | '/api/payment/upload'
+    | '/api/profile/avatar-upload';
   compress?: boolean;
   maxImageWidth?: number;
   imageQuality?: number;
@@ -64,6 +70,7 @@ export async function uploadToR2(
   if (serverUpload) {
     const formData = new FormData();
     formData.append('file', uploadBlob, filename);
+    formData.append('folder', folder);
 
     const { fileKey } = await new Promise<{ fileKey: string }>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -86,13 +93,13 @@ export async function uploadToR2(
         }
 
         if (xhr.status < 200 || xhr.status >= 300 || !response.fileKey) {
-          reject(new Error(response.error || 'Failed to upload receipt'));
+          reject(new Error(response.error || 'Failed to upload file'));
           return;
         }
 
         resolve({ fileKey: response.fileKey });
       };
-      xhr.onerror = () => reject(new Error('Network error during upload'));
+      xhr.onerror = () => reject(new Error('Network error during server upload'));
       xhr.ontimeout = () => reject(new Error('Upload timed out'));
       xhr.timeout = 5 * 60 * 1000;
       xhr.send(formData);
@@ -141,7 +148,12 @@ export async function uploadToR2(
         reject(new Error(`Upload failed with status ${xhr.status}`));
       }
     };
-    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.onerror = () =>
+      reject(
+        new Error(
+          'Direct upload to Cloudflare R2 was blocked. Check the R2 bucket CORS settings for this site and allow PUT requests from its origin.'
+        )
+      );
     xhr.ontimeout = () => reject(new Error('Upload timed out'));
     xhr.timeout = 5 * 60 * 1000;
 

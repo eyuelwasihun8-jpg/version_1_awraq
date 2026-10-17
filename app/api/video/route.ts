@@ -11,50 +11,35 @@ export const GET = createHandler(
   videoQuerySchema,
   withAuth(async (request) => {
     const { validatedQuery } = request;
-
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    const { user, profile } = request.auth!;
     const { courseId, lessonId } = validatedQuery;
-
-    // Check user role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    const isStaff = profile && STAFF_ROLES.includes(profile.role);
+    const isStaff = STAFF_ROLES.includes(profile.role);
 
     // If not staff, enforce active student enrollment
-    if (!isStaff) {
-      const { data: enrollment } = await supabase
-        .from('enrollments')
-        .select('id')
-        .eq('user_id', user.id)
+    const supabase = await createClient();
+    const [enrollmentResult, lessonResult] = await Promise.all([
+      isStaff
+        ? Promise.resolve({ data: true })
+        : supabase
+            .from('enrollments')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('course_id', courseId)
+            .eq('is_active', true)
+            .maybeSingle(),
+      supabase
+        .from('lessons')
+        .select('id, video_key, course_id, lesson_type')
+        .eq('id', lessonId)
         .eq('course_id', courseId)
-        .eq('is_active', true)
-        .maybeSingle();
+        .maybeSingle(),
+    ]);
 
-      if (!enrollment) {
-        return NextResponse.json({ error: 'Not enrolled' }, { status: 403 });
-      }
+    if (!isStaff && !enrollmentResult.data) {
+      return NextResponse.json({ error: 'Not enrolled' }, { status: 403 });
     }
 
-    const { data: lesson } = await supabase
-      .from('lessons')
-      .select('id, video_key, course_id, lesson_type')
-      .eq('id', lessonId)
-      .eq('course_id', courseId)
-      .single();
+    const lesson = lessonResult.data;
 
     // Allow video streaming as long as a video_key exists
     if (!lesson || !lesson.video_key || !lesson.video_key.trim()) {

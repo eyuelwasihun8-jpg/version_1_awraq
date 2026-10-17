@@ -50,8 +50,8 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
     const f = e.target.files?.[0];
     if (!f) return;
 
-    if (!f.type.startsWith('image/')) {
-      toast.error('Please select an image file (JPG or PNG)');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(f.type.toLowerCase())) {
+      toast.error('Please select a JPEG, PNG, or WebP image');
       return;
     }
 
@@ -70,7 +70,8 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
     try {
       const { fileKey } = await uploadToR2(rawFile, {
         folder: 'receipts',
-        endpoint: '/api/payment/upload-url',
+        endpoint: '/api/payment/upload',
+        serverUpload: true,
         compress: true,
         maxImageWidth: 1600,
         imageQuality: 0.8,
@@ -272,7 +273,12 @@ export const PurchaseClient: React.FC<Props> = ({ item, itemType }) => {
                 </div>
                 <div className="text-xs text-slate-500 font-medium">PNG or JPG screenshot</div>
               </div>
-              <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
             </label>
           )}
         </div>

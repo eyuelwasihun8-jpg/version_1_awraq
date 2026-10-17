@@ -11,10 +11,11 @@ import { compressImage } from './compressImage';
 export interface UploadOptions {
   folder: string;
   onProgress?: (percent: number) => void;
-  endpoint?: '/api/admin/upload-url' | '/api/upload-url' | '/api/payment/upload-url' | '/api/profile/avatar-upload';
+  endpoint?: '/api/admin/upload-url' | '/api/upload-url' | '/api/payment/upload-url' | '/api/payment/upload' | '/api/profile/avatar-upload';
   compress?: boolean;
   maxImageWidth?: number;
   imageQuality?: number;
+  serverUpload?: boolean;
 }
 
 export interface UploadResult {
@@ -34,6 +35,7 @@ export async function uploadToR2(
     compress = true,
     maxImageWidth = 1600,
     imageQuality = 0.75,
+    serverUpload = false,
   } = options;
 
   if (!rawFile) {
@@ -58,6 +60,47 @@ export async function uploadToR2(
   }
 
   onProgress?.(5);
+
+  if (serverUpload) {
+    const formData = new FormData();
+    formData.append('file', uploadBlob, filename);
+
+    const { fileKey } = await new Promise<{ fileKey: string }>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', endpoint, true);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable && onProgress) {
+          const pct = 5 + Math.round((event.loaded / event.total) * 94);
+          onProgress(Math.min(pct, 99));
+        }
+      };
+
+      xhr.onload = () => {
+        let response: { fileKey?: string; error?: string };
+        try {
+          response = JSON.parse(xhr.responseText);
+        } catch {
+          reject(new Error('Upload server returned an invalid response'));
+          return;
+        }
+
+        if (xhr.status < 200 || xhr.status >= 300 || !response.fileKey) {
+          reject(new Error(response.error || 'Failed to upload receipt'));
+          return;
+        }
+
+        resolve({ fileKey: response.fileKey });
+      };
+      xhr.onerror = () => reject(new Error('Network error during upload'));
+      xhr.ontimeout = () => reject(new Error('Upload timed out'));
+      xhr.timeout = 5 * 60 * 1000;
+      xhr.send(formData);
+    });
+
+    onProgress?.(100);
+    return { fileKey, size: uploadBlob.size, contentType };
+  }
 
   const urlRes = await fetch(endpoint, {
     method: 'POST',

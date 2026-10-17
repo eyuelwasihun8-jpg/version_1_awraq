@@ -121,8 +121,30 @@ function isCsrfExempt(path: string): boolean {
   );
 }
 
+function isSameOriginRequest(request: NextRequest): boolean {
+  const origin = request.headers.get('origin');
+  if (origin) {
+    try {
+      return new URL(origin).origin === request.nextUrl.origin;
+    } catch {
+      return false;
+    }
+  }
+
+  const referer = request.headers.get('referer');
+  if (referer) {
+    try {
+      return new URL(referer).origin === request.nextUrl.origin;
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+}
+
 /**
- * Validate CSRF token or Same-Origin headers for mutating requests.
+ * Validate mutating requests using same-origin browser headers or a CSRF token.
  */
 export async function validateCsrfMiddleware(request: NextRequest): Promise<NextResponse | null> {
   const method = request.method;
@@ -138,7 +160,12 @@ export async function validateCsrfMiddleware(request: NextRequest): Promise<Next
     return null;
   }
 
-  // 3. Fallback check for other forms
+  // Browsers attach Origin to same-origin fetches and form submissions.
+  if (isSameOriginRequest(request)) {
+    return null;
+  }
+
+  // Non-browser clients without same-origin headers must provide a token.
   const token = getCsrfTokenFromRequest(request);
 
   if (!token) {

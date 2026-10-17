@@ -151,7 +151,7 @@ export async function uploadToR2(
     xhr.onerror = () =>
       reject(
         new Error(
-          'Direct upload to Cloudflare R2 was blocked. Check the R2 bucket CORS settings for this site and allow PUT requests from its origin.'
+          'The browser could not complete the Cloudflare R2 upload. This can be caused by a blocked CORS preflight, a network interruption, or an expired/invalid upload URL. Confirm the latest app deployment is live, then inspect the failed OPTIONS and PUT requests in Developer Tools > Network.'
         )
       );
     xhr.ontimeout = () => reject(new Error('Upload timed out'));

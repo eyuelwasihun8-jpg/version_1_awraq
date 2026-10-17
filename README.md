@@ -601,15 +601,15 @@ Video key + duration saved to lessons.video_key
 Direct browser uploads require a CORS policy on the Cloudflare R2 bucket. In
 R2 → `course-content` → Settings → CORS Policy, allow `PUT`, `GET`, and `HEAD`
 from every site origin used by the app (production/custom domains and local
-development). For example, replace the origins below with the exact origins
-you use:
+development). The current production origin is
+`https://version1awraq-zan.vercel.app`. Use the following policy, adding any
+custom production domain you use to `AllowedOrigins`:
 
 ```json
 [
   {
     "AllowedOrigins": [
-      "https://your-production-domain.example",
-      "https://your-project.vercel.app",
+      "https://version1awraq-zan.vercel.app",
       "http://localhost:3000"
     ],
     "AllowedMethods": ["GET", "PUT", "HEAD"],
